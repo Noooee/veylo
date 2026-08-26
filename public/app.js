@@ -220,6 +220,11 @@ function setupRoomButton(button) {
       currentRoom =
         button.dataset.room;
 
+      // メッセージ欄をクリア
+if (messages) {
+  messages.innerHTML = "";
+}
+
 
       // ヘッダー変更
 
