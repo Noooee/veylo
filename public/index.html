@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Veylo</title>
+
+  <link
+    rel="stylesheet"
+    href="/style.css"
+  >
+</head>
+
+<body>
+
+  <div class="app">
+
+    <!-- =========================================
+         SIDEBAR
+    ========================================== -->
+
+    <aside class="sidebar">
+
+      <h1>Veylo</h1>
+
+      <!-- ROOMS HEADER -->
+
+      <div class="rooms-header">
+
+        <div class="channel-title">
+          ROOMS
+        </div>
+
+        <div class="rooms-actions">
+
+          <!-- 部屋に参加 -->
+
+          <button
+            id="join-room-button"
+            class="join-room-button"
+            type="button"
+            title="招待コードで参加"
+          >
+            ↗
+          </button>
+
+          <!-- 部屋を作成 -->
+
+          <button
+            id="create-room-button"
+            class="create-room-button"
+            type="button"
+            title="部屋を作成"
+          >
+            ＋
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- ROOM LIST -->
+
+      <div
+        id="room-list"
+        class="room-list"
+      >
+
+        <button
+          class="channel active"
+          data-room="casual"
+          data-name="雑談"
+          data-owner="false"
+        >
+          # 雑談
+        </button>
+
+      </div>
+
+
+      <!-- SETTINGS -->
+
+      <button
+        id="settings-button"
+        class="settings-button"
+        type="button"
+      >
+        ⚙ 設定
+      </button>
+
+    </aside>
+
+
+    <!-- =========================================
+         CHAT
+    ========================================== -->
+
+    <main class="chat">
+
+      <!-- CHAT HEADER -->
+
+      <header class="chat-header">
+
+        <span>#</span>
+
+        <strong>
+          雑談
+        </strong>
+
+      </header>
+
+
+      <!-- MESSAGES -->
+
+      <div
+        class="messages"
+        id="messages"
+      >
+
+        <div class="message">
+
+          <strong>
+            Veylo
+          </strong>
+
+          <p>
+            Veyloへようこそ！
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <!-- MESSAGE FORM -->
+
+      <div class="message-form">
+
+        <form id="form">
+
+          <textarea
+            id="input"
+            placeholder="メッセージを入力..."
+            rows="1"
+            autocomplete="off"
+          ></textarea>
+
+          <button
+            type="submit"
+          >
+            送信
+          </button>
+
+        </form>
+
+      </div>
+
+    </main>
+
+  </div>
+
+
+  <!-- =========================================
+       部屋参加モーダル
+  ========================================== -->
+
+  <div
+    class="room-join-modal"
+    id="room-join-modal"
+  >
+
+    <div class="room-join-box">
+
+      <div class="room-join-header">
+
+        <div>
+
+          <h2>
+            部屋に参加
+          </h2>
+
+          <p>
+            招待コードを入力して部屋に参加します。
+          </p>
+
+        </div>
+
+        <button
+          id="close-room-join"
+          class="modal-close"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="room-join-content">
+
+        <label for="room-invite-input">
+          招待コード
+        </label>
+
+        <input
+          id="room-invite-input"
+          type="text"
+          placeholder="招待コードを入力"
+          autocomplete="off"
+        >
+
+        <p
+          id="room-join-error"
+          class="room-join-error"
+        ></p>
+
+      </div>
+
+
+      <div class="room-join-footer">
+
+        <button
+          id="cancel-room-join"
+          class="cancel-button"
+          type="button"
+        >
+          キャンセル
+        </button>
+
+        <button
+          id="confirm-room-join"
+          class="confirm-button"
+          type="button"
+        >
+          参加
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       部屋作成モーダル
+  ========================================== -->
+
+  <div
+    class="room-create-modal"
+    id="room-create-modal"
+  >
+
+    <div class="room-create-box">
+
+      <div class="room-create-header">
+
+        <div>
+
+          <h2>
+            部屋を作成
+          </h2>
+
+          <p>
+            新しい部屋を作成して友達と話しましょう。
+          </p>
+
+        </div>
+
+        <button
+          id="close-room-create"
+          class="modal-close"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="room-create-content">
+
+        <label for="room-name-input">
+          部屋名
+        </label>
+
+        <input
+          id="room-name-input"
+          type="text"
+          placeholder="新しい部屋"
+          maxlength="50"
+          autocomplete="off"
+        >
+
+      </div>
+
+
+      <div class="room-create-footer">
+
+        <button
+          id="cancel-room-create"
+          class="cancel-button"
+          type="button"
+        >
+          キャンセル
+        </button>
+
+        <button
+          id="confirm-room-create"
+          class="confirm-button"
+          type="button"
+        >
+          作成
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       部屋設定モーダル
+  ========================================== -->
+
+  <div
+    class="room-settings-modal"
+    id="room-settings-modal"
+  >
+
+    <div class="room-settings-box">
+
+      <div class="room-settings-header">
+
+        <div>
+
+          <h2 id="room-settings-title">
+            部屋設定
+          </h2>
+
+          <p>
+            この部屋の設定を管理できます。
+          </p>
+
+        </div>
+
+        <button
+          id="close-room-settings"
+          class="modal-close"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="room-settings-content">
+
+        <div class="room-setting-item">
+
+          <div class="room-setting-label">
+            招待コード
+          </div>
+
+          <div class="invite-code-row">
+
+            <input
+              id="invite-code"
+              type="text"
+              readonly
+            >
+
+            <button
+              id="copy-invite-code"
+              class="copy-code-button"
+              type="button"
+            >
+              📋 コピー
+            </button>
+
+          </div>
+
+          <p class="room-setting-description">
+            このコードを友達に送ると、
+            この部屋へ招待できます。
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="room-settings-footer">
+
+        <button
+          id="close-room-settings-bottom"
+          class="cancel-button"
+          type="button"
+        >
+          閉じる
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       SETTINGS
+  ========================================== -->
+
+  <div
+    class="settings-panel"
+    id="settings-panel"
+  >
+
+    <div class="settings-card">
+
+      <div class="settings-header">
+
+        <div>
+
+          <h2>
+            設定
+          </h2>
+
+          <p>
+            Veyloの表示や言語を変更できます
+          </p>
+
+        </div>
+
+        <button
+          id="close-settings"
+          class="close-settings"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <!-- USER -->
+
+      <div class="settings-section">
+
+        <h3>
+          👤 ユーザー
+        </h3>
+
+        <label for="username-input">
+          ユーザー名
+        </label>
+
+        <input
+          id="username-input"
+          type="text"
+          maxlength="30"
+          placeholder="ユーザー名を入力..."
+          autocomplete="off"
+        >
+
+        <button
+          id="save-username"
+          class="save-username"
+          type="button"
+        >
+          保存
+        </button>
+
+        <p
+          id="username-status"
+          class="setting-description"
+        ></p>
+
+      </div>
+
+
+      <!-- THEME -->
+
+      <div class="settings-section">
+
+        <h3>
+          🎨 テーマ
+        </h3>
+
+        <button
+          class="theme-button"
+          data-theme="light"
+          type="button"
+        >
+
+          <span>☀️</span>
+
+          <div>
+
+            <strong>
+              Light
+            </strong>
+
+            <small>
+              明るいテーマ
+            </small>
+
+          </div>
+
+        </button>
+
+
+        <button
+          class="theme-button"
+          data-theme="dark"
+          type="button"
+        >
+
+          <span>🌙</span>
+
+          <div>
+
+            <strong>
+              Dark
+            </strong>
+
+            <small>
+              暗いテーマ
+            </small>
+
+          </div>
+
+        </button>
+
+
+        <button
+          class="theme-button"
+          data-theme="gray"
+          type="button"
+        >
+
+          <span>🌫️</span>
+
+          <div>
+
+            <strong>
+              Gray
+            </strong>
+
+            <small>
+              落ち着いたグレーテーマ
+            </small>
+
+          </div>
+
+        </button>
+
+      </div>
+
+
+      <!-- LANGUAGE -->
+
+      <div class="settings-section">
+
+        <h3>
+          🌐 言語
+        </h3>
+
+        <button
+          class="language-button"
+          data-language="ja"
+          type="button"
+        >
+
+          <span>🇯🇵</span>
+
+          <div>
+
+            <strong>
+              日本語
+            </strong>
+
+            <small>
+              Japanese
+            </small>
+
+          </div>
+
+        </button>
+
+
+        <button
+          class="language-button"
+          data-language="en"
+          type="button"
+        >
+
+          <span>🇺🇸</span>
+
+          <div>
+
+            <strong>
+              English
+            </strong>
+
+            <small>
+              英語
+            </small>
+
+          </div>
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       SOCKET.IO
+  ========================================== -->
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- Veylo -->
+
+  <script src="/app.js"></script>
+
+</body>
+
+</html>
