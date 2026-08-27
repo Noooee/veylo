@@ -53,6 +53,8 @@ app.get("/health", (req, res) => {
 // 作成された部屋
 // ==================================================
 async function initDatabase() {
+
+  // 部屋テーブル
   await pool.query(`
     CREATE TABLE IF NOT EXISTS rooms (
       id TEXT PRIMARY KEY,
@@ -63,9 +65,20 @@ async function initDatabase() {
     )
   `);
 
-  console.log("PostgreSQL: roomsテーブル準備完了");
-}
+  // メッセージテーブル
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS messages (
+      id SERIAL PRIMARY KEY,
+      room TEXT NOT NULL,
+      username TEXT NOT NULL,
+      text TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 
+  console.log("PostgreSQL: roomsテーブル準備完了");
+  console.log("PostgreSQL: messagesテーブル準備完了");
+}
 
 // ==================================================
 // ユーザー接続
@@ -79,39 +92,101 @@ io.on("connection", (socket) => {
   );
   
   // 雑談ルームに自動参加
-  socket.join("casual");
+socket.join("casual");
+
+
+// 雑談の過去メッセージを取得
+pool.query(
+  `
+  SELECT
+    room,
+    username,
+    text
+  FROM messages
+  WHERE room = $1
+  ORDER BY created_at ASC
+  `,
+  ["casual"]
+)
+.then((result) => {
+
+  socket.emit(
+    "room messages",
+    result.rows
+  );
+
+})
+.catch((error) => {
+
+  console.error(
+    "雑談メッセージ取得エラー:",
+    error
+  );
+
+});
 
   // ==================================================
   // チャットメッセージ
   // ==================================================
 
-  socket.on("chat message", (msg) => {
+ socket.on("chat message", async (msg) => {
 
-    if (!msg) {
-      return;
-    }
+  if (!msg) {
+    return;
+  }
 
-    if (!msg.room) {
-      return;
-    }
+  if (!msg.room) {
+    return;
+  }
 
-    if (!msg.text) {
-      return;
-    }
+  if (!msg.text) {
+    return;
+  }
 
+  const message = {
+    room: msg.room,
+    text: String(msg.text),
+    username: msg.username || "ゲスト"
+  };
 
-    // その部屋にいるユーザーへ送信
+  try {
 
-    io.to(msg.room).emit(
-      "chat message",
-      {
-        room: msg.room,
-        text: msg.text,
-        username: msg.username || "ゲスト"
-      }
+    // PostgreSQLに保存
+    await pool.query(
+      `
+      INSERT INTO messages
+        (room, username, text)
+      VALUES
+        ($1, $2, $3)
+      `,
+      [
+        message.room,
+        message.username,
+        message.text
+      ]
     );
 
-  });
+    console.log(
+      "PostgreSQLにメッセージを保存しました:",
+      message.text
+    );
+
+    // その部屋にいるユーザーへ送信
+    io.to(message.room).emit(
+      "chat message",
+      message
+    );
+
+  } catch (error) {
+
+    console.error(
+      "メッセージの保存に失敗しました:",
+      error
+    );
+
+  }
+
+});
 
 
   // ==================================================
@@ -296,6 +371,39 @@ const room = {
 // Socket.IOの部屋へ参加
 
     socket.join(room.id);
+    // Socket.IOの部屋へ参加
+socket.join(room.id);
+
+
+// 過去のメッセージを取得
+try {
+
+  const messagesResult = await pool.query(
+    `
+    SELECT
+      room,
+      username,
+      text
+    FROM messages
+    WHERE room = $1
+    ORDER BY created_at ASC
+    `,
+    [room.id]
+  );
+
+  socket.emit(
+    "room messages",
+    messagesResult.rows
+  );
+
+} catch (error) {
+
+  console.error(
+    "メッセージ取得エラー:",
+    error
+  );
+
+}
 
 
     console.log(
