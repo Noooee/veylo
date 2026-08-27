@@ -178,39 +178,167 @@ io.on("connection", (socket) => {
 
 
   // ==================================================
-  // チャットメッセージ
-  // ==================================================
+// チャットメッセージ
+// ==================================================
 
-  socket.on("chat message", async (msg) => {
+socket.on("chat message", async (msg) => {
 
-    try {
+  console.log("========== チャット受信 ==========");
+  console.log("受信データ:", msg);
 
-      if (!msg) {
-        return;
-      }
+  try {
 
-      if (!msg.room) {
-        return;
-      }
+    if (!msg) {
+      console.log("❌ msg がありません");
+      return;
+    }
 
-      if (!msg.text) {
-        return;
-      }
+    if (!msg.room) {
+      console.log("❌ room がありません");
+      return;
+    }
 
-
-      const roomId =
-        String(msg.room).trim();
-
-      const text =
-        String(msg.text).trim();
-
-      const username =
-        String(msg.username || "ゲスト").trim();
+    if (!msg.text) {
+      console.log("❌ text がありません");
+      return;
+    }
 
 
-      if (!roomId || !text) {
-        return;
-      }
+    const roomId =
+      String(msg.room).trim();
+
+    const text =
+      String(msg.text).trim();
+
+    const username =
+      String(msg.username || "ゲスト").trim();
+
+
+    console.log("チャット処理開始:", {
+      roomId,
+      text,
+      username
+    });
+
+
+    if (!roomId || !text) {
+      console.log("❌ roomId または text が空です");
+      return;
+    }
+
+
+    // ==================================================
+    // PostgreSQL保存開始
+    // ==================================================
+
+    console.log(
+      "PostgreSQLへ保存開始..."
+    );
+
+
+    const result = await pool.query(
+      `
+      INSERT INTO messages
+        (room_id, username, text)
+      VALUES
+        ($1, $2, $3)
+      RETURNING
+        id,
+        room_id,
+        username,
+        text,
+        created_at
+      `,
+      [
+        roomId,
+        username || "ゲスト",
+        text
+      ]
+    );
+
+
+    console.log(
+      "PostgreSQL INSERT 完了"
+    );
+
+
+    const savedMessage =
+      result.rows[0];
+
+
+    if (!savedMessage) {
+
+      console.error(
+        "❌ PostgreSQLから保存結果が返ってきませんでした"
+      );
+
+      return;
+    }
+
+
+    console.log(
+      "PostgreSQLにメッセージを保存しました:",
+      savedMessage
+    );
+
+
+    // ==================================================
+    // クライアントへ送信
+    // ==================================================
+
+    const messageData = {
+
+      id:
+        savedMessage.id,
+
+      room:
+        savedMessage.room_id,
+
+      text:
+        savedMessage.text,
+
+      username:
+        savedMessage.username,
+
+      createdAt:
+        savedMessage.created_at,
+
+      senderId:
+        socket.id
+
+    };
+
+
+    console.log(
+      "クライアントへコメント送信:",
+      messageData
+    );
+
+
+    io.to(roomId).emit(
+      "chat message",
+      messageData
+    );
+
+
+    console.log(
+      "========== チャット処理完了 =========="
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "❌ メッセージ保存エラー:"
+    );
+
+    console.error(
+      error
+    );
+
+  }
+
+});
 
 
       // ------------------------------------------
