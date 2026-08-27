@@ -2,6 +2,7 @@
 <html lang="ja">
 
 <head>
+
   <meta charset="UTF-8">
 
   <meta
@@ -15,6 +16,7 @@
     rel="stylesheet"
     href="/style.css"
   >
+
 </head>
 
 <body>
@@ -48,8 +50,9 @@
       <button
         id="settingsButton"
         class="header-button settings-button"
+        title="設定"
       >
-        ⚙ 設定
+        ⚙️
       </button>
 
     </div>
@@ -64,28 +67,36 @@
   <main class="main">
 
     <!-- ========================================
-         部屋名
+         部屋情報
     ========================================= -->
 
-    <section class="room-title">
+    <section class="room-header">
 
-      <div class="room-label">
-        CHAT ROOM
+      <div>
+
+        <div class="room-label">
+          CHAT ROOM
+        </div>
+
+        <h1 id="roomName">
+          雑談
+        </h1>
+
       </div>
-
-      <h1 id="roomName">
-        雑談
-      </h1>
 
       <div
         id="inviteArea"
         class="invite-area hidden"
       >
-        招待コード
+
+        <span>
+          招待コード
+        </span>
 
         <strong id="inviteCode">
           -
         </strong>
+
       </div>
 
     </section>
@@ -253,43 +264,38 @@
     <div class="modal-box settings-box">
 
       <h2>
-        ⚙ 設定
+        ⚙️ 設定
       </h2>
 
 
-      <!-- 表示名 -->
+      <!-- ユーザー名 -->
 
-      <label class="settings-label">
-        表示名
-      </label>
+      <div class="setting-item">
 
-      <input
-        id="settingsUsernameInput"
-        type="text"
-        maxlength="30"
-        placeholder="名前"
-      >
+        <label for="settingsUsernameInput">
+          ユーザー名
+        </label>
+
+        <input
+          id="settingsUsernameInput"
+          type="text"
+          maxlength="30"
+          placeholder="名前を入力"
+        >
+
+      </div>
 
 
       <!-- 言語 -->
 
-      <div class="settings-item">
+      <div class="setting-item">
 
-        <div>
-
-          <div class="settings-item-title">
-            言語
-          </div>
-
-          <div class="settings-item-description">
-            表示する言語を選択
-          </div>
-
-        </div>
+        <label for="languageSelect">
+          言語 / Language
+        </label>
 
         <select
           id="languageSelect"
-          class="settings-select"
         >
 
           <option value="ja">
@@ -307,17 +313,17 @@
 
       <!-- ダークモード -->
 
-      <div class="settings-item">
+      <div class="setting-row">
 
         <div>
 
-          <div class="settings-item-title">
+          <strong>
             ダークモード
-          </div>
+          </strong>
 
-          <div class="settings-item-description">
-            暗い画面で表示
-          </div>
+          <small>
+            Dark Mode
+          </small>
 
         </div>
 
@@ -334,17 +340,17 @@
 
       <!-- グレーモード -->
 
-      <div class="settings-item">
+      <div class="setting-row">
 
         <div>
 
-          <div class="settings-item-title">
+          <strong>
             グレーモード
-          </div>
+          </strong>
 
-          <div class="settings-item-description">
-            色を抑えた落ち着いた表示
-          </div>
+          <small>
+            Gray Mode
+          </small>
 
         </div>
 
@@ -358,8 +364,6 @@
 
       </div>
 
-
-      <!-- ボタン -->
 
       <div class="modal-buttons">
 
@@ -391,6 +395,11 @@
   =========================================== -->
 
   <script src="/socket.io/socket.io.js"></script>
+
+
+  <!-- ==========================================
+       Veylo JavaScript
+  =========================================== -->
 
   <script src="/app.js"></script>
 
