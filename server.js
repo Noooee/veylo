@@ -3,6 +3,10 @@ const http = require("http");
 const { Server } = require("socket.io");
 const { Pool } = require("pg");
 
+console.log("=================================");
+console.log("VEYLO SERVER.JS START");
+console.log("=================================");
+
 
 // ==================================================
 // PostgreSQL
@@ -178,53 +182,212 @@ io.on("connection", (socket) => {
 
 
   // ==================================================
-// チャットメッセージ
-// ==================================================
+  // チャットメッセージ
+  // ==================================================
 
-socket.on("chat message", async (msg) => {
+  socket.on("chat message", async (msg) => {
 
-  console.log("========== チャット受信 ==========");
-  console.log("受信データ:", msg);
+    console.log(
+      "★★★★★ サーバーがコメントを受信しました ★★★★★"
+    );
 
-  try {
+    console.log(
+      "受信データ:",
+      msg
+    );
 
-    if (!msg) {
-      console.log("❌ msg がありません");
-      return;
+
+    try {
+
+      // ------------------------------------------
+      // データ確認
+      // ------------------------------------------
+
+      if (!msg) {
+
+        console.log(
+          "❌ msg がありません"
+        );
+
+        return;
+      }
+
+
+      if (!msg.room) {
+
+        console.log(
+          "❌ room がありません"
+        );
+
+        return;
+      }
+
+
+      if (!msg.text) {
+
+        console.log(
+          "❌ text がありません"
+        );
+
+        return;
+      }
+
+
+      // ------------------------------------------
+      // データ整理
+      // ------------------------------------------
+
+      const roomId =
+        String(msg.room).trim();
+
+
+      const text =
+        String(msg.text).trim();
+
+
+      const username =
+        String(
+          msg.username || "ゲスト"
+        ).trim();
+
+
+      console.log(
+        "チャット処理開始:",
+        {
+          roomId,
+          text,
+          username
+        }
+      );
+
+
+      if (!roomId || !text) {
+
+        console.log(
+          "❌ roomId または text が空です"
+        );
+
+        return;
+      }
+
+
+      // ------------------------------------------
+      // PostgreSQLへ保存
+      // ------------------------------------------
+
+      console.log(
+        "PostgreSQL保存開始:",
+        {
+          roomId,
+          username,
+          text
+        }
+      );
+
+
+      const result =
+        await pool.query(
+          `
+          INSERT INTO messages
+            (room_id, username, text)
+          VALUES
+            ($1, $2, $3)
+          RETURNING
+            id,
+            room_id,
+            username,
+            text,
+            created_at
+          `,
+          [
+            roomId,
+            username || "ゲスト",
+            text
+          ]
+        );
+
+
+      // ------------------------------------------
+      // 保存結果
+      // ------------------------------------------
+
+      const savedMessage =
+        result.rows[0];
+
+
+      if (!savedMessage) {
+
+        console.error(
+          "❌ PostgreSQLから保存結果が返ってきませんでした"
+        );
+
+        return;
+      }
+
+
+      console.log(
+        "PostgreSQLにメッセージを保存しました:",
+        savedMessage
+      );
+
+
+      // ------------------------------------------
+      // クライアントへ送信
+      // ------------------------------------------
+
+      const messageData = {
+
+        id:
+          savedMessage.id,
+
+        room:
+          savedMessage.room_id,
+
+        text:
+          savedMessage.text,
+
+        username:
+          savedMessage.username,
+
+        createdAt:
+          savedMessage.created_at,
+
+        senderId:
+          socket.id
+
+      };
+
+
+      console.log(
+        "クライアントへコメント送信:",
+        messageData
+      );
+
+
+      io.to(roomId).emit(
+        "chat message",
+        messageData
+      );
+
+
+      console.log(
+        "========== チャット処理完了 =========="
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "❌ メッセージ保存エラー:"
+      );
+
+      console.error(
+        error
+      );
+
     }
 
-    if (!msg.room) {
-      console.log("❌ room がありません");
-      return;
-    }
-
-    if (!msg.text) {
-      console.log("❌ text がありません");
-      return;
-    }
-
-
-    const roomId =
-      String(msg.room).trim();
-
-    const text =
-      String(msg.text).trim();
-
-    const username =
-      String(msg.username || "ゲスト").trim();
-
-
-    console.log("チャット処理開始:", {
-      roomId,
-      text,
-      username
-    });
-
-
-    if (!roomId || !text) {
-      console.log("❌ roomId または text が空です");
-      return;
-    }
+  });
 
 
     // ==================================================
