@@ -2,9 +2,7 @@
 // Veylo App.js
 // ==================================================
 
-console.log(
-  "Veylo app.js loaded successfully."
-);
+console.log("Veylo app.js loaded successfully.");
 
 
 // ==================================================
@@ -84,6 +82,14 @@ const joinError =
 
 
 // ==================================================
+// 雑談へ戻る
+// ==================================================
+
+const backToCasualButton =
+  document.getElementById("backToCasualButton");
+
+
+// ==================================================
 // 設定
 // ==================================================
 
@@ -94,34 +100,22 @@ const settingsModal =
   document.getElementById("settingsModal");
 
 const settingsUsernameInput =
-  document.getElementById(
-    "settingsUsernameInput"
-  );
+  document.getElementById("settingsUsernameInput");
 
 const closeSettingsButton =
-  document.getElementById(
-    "closeSettingsButton"
-  );
+  document.getElementById("closeSettingsButton");
 
 const saveSettingsButton =
-  document.getElementById(
-    "saveSettingsButton"
-  );
+  document.getElementById("saveSettingsButton");
 
 const themeToggleButton =
-  document.getElementById(
-    "themeToggleButton"
-  );
+  document.getElementById("themeToggleButton");
 
 const grayToggleButton =
-  document.getElementById(
-    "grayToggleButton"
-  );
+  document.getElementById("grayToggleButton");
 
 const languageSelect =
-  document.getElementById(
-    "languageSelect"
-  );
+  document.getElementById("languageSelect");
 
 
 // ==================================================
@@ -136,19 +130,21 @@ let currentRoom = "casual";
 // ==================================================
 
 let darkMode =
-  localStorage.getItem(
-    "veylo_dark_mode"
-  ) === "true";
+  localStorage.getItem("veylo_dark_mode") === "true";
 
 let grayMode =
-  localStorage.getItem(
-    "veylo_gray_mode"
-  ) === "true";
+  localStorage.getItem("veylo_gray_mode") === "true";
 
 let language =
-  localStorage.getItem(
-    "veylo_language"
-  ) || "ja";
+  localStorage.getItem("veylo_language") || "ja";
+
+
+// ==================================================
+// 24時間
+// ==================================================
+
+const MESSAGE_LIFETIME =
+  24 * 60 * 60 * 1000;
 
 
 // ==================================================
@@ -170,11 +166,9 @@ socket.on("connect", () => {
 // ==================================================
 
 const savedUsername =
-  localStorage.getItem(
-    "veylo_username"
-  );
+  localStorage.getItem("veylo_username");
 
-if (savedUsername) {
+if (savedUsername && usernameInput) {
 
   usernameInput.value =
     savedUsername;
@@ -183,14 +177,73 @@ if (savedUsername) {
 
 
 // ==================================================
-// 初期テーマ
+// メッセージが24時間以内か確認
 // ==================================================
 
-updateTheme();
+function isMessageValid(data) {
+
+  if (!data) {
+    return false;
+  }
+
+  if (!data.createdAt) {
+    return true;
+  }
+
+  const created =
+    new Date(data.createdAt).getTime();
+
+  if (Number.isNaN(created)) {
+    return true;
+  }
+
+  return (
+    Date.now() - created <
+    MESSAGE_LIFETIME
+  );
+
+}
 
 
 // ==================================================
-// 初期メッセージ
+// LocalStorageの古いコメントを削除
+// ==================================================
+
+function cleanupLocalMessages() {
+
+  try {
+
+    const stored =
+      JSON.parse(
+        localStorage.getItem(
+          "veylo_casual_messages"
+        )
+      ) || [];
+
+    const valid =
+      stored.filter(
+        (data) =>
+          isMessageValid(data)
+      );
+
+    localStorage.setItem(
+      "veylo_casual_messages",
+      JSON.stringify(valid)
+    );
+
+  } catch {
+
+    localStorage.removeItem(
+      "veylo_casual_messages"
+    );
+
+  }
+
+}
+
+
+// ==================================================
+// 保存済みコメント読み込み
 // ==================================================
 
 loadLocalMessages();
@@ -213,14 +266,17 @@ messageForm.addEventListener(
       usernameInput.value.trim() ||
       "ゲスト";
 
+
     if (!text) {
       return;
     }
+
 
     localStorage.setItem(
       "veylo_username",
       username
     );
+
 
     socket.emit(
       "chat message",
@@ -230,6 +286,7 @@ messageForm.addEventListener(
         username: username
       }
     );
+
 
     messageInput.value = "";
 
@@ -251,13 +308,60 @@ socket.on(
       return;
     }
 
+
     if (data.room !== currentRoom) {
       return;
     }
 
+
+    if (!isMessageValid(data)) {
+      return;
+    }
+
+
     addMessage(data);
 
     saveLocalMessage(data);
+
+  }
+);
+
+
+// ==================================================
+// サーバーから過去コメント受信
+// ==================================================
+
+socket.on(
+  "previous messages",
+  (data) => {
+
+    if (!Array.isArray(data)) {
+      return;
+    }
+
+
+    messages.innerHTML = "";
+
+
+    data
+      .filter(
+        (message) =>
+          isMessageValid(message)
+      )
+      .forEach(
+        (message) => {
+
+          addMessage(message);
+
+        }
+      );
+
+
+    if (currentRoom === "casual") {
+
+      saveAllLocalMessages(data);
+
+    }
 
   }
 );
@@ -269,12 +373,21 @@ socket.on(
 
 function addMessage(data) {
 
+  if (!isMessageValid(data)) {
+    return;
+  }
+
+
   const message =
     document.createElement("div");
 
   message.className =
     "message";
 
+
+  // ==================================================
+  // ユーザー名
+  // ==================================================
 
   const user =
     document.createElement("div");
@@ -286,6 +399,10 @@ function addMessage(data) {
     data.username || "ゲスト";
 
 
+  // ==================================================
+  // 本文
+  // ==================================================
+
   const text =
     document.createElement("span");
 
@@ -295,6 +412,10 @@ function addMessage(data) {
   text.textContent =
     data.text;
 
+
+  // ==================================================
+  // 時刻
+  // ==================================================
 
   const time =
     document.createElement("span");
@@ -314,8 +435,13 @@ function addMessage(data) {
 
   message.appendChild(time);
 
+
   messages.appendChild(message);
 
+
+  // ==================================================
+  // 一番下へ
+  // ==================================================
 
   messages.scrollTop =
     messages.scrollHeight;
@@ -333,21 +459,24 @@ function formatTime(value) {
     return "";
   }
 
+
   const date =
     new Date(value);
+
 
   if (
     Number.isNaN(
       date.getTime()
     )
   ) {
+
     return "";
+
   }
 
+
   return date.toLocaleTimeString(
-    language === "en"
-      ? "en-US"
-      : "ja-JP",
+    "ja-JP",
     {
       hour: "2-digit",
       minute: "2-digit"
@@ -367,10 +496,17 @@ function saveLocalMessage(data) {
     !data ||
     data.room !== "casual"
   ) {
+
     return;
+
   }
 
+
+  cleanupLocalMessages();
+
+
   let stored = [];
+
 
   try {
 
@@ -388,27 +524,37 @@ function saveLocalMessage(data) {
   }
 
 
-  const exists =
-    stored.some((item) => {
+  if (!isMessageValid(data)) {
+    return;
+  }
 
-      if (
-        data.id &&
-        item.id
-      ) {
+
+  const exists =
+    stored.some(
+      (item) => {
+
+        if (
+          data.id &&
+          item.id
+        ) {
+
+          return (
+            item.id === data.id
+          );
+
+        }
+
 
         return (
-          item.id === data.id
+          item.text === data.text &&
+          item.username ===
+            data.username &&
+          item.createdAt ===
+            data.createdAt
         );
 
       }
-
-      return (
-        item.text === data.text &&
-        item.username ===
-          data.username
-      );
-
-    });
+    );
 
 
   if (exists) {
@@ -417,6 +563,13 @@ function saveLocalMessage(data) {
 
 
   stored.push(data);
+
+
+  stored =
+    stored.filter(
+      (item) =>
+        isMessageValid(item)
+    );
 
 
   if (stored.length > 1000) {
@@ -438,12 +591,44 @@ function saveLocalMessage(data) {
 
 
 // ==================================================
+// 過去コメントをまとめて保存
+// ==================================================
+
+function saveAllLocalMessages(data) {
+
+  if (!Array.isArray(data)) {
+    return;
+  }
+
+
+  const valid =
+    data.filter(
+      (item) =>
+        isMessageValid(item)
+    );
+
+
+  localStorage.setItem(
+    "veylo_casual_messages",
+    JSON.stringify(
+      valid.slice(-1000)
+    )
+  );
+
+}
+
+
+// ==================================================
 // LocalStorage読み込み
 // ==================================================
 
 function loadLocalMessages() {
 
+  cleanupLocalMessages();
+
+
   let stored = [];
+
 
   try {
 
@@ -460,11 +645,25 @@ function loadLocalMessages() {
 
   }
 
-  stored.forEach((data) => {
 
-    addMessage(data);
+  console.log(
+    "保存済み雑談コメント:",
+    stored
+  );
 
-  });
+
+  stored
+    .filter(
+      (data) =>
+        isMessageValid(data)
+    )
+    .forEach(
+      (data) => {
+
+        addMessage(data);
+
+      }
+    );
 
 }
 
@@ -516,17 +715,17 @@ confirmCreateButton.addEventListener(
     const name =
       roomNameInput.value.trim();
 
+
     if (!name) {
 
       alert(
-        language === "en"
-          ? "Please enter a room name."
-          : "部屋の名前を入力してください。"
+        "部屋の名前を入力してください。"
       );
 
       return;
 
     }
+
 
     socket.emit(
       "create room",
@@ -552,33 +751,125 @@ socket.on(
       room
     );
 
+
     currentRoom =
       room.id;
+
 
     roomName.textContent =
       room.name;
 
+
     inviteCode.textContent =
       room.inviteCode;
+
 
     inviteArea.classList.remove(
       "hidden"
     );
 
+
     createModal.classList.add(
       "hidden"
     );
 
+
     messages.innerHTML = "";
 
+
+    updateBackToCasualButton();
+
+
     alert(
-      language === "en"
-        ? `Room created!\n\nInvite code: ${room.inviteCode}`
-        : `部屋を作成しました。\n\n招待コード: ${room.inviteCode}`
+      `部屋を作成しました。\n\n招待コード: ${room.inviteCode}`
     );
 
   }
 );
+
+
+// ==================================================
+// 雑談へ戻る
+// ==================================================
+
+backToCasualButton.addEventListener(
+  "click",
+  () => {
+
+    if (currentRoom === "casual") {
+      return;
+    }
+
+
+    currentRoom =
+      "casual";
+
+
+    roomName.textContent =
+      "雑談";
+
+
+    inviteArea.classList.add(
+      "hidden"
+    );
+
+
+    messages.innerHTML = "";
+
+
+    updateBackToCasualButton();
+
+
+    socket.emit(
+      "join casual"
+    );
+
+  }
+);
+
+
+// ==================================================
+// 雑談へ戻ったとき
+// ==================================================
+
+socket.on(
+  "casual joined",
+  () => {
+
+    messages.innerHTML = "";
+
+    loadLocalMessages();
+
+  }
+);
+
+
+// ==================================================
+// 雑談ボタン表示更新
+// ==================================================
+
+function updateBackToCasualButton() {
+
+  if (!backToCasualButton) {
+    return;
+  }
+
+
+  if (currentRoom === "casual") {
+
+    backToCasualButton.classList.add(
+      "hidden"
+    );
+
+  } else {
+
+    backToCasualButton.classList.remove(
+      "hidden"
+    );
+
+  }
+
+}
 
 
 // ==================================================
@@ -632,16 +923,16 @@ confirmJoinButton.addEventListener(
         .trim()
         .toUpperCase();
 
+
     if (!code) {
 
       joinError.textContent =
-        language === "en"
-          ? "Please enter an invite code."
-          : "招待コードを入力してください。";
+        "招待コードを入力してください。";
 
       return;
 
     }
+
 
     socket.emit(
       "join room",
@@ -667,24 +958,33 @@ socket.on(
       room
     );
 
+
     currentRoom =
       room.id;
+
 
     roomName.textContent =
       room.name;
 
+
     inviteCode.textContent =
       room.inviteCode;
+
 
     inviteArea.classList.remove(
       "hidden"
     );
 
+
     joinModal.classList.add(
       "hidden"
     );
 
+
     messages.innerHTML = "";
+
+
+    updateBackToCasualButton();
 
   }
 );
@@ -700,51 +1000,7 @@ socket.on(
 
     joinError.textContent =
       data?.message ||
-      (
-        language === "en"
-          ? "Could not join the room."
-          : "部屋に参加できませんでした。"
-      );
-
-  }
-);
-
-
-// ==================================================
-// Enterキー
-// ==================================================
-
-roomNameInput.addEventListener(
-  "keydown",
-  (event) => {
-
-    if (
-      event.key === "Enter"
-    ) {
-
-      event.preventDefault();
-
-      confirmCreateButton.click();
-
-    }
-
-  }
-);
-
-
-inviteCodeInput.addEventListener(
-  "keydown",
-  (event) => {
-
-    if (
-      event.key === "Enter"
-    ) {
-
-      event.preventDefault();
-
-      confirmJoinButton.click();
-
-    }
+      "部屋に参加できませんでした。";
 
   }
 );
@@ -763,12 +1019,15 @@ settingsButton.addEventListener(
         "veylo_username"
       ) || "";
 
+
     languageSelect.value =
       language;
+
 
     settingsModal.classList.remove(
       "hidden"
     );
+
 
     settingsUsernameInput.focus();
 
@@ -827,6 +1086,58 @@ grayToggleButton.addEventListener(
 
 
 // ==================================================
+// テーマ更新
+// ==================================================
+
+function updateTheme() {
+
+  document.body.classList.toggle(
+    "dark-mode",
+    darkMode
+  );
+
+
+  document.body.classList.toggle(
+    "gray-mode",
+    grayMode
+  );
+
+
+  themeToggleButton.textContent =
+    darkMode ? "ON" : "OFF";
+
+
+  grayToggleButton.textContent =
+    grayMode ? "ON" : "OFF";
+
+
+  themeToggleButton.classList.toggle(
+    "active",
+    darkMode
+  );
+
+
+  grayToggleButton.classList.toggle(
+    "active",
+    grayMode
+  );
+
+
+  localStorage.setItem(
+    "veylo_dark_mode",
+    darkMode
+  );
+
+
+  localStorage.setItem(
+    "veylo_gray_mode",
+    grayMode
+  );
+
+}
+
+
+// ==================================================
 // 設定保存
 // ==================================================
 
@@ -837,12 +1148,14 @@ saveSettingsButton.addEventListener(
     const username =
       settingsUsernameInput.value.trim();
 
+
     if (username) {
 
       localStorage.setItem(
         "veylo_username",
         username
       );
+
 
       usernameInput.value =
         username;
@@ -859,10 +1172,12 @@ saveSettingsButton.addEventListener(
       language
     );
 
+
     localStorage.setItem(
       "veylo_dark_mode",
       darkMode
     );
+
 
     localStorage.setItem(
       "veylo_gray_mode",
@@ -882,42 +1197,127 @@ saveSettingsButton.addEventListener(
 
 
 // ==================================================
-// テーマ更新
+// Enterキー：部屋作成
 // ==================================================
 
-function updateTheme() {
+roomNameInput.addEventListener(
+  "keydown",
+  (event) => {
 
-  document.body.classList.toggle(
-    "dark-mode",
-    darkMode
-  );
+    if (
+      event.key === "Enter"
+    ) {
 
-  document.body.classList.toggle(
-    "gray-mode",
-    grayMode
-  );
+      event.preventDefault();
 
+      confirmCreateButton.click();
 
-  themeToggleButton.textContent =
-    darkMode
-      ? "ON"
-      : "OFF";
+    }
 
-
-  grayToggleButton.textContent =
-    grayMode
-      ? "ON"
-      : "OFF";
+  }
+);
 
 
-  themeToggleButton.classList.toggle(
-    "active",
-    darkMode
-  );
+// ==================================================
+// Enterキー：部屋参加
+// ==================================================
 
-  grayToggleButton.classList.toggle(
-    "active",
-    grayMode
-  );
+inviteCodeInput.addEventListener(
+  "keydown",
+  (event) => {
 
-}
+    if (
+      event.key === "Enter"
+    ) {
+
+      event.preventDefault();
+
+      confirmJoinButton.click();
+
+    }
+
+  }
+);
+
+
+// ==================================================
+// モーダル外クリック
+// ==================================================
+
+createModal.addEventListener(
+  "click",
+  (event) => {
+
+    if (
+      event.target === createModal
+    ) {
+
+      createModal.classList.add(
+        "hidden"
+      );
+
+    }
+
+  }
+);
+
+
+joinModal.addEventListener(
+  "click",
+  (event) => {
+
+    if (
+      event.target === joinModal
+    ) {
+
+      joinModal.classList.add(
+        "hidden"
+      );
+
+    }
+
+  }
+);
+
+
+settingsModal.addEventListener(
+  "click",
+  (event) => {
+
+    if (
+      event.target === settingsModal
+    ) {
+
+      settingsModal.classList.add(
+        "hidden"
+      );
+
+    }
+
+  }
+);
+
+
+// ==================================================
+// 初期設定
+// ==================================================
+
+updateTheme();
+
+updateBackToCasualButton();
+
+cleanupLocalMessages();
+
+
+// ==================================================
+// 24時間ごとにブラウザ側も掃除
+// ==================================================
+
+setInterval(
+  () => {
+
+    cleanupLocalMessages();
+
+  },
+  10 * 60 * 1000
+);
