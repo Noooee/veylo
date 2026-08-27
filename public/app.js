@@ -301,6 +301,11 @@ function setupRoomButton(button) {
       currentRoom =
         button.dataset.room;
 
+      socket.emit(
+  "load messages",
+  currentRoom
+);
+
       // メッセージ欄をクリア
 if (messages) {
   messages.innerHTML = "";
@@ -1643,6 +1648,45 @@ socket.on(
 
     console.log(
       "Veylo Socket.IO disconnected"
+    );
+
+  }
+);
+// ==================================================
+// メッセージ履歴を読み込む
+// ==================================================
+
+socket.on(
+  "message history",
+  (history) => {
+
+    if (!messages) {
+      return;
+    }
+
+    messages.innerHTML = "";
+
+    history.forEach(
+      (message) => {
+
+        displayMessage({
+          room:
+            message.room,
+
+          text:
+            message.text,
+
+          username:
+            message.username,
+
+          userId:
+            message.user_id,
+
+          createdAt:
+            message.created_at
+        });
+
+      }
     );
 
   }
