@@ -62,6 +62,23 @@ app.get("/health", (req, res) => {
 // ==================================================
 
 async function initDatabase() {
+  async function initDatabase() {
+
+  console.log("★★★★★ messagesテーブル確認開始 ★★★★★");
+
+  const check = await pool.query(`
+    SELECT column_name
+    FROM information_schema.columns
+    WHERE table_name = 'messages'
+    ORDER BY ordinal_position
+  `);
+
+  console.log(
+    "messagesテーブルのカラム:",
+    check.rows
+  );
+
+  // この下は今までの処理
   const check = await pool.query(`
   SELECT column_name
   FROM information_schema.columns
