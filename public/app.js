@@ -37,6 +37,34 @@ const inviteArea =
 const inviteCode =
   document.getElementById("inviteCode");
 
+// ==================================================
+// 雑談ルームへ戻る
+// ==================================================
+
+const casualRoomButton =
+  document.getElementById("casualRoomButton");
+
+casualRoomButton.addEventListener(
+  "click",
+  () => {
+
+    currentRoom = "casual";
+
+    roomName.textContent = "雑談";
+
+    inviteArea.classList.add("hidden");
+
+    messages.innerHTML = "";
+
+    loadLocalMessages();
+
+    console.log(
+      "雑談ルームへ戻りました"
+    );
+
+  }
+);
+
 
 // ==================================================
 // 部屋作成
