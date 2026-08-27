@@ -1,6 +1,14 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const { Pool } = require("pg");
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 
 // ==================================================
