@@ -52,8 +52,6 @@ app.get("/health", (req, res) => {
 // ==================================================
 // 作成された部屋
 // ==================================================
-
-const rooms = {};
 async function initDatabase() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS rooms (
@@ -120,8 +118,8 @@ io.on("connection", (socket) => {
   // 部屋作成
   // ==================================================
 
-　socket.on("create room", async (data) => {
-    if (!data || !data.name) {
+socket.on("create room", async (data) => {
+  if (!data || !data.name) {
       return;
     }
 
@@ -172,7 +170,6 @@ io.on("connection", (socket) => {
 
     // 保存
 
-    rooms[roomId] = room;
     // PostgreSQLにも保存
 
 try {
@@ -296,23 +293,7 @@ const room = {
 };
 
 
-    // 部屋が存在しない
-
-    if (!room) {
-
-      socket.emit(
-        "join room error",
-        {
-          message:
-            "招待コードが正しくありません。"
-        }
-      );
-
-      return;
-    }
-
-
-    // Socket.IOの部屋へ参加
+// Socket.IOの部屋へ参加
 
     socket.join(room.id);
 
