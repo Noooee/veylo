@@ -3,6 +3,11 @@ const http = require("http");
 const { Server } = require("socket.io");
 const { Pool } = require("pg");
 
+
+// ==================================================
+// PostgreSQL
+// ==================================================
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -49,12 +54,14 @@ app.get("/health", (req, res) => {
 
 
 // ==================================================
-// PostgreSQL 初期設定
+// PostgreSQL テーブル作成
 // ==================================================
 
 async function initDatabase() {
 
+  // ------------------------------
   // 部屋テーブル
+  // ------------------------------
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS rooms (
@@ -66,36 +73,41 @@ async function initDatabase() {
     )
   `);
 
-  console.log(
-    "PostgreSQL: roomsテーブル準備完了"
-  );
 
-
+  // ------------------------------
   // メッセージテーブル
+  // ------------------------------
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS messages (
       id SERIAL PRIMARY KEY,
-      room TEXT NOT NULL,
-      text TEXT NOT NULL,
+      room_id TEXT NOT NULL,
       username TEXT NOT NULL,
-      user_id TEXT NOT NULL,
+      text TEXT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
 
-  console.log(
-    "PostgreSQL: messagesテーブル準備完了"
-  );
 
+  // ------------------------------
+  // 24時間より古いメッセージを削除
+  // ------------------------------
+
+  await pool.query(`
+    DELETE FROM messages
+    WHERE created_at < NOW() - INTERVAL '24 hours'
+  `);
+
+
+  console.log("PostgreSQL: テーブル準備完了");
 }
 
 
 // ==================================================
-// 24時間以上経ったメッセージを削除
+// 24時間以上前のコメントを定期削除
 // ==================================================
 
-async function deleteOldMessages() {
+setInterval(async () => {
 
   try {
 
@@ -107,7 +119,7 @@ async function deleteOldMessages() {
     if (result.rowCount > 0) {
 
       console.log(
-        `24時間経過したメッセージを${result.rowCount}件削除しました`
+        `24時間経過したコメントを ${result.rowCount} 件削除しました`
       );
 
     }
@@ -115,17 +127,17 @@ async function deleteOldMessages() {
   } catch (error) {
 
     console.error(
-      "古いメッセージの削除に失敗:",
+      "古いコメントの削除に失敗しました:",
       error
     );
 
   }
 
-}
+}, 60 * 60 * 1000); // 1時間ごと
 
 
 // ==================================================
-// ユーザー接続
+// Socket.IO
 // ==================================================
 
 io.on("connection", (socket) => {
@@ -136,55 +148,31 @@ io.on("connection", (socket) => {
   );
 
 
-  // 雑談ルーム
+  // ==================================================
+  // 雑談ルームに自動参加
+  // ==================================================
 
   socket.join("casual");
 
 
   // ==================================================
-  // 過去24時間のメッセージを取得
+  // 雑談ルームの過去コメントを取得
   // ==================================================
 
-  socket.on("load messages", async (roomId) => {
+  sendRoomMessages(socket, "casual");
+
+
+  // ==================================================
+  // 部屋のコメント取得
+  // ==================================================
+
+  socket.on("load room messages", async (roomId) => {
 
     if (!roomId) {
       return;
     }
 
-    try {
-
-      const result = await pool.query(
-        `
-        SELECT
-          id,
-          room,
-          text,
-          username,
-          user_id,
-          created_at
-        FROM messages
-        WHERE room = $1
-          AND created_at >= NOW() - INTERVAL '24 hours'
-        ORDER BY created_at ASC
-        `,
-        [roomId]
-      );
-
-
-      socket.emit(
-        "message history",
-        result.rows
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        "メッセージ取得エラー:",
-        error
-      );
-
-    }
+    await sendRoomMessages(socket, roomId);
 
   });
 
@@ -195,57 +183,57 @@ io.on("connection", (socket) => {
 
   socket.on("chat message", async (msg) => {
 
-    if (!msg) {
-      return;
-    }
-
-    if (!msg.room) {
-      return;
-    }
-
-    if (!msg.text) {
-      return;
-    }
-
-
-    const message = {
-
-      room: msg.room,
-
-      text: msg.text,
-
-      username:
-        msg.username || "ゲスト",
-
-      userId:
-        msg.userId || socket.id
-
-    };
-
-
-    // PostgreSQLに保存
-
     try {
+
+      if (!msg) {
+        return;
+      }
+
+      if (!msg.room) {
+        return;
+      }
+
+      if (!msg.text) {
+        return;
+      }
+
+
+      const roomId =
+        String(msg.room).trim();
+
+      const text =
+        String(msg.text).trim();
+
+      const username =
+        String(msg.username || "ゲスト").trim();
+
+
+      if (!roomId || !text) {
+        return;
+      }
+
+
+      // ------------------------------------------
+      // PostgreSQLへ保存
+      // ------------------------------------------
 
       const result = await pool.query(
         `
         INSERT INTO messages
-          (room, text, username, user_id)
+          (room_id, username, text)
         VALUES
-          ($1, $2, $3, $4)
+          ($1, $2, $3)
         RETURNING
           id,
-          room,
-          text,
+          room_id,
           username,
-          user_id,
+          text,
           created_at
         `,
         [
-          message.room,
-          message.text,
-          message.username,
-          message.userId
+          roomId,
+          username || "ゲスト",
+          text
         ]
       );
 
@@ -256,29 +244,28 @@ io.on("connection", (socket) => {
 
       console.log(
         "PostgreSQLにメッセージを保存しました:",
-        savedMessage.text
+        text
       );
 
 
-      // その部屋にいる全員へ送信
+      // ------------------------------------------
+      // クライアントへ送信
+      // ------------------------------------------
 
-      io.to(message.room).emit(
+      io.to(roomId).emit(
         "chat message",
         {
-          room:
-            savedMessage.room,
+          id: savedMessage.id,
 
-          text:
-            savedMessage.text,
+          room: savedMessage.room_id,
 
-          username:
-            savedMessage.username,
+          text: savedMessage.text,
 
-          userId:
-            savedMessage.user_id,
+          username: savedMessage.username,
 
-          createdAt:
-            savedMessage.created_at
+          createdAt: savedMessage.created_at,
+
+          senderId: socket.id
         }
       );
 
@@ -301,60 +288,66 @@ io.on("connection", (socket) => {
 
   socket.on("create room", async (data) => {
 
-    if (!data || !data.name) {
-      return;
-    }
-
-
-    const roomName =
-      String(data.name).trim();
-
-
-    if (!roomName) {
-      return;
-    }
-
-
-    // 部屋ID
-
-    const roomId =
-      "room-" +
-      Date.now() +
-      "-" +
-      Math.floor(
-        Math.random() * 100000
-      );
-
-
-    // 招待コード
-
-    const inviteCode =
-      Math.random()
-        .toString(36)
-        .substring(2, 10)
-        .toUpperCase();
-
-
-    // 部屋情報
-
-    const room = {
-
-      id: roomId,
-
-      name: roomName,
-
-      inviteCode:
-        inviteCode,
-
-      owner:
-        socket.id
-
-    };
-
-
-    // PostgreSQLに保存
-
     try {
+
+      if (!data || !data.name) {
+        return;
+      }
+
+
+      const roomName =
+        String(data.name).trim();
+
+
+      if (!roomName) {
+        return;
+      }
+
+
+      // ------------------------------------------
+      // 部屋ID
+      // ------------------------------------------
+
+      const roomId =
+        "room-" +
+        Date.now() +
+        "-" +
+        Math.floor(
+          Math.random() * 100000
+        );
+
+
+      // ------------------------------------------
+      // 招待コード
+      // ------------------------------------------
+
+      const inviteCode =
+        Math.random()
+          .toString(36)
+          .substring(2, 10)
+          .toUpperCase();
+
+
+      // ------------------------------------------
+      // 部屋情報
+      // ------------------------------------------
+
+      const room = {
+
+        id: roomId,
+
+        name: roomName,
+
+        inviteCode: inviteCode,
+
+        owner: socket.id
+
+      };
+
+
+      // ------------------------------------------
+      // PostgreSQLへ保存
+      // ------------------------------------------
 
       await pool.query(
         `
@@ -378,35 +371,46 @@ io.on("connection", (socket) => {
       );
 
 
+      // ------------------------------------------
+      // Socket.IOの部屋へ参加
+      // ------------------------------------------
+
+      socket.join(roomId);
+
+
+      console.log(
+        "部屋が作成されました:",
+        room
+      );
+
+
+      // ------------------------------------------
+      // 作成者へ通知
+      // ------------------------------------------
+
+      socket.emit(
+        "room created",
+        room
+      );
+
+
     } catch (error) {
 
       console.error(
-        "部屋の保存に失敗しました:",
+        "部屋作成エラー:",
         error
       );
 
-      return;
+
+      socket.emit(
+        "create room error",
+        {
+          message:
+            "部屋を作成できませんでした。"
+        }
+      );
 
     }
-
-
-    // 作成者も参加
-
-    socket.join(roomId);
-
-
-    console.log(
-      "部屋が作成されました:",
-      room
-    );
-
-
-    // 作成者へ通知
-
-    socket.emit(
-      "room created",
-      room
-    );
 
   });
 
@@ -417,30 +421,37 @@ io.on("connection", (socket) => {
 
   socket.on("join room", async (data) => {
 
-    const code =
-      String(
-        data?.code || ""
-      )
-      .trim()
-      .toUpperCase();
-
-
-    if (!code) {
-
-      socket.emit(
-        "join room error",
-        {
-          message:
-            "招待コードを入力してください。"
-        }
-      );
-
-      return;
-
-    }
-
-
     try {
+
+      const code =
+        String(
+          data?.code || ""
+        )
+        .trim()
+        .toUpperCase();
+
+
+      // ------------------------------------------
+      // コードが空
+      // ------------------------------------------
+
+      if (!code) {
+
+        socket.emit(
+          "join room error",
+          {
+            message:
+              "招待コードを入力してください。"
+          }
+        );
+
+        return;
+      }
+
+
+      // ------------------------------------------
+      // PostgreSQLから部屋検索
+      // ------------------------------------------
 
       const result =
         await pool.query(
@@ -457,6 +468,10 @@ io.on("connection", (socket) => {
         );
 
 
+      // ------------------------------------------
+      // 部屋がない
+      // ------------------------------------------
+
       if (result.rows.length === 0) {
 
         socket.emit(
@@ -468,9 +483,12 @@ io.on("connection", (socket) => {
         );
 
         return;
-
       }
 
+
+      // ------------------------------------------
+      // 部屋情報
+      // ------------------------------------------
 
       const dbRoom =
         result.rows[0];
@@ -478,22 +496,21 @@ io.on("connection", (socket) => {
 
       const room = {
 
-        id:
-          dbRoom.id,
+        id: dbRoom.id,
 
-        name:
-          dbRoom.name,
+        name: dbRoom.name,
 
         inviteCode:
           dbRoom.invite_code,
 
-        owner:
-          dbRoom.owner
+        owner: dbRoom.owner
 
       };
 
 
-      // Socket.IOの部屋へ参加
+      // ------------------------------------------
+      // Socket.IOへ参加
+      // ------------------------------------------
 
       socket.join(room.id);
 
@@ -505,11 +522,23 @@ io.on("connection", (socket) => {
       );
 
 
-      // 参加した本人へ通知
+      // ------------------------------------------
+      // 部屋情報を送信
+      // ------------------------------------------
 
       socket.emit(
         "room joined",
         room
+      );
+
+
+      // ------------------------------------------
+      // 過去コメントを送信
+      // ------------------------------------------
+
+      await sendRoomMessages(
+        socket,
+        room.id
       );
 
 
@@ -525,7 +554,7 @@ io.on("connection", (socket) => {
         "join room error",
         {
           message:
-            "部屋への参加に失敗しました。"
+            "部屋に参加できませんでした。"
         }
       );
 
@@ -551,6 +580,80 @@ io.on("connection", (socket) => {
 
 
 // ==================================================
+// 部屋の過去コメントを取得
+// ==================================================
+
+async function sendRoomMessages(socket, roomId) {
+
+  try {
+
+    // ------------------------------------------
+    // 24時間以内のコメントだけ取得
+    // ------------------------------------------
+
+    const result =
+      await pool.query(
+        `
+        SELECT
+          id,
+          room_id,
+          username,
+          text,
+          created_at
+        FROM messages
+        WHERE room_id = $1
+          AND created_at >= NOW() - INTERVAL '24 hours'
+        ORDER BY created_at ASC
+        `,
+        [roomId]
+      );
+
+
+    // ------------------------------------------
+    // ブラウザへ送信
+    // ------------------------------------------
+
+    socket.emit(
+      "room messages",
+      result.rows.map((message) => {
+
+        return {
+
+          id: message.id,
+
+          room: message.room_id,
+
+          username: message.username,
+
+          text: message.text,
+
+          createdAt: message.created_at
+
+        };
+
+      })
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "コメント取得エラー:",
+      error
+    );
+
+
+    socket.emit(
+      "room messages",
+      []
+    );
+
+  }
+
+}
+
+
+// ==================================================
 // サーバー起動
 // ==================================================
 
@@ -562,21 +665,16 @@ async function startServer() {
 
   try {
 
+    // ------------------------------------------
+    // データベース初期化
+    // ------------------------------------------
+
     await initDatabase();
 
 
-    // 起動時に一度削除
-
-    await deleteOldMessages();
-
-
-    // 1時間ごとに削除
-
-    setInterval(
-      deleteOldMessages,
-      60 * 60 * 1000
-    );
-
+    // ------------------------------------------
+    // サーバー起動
+    // ------------------------------------------
 
     server.listen(
       PORT,
@@ -587,10 +685,10 @@ async function startServer() {
           `Veyloサーバー起動: 0.0.0.0:${PORT}`
         );
 
+
         console.log(
           `環境: ${
-            process.env.NODE_ENV ||
-            "development"
+            process.env.NODE_ENV || "development"
           }`
         );
 
@@ -604,6 +702,7 @@ async function startServer() {
       "PostgreSQLへの接続に失敗しました:",
       error
     );
+
 
     process.exit(1);
 
