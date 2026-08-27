@@ -120,8 +120,7 @@ io.on("connection", (socket) => {
   // 部屋作成
   // ==================================================
 
-  socket.on("create room", (data) => {
-
+　socket.on("create room", async (data) => {
     if (!data || !data.name) {
       return;
     }
@@ -174,6 +173,38 @@ io.on("connection", (socket) => {
     // 保存
 
     rooms[roomId] = room;
+    // PostgreSQLにも保存
+
+try {
+
+  await pool.query(
+    `
+    INSERT INTO rooms
+      (id, name, invite_code, owner)
+    VALUES
+      ($1, $2, $3, $4)
+    `,
+    [
+      room.id,
+      room.name,
+      room.inviteCode,
+      room.owner
+    ]
+  );
+
+  console.log(
+    "PostgreSQLに部屋を保存しました:",
+    room.name
+  );
+
+} catch (error) {
+
+  console.error(
+    "部屋の保存に失敗しました:",
+    error
+  );
+
+}
 
 
     // 作成者自身も参加
