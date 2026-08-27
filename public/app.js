@@ -757,3 +757,151 @@ inviteCodeInput.addEventListener(
 
   }
 );
+
+// ==================================================
+// 設定
+// ==================================================
+
+const settingsButton =
+  document.getElementById("settingsButton");
+
+const settingsModal =
+  document.getElementById("settingsModal");
+
+const settingsUsernameInput =
+  document.getElementById("settingsUsernameInput");
+
+const closeSettingsButton =
+  document.getElementById("closeSettingsButton");
+
+const saveSettingsButton =
+  document.getElementById("saveSettingsButton");
+
+const themeToggleButton =
+  document.getElementById("themeToggleButton");
+
+
+// ==================================================
+// 設定を開く
+// ==================================================
+
+settingsButton.addEventListener(
+  "click",
+  () => {
+
+    settingsUsernameInput.value =
+      localStorage.getItem(
+        "veylo_username"
+      ) || "";
+
+    settingsModal.classList.remove(
+      "hidden"
+    );
+
+    settingsUsernameInput.focus();
+
+  }
+);
+
+
+// ==================================================
+// 設定を閉じる
+// ==================================================
+
+closeSettingsButton.addEventListener(
+  "click",
+  () => {
+
+    settingsModal.classList.add(
+      "hidden"
+    );
+
+  }
+);
+
+
+// ==================================================
+// 設定を保存
+// ==================================================
+
+saveSettingsButton.addEventListener(
+  "click",
+  () => {
+
+    const username =
+      settingsUsernameInput.value.trim();
+
+    if (username) {
+
+      localStorage.setItem(
+        "veylo_username",
+        username
+      );
+
+      usernameInput.value =
+        username;
+
+    }
+
+    settingsModal.classList.add(
+      "hidden"
+    );
+
+  }
+);
+
+
+// ==================================================
+// ダークモード
+// ==================================================
+
+let darkMode =
+  localStorage.getItem(
+    "veylo_dark_mode"
+  ) === "true";
+
+
+function updateTheme() {
+
+  if (darkMode) {
+
+    document.body.classList.add(
+      "dark-mode"
+    );
+
+    themeToggleButton.textContent =
+      "ON";
+
+  } else {
+
+    document.body.classList.remove(
+      "dark-mode"
+    );
+
+    themeToggleButton.textContent =
+      "OFF";
+
+  }
+
+}
+
+
+themeToggleButton.addEventListener(
+  "click",
+  () => {
+
+    darkMode =
+      !darkMode;
+
+    localStorage.setItem(
+      "veylo_dark_mode",
+      darkMode
+    );
+
+    updateTheme();
+
+  }
+);
+
+
+updateTheme();
