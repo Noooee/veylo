@@ -180,6 +180,32 @@ socket.on(
 
   }
 );
+// ==================================================
+// 過去のメッセージを読み込む
+// ==================================================
+
+socket.on(
+  "room messages",
+  (roomMessages) => {
+
+    if (!messages) return;
+
+    messages.innerHTML = "";
+
+    if (!Array.isArray(roomMessages)) {
+      return;
+    }
+
+    roomMessages.forEach(
+      (message) => {
+
+        displayMessage(message);
+
+      }
+    );
+
+  }
+);
 
 
 // ==================================================
