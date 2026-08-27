@@ -54,6 +54,19 @@ app.get("/health", (req, res) => {
 // ==================================================
 
 const rooms = {};
+async function initDatabase() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS rooms (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      invite_code TEXT UNIQUE NOT NULL,
+      owner TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  console.log("PostgreSQL: roomsテーブル準備完了");
+}
 
 
 // ==================================================
