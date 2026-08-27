@@ -84,43 +84,45 @@ if (input) {
 
 if (form) {
 
-  form.addEventListener(
-    "submit",
-    (event) => {
+  form.addEventListener("submit", function (event) {
 
-      event.preventDefault();
+    event.preventDefault();
 
-      if (!input) return;
-
-      const text =
-        input.value.trim();
-
-      if (!text) {
-        return;
-      }
-
-
-      socket.emit(
-        "chat message",
-        {
-          room: currentRoom,
-          text: text,
-          username: username
-        }
-      );
-
-
-      input.value = "";
-
-      input.style.height = "50px";
-
-      input.focus();
-
+    if (!input) {
+      console.error("input が見つかりません");
+      return;
     }
-  );
+
+    const text = input.value.trim();
+
+    if (!text) {
+      return;
+    }
+
+    console.log("メッセージ送信:", {
+      room: currentRoom,
+      text: text,
+      username: username
+    });
+
+    socket.emit(
+      "chat message",
+      {
+        room: currentRoom,
+        text: text,
+        username: username
+      }
+    );
+
+    input.value = "";
+
+    input.style.height = "50px";
+
+    input.focus();
+
+  });
 
 }
-
 
 // ==================================================
 // 日付・時刻を表示
