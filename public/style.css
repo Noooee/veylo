@@ -1,12 +1,6 @@
-/* =========================================================
-   Veylo
-   完成版 CSS
-========================================================= */
-
-
-/* =========================================================
+/* ==========================================
    基本設定
-========================================================= */
+========================================== */
 
 * {
   box-sizing: border-box;
@@ -14,9 +8,10 @@
 
 html,
 body {
+  margin: 0;
+  padding: 0;
   width: 100%;
   height: 100%;
-  margin: 0;
 }
 
 body {
@@ -24,1891 +19,505 @@ body {
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
-    "Noto Sans JP",
     sans-serif;
 
-  background: #0f1117;
-  color: #f5f7fa;
-
-  overflow: hidden;
-}
-
-button,
-input,
-textarea {
-  font-family: inherit;
-}
-
-button {
-  border: none;
-  cursor: pointer;
+  background: #f5f7fb;
+  color: #172033;
 }
 
 
-/* =========================================================
-   アプリ全体
-========================================================= */
-
-.app {
-  display: flex;
-
-  width: 100%;
-  height: 100vh;
-
-  overflow: hidden;
-}
-
-
-/* =========================================================
-   サイドバー
-========================================================= */
-
-.sidebar {
-  display: flex;
-  flex-direction: column;
-
-  width: 250px;
-  height: 100vh;
-
-  flex-shrink: 0;
-
-  padding: 22px 14px;
-
-  background:
-    linear-gradient(
-      180deg,
-      #191c25 0%,
-      #151820 100%
-    );
-
-  border-right: 1px solid #292e38;
-}
-
-.sidebar h1 {
-  margin: 0 10px 32px;
-
-  color: #ffffff;
-
-  font-size: 25px;
-  font-weight: 800;
-
-  letter-spacing: 1px;
-}
-
-
-/* =========================================================
-   Rooms ヘッダー
-========================================================= */
-
-.rooms-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  margin: 0 8px 10px;
-}
-
-.channel-title {
-  color: #777f91;
-
-  font-size: 11px;
-  font-weight: 800;
-
-  letter-spacing: 1.2px;
-}
-
-.rooms-actions {
-  display: flex;
-  align-items: center;
-
-  gap: 4px;
-}
-
-
-/* =========================================================
-   部屋ボタン
-========================================================= */
-
-.create-room-button,
-.join-room-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 29px;
-  height: 29px;
-
-  padding: 0;
-
-  border-radius: 8px;
-
-  background: transparent;
-
-  color: #858d9e;
-
-  font-size: 19px;
-
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    transform 0.15s ease;
-}
-
-.create-room-button:hover,
-.join-room-button:hover {
-  background: #292e39;
-
-  color: #ffffff;
-
-  transform: scale(1.06);
-}
-
-
-/* =========================================================
-   部屋一覧
-========================================================= */
-
-.room-list {
-  display: flex;
-  flex-direction: column;
-
-  gap: 4px;
-
-  overflow-y: auto;
-}
-
-.channel {
-  display: flex;
-  align-items: center;
-
-  width: 100%;
-  min-height: 42px;
-
-  padding: 0 13px;
-
-  border-radius: 9px;
-
-  background: transparent;
-
-  color: #9ca4b4;
-
-  font-size: 14px;
-
-  text-align: left;
-
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    transform 0.15s ease;
-}
-
-.channel:hover {
-  background: #242934;
-
-  color: #ffffff;
-}
-
-.channel.active {
-  background:
-    linear-gradient(
-      90deg,
-      rgba(108, 99, 255, 0.22),
-      rgba(118, 87, 232, 0.12)
-    );
-
-  color: #ffffff;
-
-  box-shadow:
-    inset 2px 0 0 #7c83ff;
-}
-
-
-/* =========================================================
-   設定ボタン
-========================================================= */
-
-.settings-button {
-  display: flex;
-  align-items: center;
-
-  width: 100%;
-  min-height: 43px;
-
-  margin-top: auto;
-
-  padding: 0 13px;
-
-  border-radius: 9px;
-
-  background: transparent;
-
-  color: #969ead;
-
-  font-size: 14px;
-
-  text-align: left;
-
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-.settings-button:hover {
-  background: #242934;
-
-  color: #ffffff;
-}
-
-
-/* =========================================================
-   チャット全体
-========================================================= */
-
-.chat {
-  display: flex;
-  flex-direction: column;
-
-  flex: 1;
-  min-width: 0;
-
-  height: 100vh;
-
-  background:
-    radial-gradient(
-      circle at top right,
-      rgba(92, 79, 190, 0.08),
-      transparent 35%
-    ),
-    #0f1117;
-}
-
-
-/* =========================================================
-   チャットヘッダー
-========================================================= */
-
-.chat-header {
-  display: flex;
-  align-items: center;
-
+/* ==========================================
+   ヘッダー
+========================================== */
+
+.header {
   height: 64px;
 
-  flex-shrink: 0;
+  background: #ffffff;
 
-  padding: 0 25px;
+  border-bottom:
+    1px solid #e7eaf0;
 
-  background: rgba(17, 20, 27, 0.94);
-
-  border-bottom: 1px solid #292e38;
-
-  backdrop-filter: blur(10px);
-}
-
-.chat-header span {
   display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 27px;
-  height: 27px;
-
-  margin-right: 8px;
-
-  border-radius: 8px;
-
-  background: rgba(124, 131, 255, 0.12);
-
-  color: #7c83ff;
-
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.chat-header strong {
-  color: #f5f7fa;
-
-  font-size: 15px;
-  font-weight: 700;
-}
-
-
-/* =========================================================
-   メッセージエリア
-========================================================= */
-
-.messages,
-#messages {
-  display: flex;
-  flex-direction: column;
-
-  flex: 1;
-
-  min-height: 0;
-
-  gap: 13px;
-
-  padding: 24px 28px;
-
-  overflow-y: auto;
-
-  scroll-behavior: smooth;
-}
-
-
-/* =========================================================
-   スクロールバー
-========================================================= */
-
-#messages::-webkit-scrollbar {
-  width: 7px;
-}
-
-#messages::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-#messages::-webkit-scrollbar-thumb {
-  background: rgba(150, 160, 180, 0.24);
-
-  border-radius: 20px;
-}
-
-#messages::-webkit-scrollbar-thumb:hover {
-  background: rgba(150, 160, 180, 0.42);
-}
-
-
-/* =========================================================
-   メッセージ全体
-========================================================= */
-
-.message-wrapper {
-  display: flex;
-  flex-direction: column;
-
-  width: fit-content;
-  max-width: min(75%, 720px);
-
-  animation:
-    messageAppear 0.22s ease-out;
-}
-
-
-/* =========================================================
-   自分 → 右
-========================================================= */
-
-.message-wrapper.mine {
-  align-self: flex-end;
-
-  align-items: flex-end;
-}
-
-
-/* =========================================================
-   他人 → 左
-========================================================= */
-
-.message-wrapper.other {
-  align-self: flex-start;
-
-  align-items: flex-start;
-}
-
-
-/* =========================================================
-   時刻
-========================================================= */
-
-.message-time {
-  margin-bottom: 3px;
-
-  padding: 0 7px;
-
-  color: #737b8c;
-
-  font-size: 10px;
-  font-weight: 500;
-
-  line-height: 1.2;
-
-  letter-spacing: 0.2px;
-}
-
-
-/* =========================================================
-   ユーザー名
-========================================================= */
-
-.message-username,
-.message-name {
-  margin-bottom: 5px;
-
-  padding: 0 7px;
-
-  color: #aeb6c7;
-
-  font-size: 11px;
-  font-weight: 600;
-
-  line-height: 1.2;
-}
-
-
-/* 自分の名前 */
-
-.message-wrapper.mine .message-username,
-.message-wrapper.mine .message-name {
-  color: #aebaff;
-}
-
-
-/* =========================================================
-   吹き出し
-========================================================= */
-
-.message-bubble {
-  position: relative;
-
-  max-width: 100%;
-
-  padding: 11px 15px;
-
-  border-radius: 18px;
-
-  font-size: 14px;
-
-  line-height: 1.55;
-
-  word-break: break-word;
-  overflow-wrap: anywhere;
-
-  white-space: pre-wrap;
-
-  box-shadow:
-    0 5px 18px rgba(0, 0, 0, 0.18);
-
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-
-/* =========================================================
-   他人の吹き出し
-========================================================= */
-
-.message-wrapper.other .message-bubble {
-  background:
-    linear-gradient(
-      145deg,
-      #292e3a,
-      #232731
-    );
-
-  border: 1px solid rgba(255, 255, 255, 0.055);
-
-  border-bottom-left-radius: 5px;
-
-  color: #f1f3f7;
-}
-
-
-/* =========================================================
-   自分の吹き出し
-========================================================= */
-
-.message-wrapper.mine .message-bubble {
-  background:
-    linear-gradient(
-      135deg,
-      #617cf6 0%,
-      #705be8 55%,
-      #8252df 100%
-    );
-
-  border: 1px solid rgba(255, 255, 255, 0.10);
-
-  border-bottom-right-radius: 5px;
-
-  color: #ffffff;
-
-  box-shadow:
-    0 6px 20px rgba(96, 82, 220, 0.25);
-}
-
-
-/* =========================================================
-   吹き出しホバー
-========================================================= */
-
-.message-bubble:hover {
-  transform: translateY(-1px);
-
-  box-shadow:
-    0 8px 23px rgba(0, 0, 0, 0.24);
-}
-
-
-/* =========================================================
-   コメント本文
-========================================================= */
-
-.message-text {
-  white-space: pre-wrap;
-
-  overflow-wrap: anywhere;
-}
-
-
-/* =========================================================
-   メッセージ登場アニメーション
-========================================================= */
-
-@keyframes messageAppear {
-  from {
-    opacity: 0;
-
-    transform:
-      translateY(7px)
-      scale(0.97);
-  }
-
-  to {
-    opacity: 1;
-
-    transform:
-      translateY(0)
-      scale(1);
-  }
-}
-
-
-/* =========================================================
-   メッセージ入力エリア
-========================================================= */
-
-.message-form {
-  flex-shrink: 0;
-
-  padding: 13px 24px 22px;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(15, 17, 23, 0.55),
-      #0f1117
-    );
-}
-
-.message-form form {
-  display: flex;
-  align-items: flex-end;
-
-  gap: 10px;
-
-  width: 100%;
-}
-
-
-/* =========================================================
-   テキスト入力
-========================================================= */
-
-.message-form textarea {
-  flex: 1;
-
-  min-width: 0;
-
-  min-height: 50px;
-  max-height: 180px;
-
-  padding: 13px 16px;
-
-  border: 1px solid #303642;
-  border-radius: 14px;
-
-  outline: none;
-
-  resize: none;
-
-  overflow-y: auto;
-
-  background:
-    linear-gradient(
-      145deg,
-      #191d26,
-      #161a22
-    );
-
-  color: #ffffff;
-
-  font-size: 14px;
-
-  line-height: 1.5;
-
-  transition:
-    border 0.15s ease,
-    box-shadow 0.15s ease,
-    background 0.15s ease;
-}
-
-.message-form textarea:focus {
-  border-color: #737bff;
-
-  background: #1b1f29;
-
-  box-shadow:
-    0 0 0 3px rgba(115, 123, 255, 0.10);
-}
-
-.message-form textarea::placeholder {
-  color: #707887;
-}
-
-
-/* =========================================================
-   送信ボタン
-========================================================= */
-
-.message-form button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  height: 50px;
-
-  padding: 0 20px;
-
-  border-radius: 13px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #697cff,
-      #7657e8
-    );
-
-  color: #ffffff;
-
-  font-size: 14px;
-  font-weight: 700;
-
-  box-shadow:
-    0 5px 16px rgba(105, 92, 235, 0.22);
-
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    filter 0.15s ease;
-}
-
-.message-form button:hover {
-  transform: translateY(-1px);
-
-  filter: brightness(1.08);
-
-  box-shadow:
-    0 7px 20px rgba(105, 92, 235, 0.30);
-}
-
-.message-form button:active {
-  transform: translateY(1px);
-}
-
-
-/* =========================================================
-   モーダル共通
-========================================================= */
-
-.modal-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 35px;
-  height: 35px;
-
-  padding: 0;
-
-  border-radius: 9px;
-
-  background: transparent;
-
-  color: #858c9c;
-
-  font-size: 25px;
-
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-.modal-close:hover {
-  background: #292e38;
-
-  color: #ffffff;
-}
-
-
-/* =========================================================
-   部屋作成・部屋設定モーダル
-========================================================= */
-
-.room-create-modal,
-.room-settings-modal {
-  position: fixed;
-
-  inset: 0;
-
-  display: none;
 
   align-items: center;
-  justify-content: center;
 
-  padding: 20px;
-
-  background: rgba(0, 0, 0, 0.66);
-
-  backdrop-filter: blur(7px);
-
-  z-index: 2000;
-}
-
-.room-create-modal.open,
-.room-settings-modal.open {
-  display: flex;
-}
-
-
-/* =========================================================
-   モーダルBOX
-========================================================= */
-
-.room-create-box,
-.room-settings-box {
-  width: 440px;
-  max-width: 100%;
-
-  overflow: hidden;
-
-  background:
-    linear-gradient(
-      145deg,
-      #1c2029,
-      #171a21
-    );
-
-  border: 1px solid #343943;
-
-  border-radius: 16px;
-
-  box-shadow:
-    0 25px 70px rgba(0, 0, 0, 0.55);
-}
-
-
-/* =========================================================
-   モーダルヘッダー
-========================================================= */
-
-.room-create-header,
-.room-settings-header {
-  display: flex;
-
-  align-items: flex-start;
   justify-content: space-between;
 
-  padding: 24px;
+  padding:
+    0 24px;
 
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  position: sticky;
+
+  top: 0;
+
+  z-index: 10;
 }
 
-.room-create-header h2,
-.room-settings-header h2 {
-  margin: 0 0 8px;
+.logo {
+  font-size: 25px;
 
-  color: #ffffff;
-
-  font-size: 20px;
-}
-
-.room-create-header p,
-.room-settings-header p {
-  margin: 0;
-
-  color: #8d93a1;
-
-  font-size: 13px;
-
-  line-height: 1.5;
-}
-
-
-/* =========================================================
-   モーダル本文
-========================================================= */
-
-.room-create-content,
-.room-settings-content {
-  padding: 22px 24px 24px;
-}
-
-.room-create-content label,
-.room-setting-label {
-  display: block;
-
-  margin-bottom: 8px;
-
-  color: #aeb4c0;
-
-  font-size: 11px;
   font-weight: 800;
 
-  letter-spacing: 0.5px;
+  letter-spacing: -1px;
 
-  text-transform: uppercase;
+  color: #5865f2;
 }
 
-
-/* =========================================================
-   入力欄
-========================================================= */
-
-#room-name-input,
-#invite-code,
-#room-invite-input {
-  width: 100%;
-
-  height: 46px;
-
-  padding: 0 13px;
-
-  border: 1px solid #343943;
-  border-radius: 9px;
-
-  outline: none;
-
-  background: #111318;
-
-  color: #ffffff;
-
-  font-size: 14px;
-
-  transition:
-    border 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-#room-name-input:focus,
-#room-invite-input:focus {
-  border-color: #7c83ff;
-
-  box-shadow:
-    0 0 0 3px rgba(124, 131, 255, 0.10);
-}
-
-#room-name-input::placeholder,
-#room-invite-input::placeholder {
-  color: #777e8c;
-}
-
-
-/* =========================================================
-   モーダルフッター
-========================================================= */
-
-.room-create-footer,
-.room-settings-footer {
-  display: flex;
-
-  align-items: center;
-  justify-content: flex-end;
-
-  gap: 10px;
-
-  padding: 16px 24px;
-
-  background: rgba(0,0,0,0.10);
-
-  border-top: 1px solid rgba(255,255,255,0.035);
-}
-
-
-/* =========================================================
-   キャンセル・確認ボタン
-========================================================= */
-
-.cancel-button,
-.confirm-button {
-  height: 39px;
-
-  padding: 0 18px;
-
-  border-radius: 8px;
-
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.cancel-button {
-  background: transparent;
-
-  color: #c5cad3;
-}
-
-.cancel-button:hover {
-  background: rgba(255,255,255,0.06);
-}
-
-.confirm-button {
-  background:
-    linear-gradient(
-      135deg,
-      #697cff,
-      #7657e8
-    );
-
-  color: #ffffff;
-}
-
-.confirm-button:hover {
-  filter: brightness(1.08);
-}
-
-
-/* =========================================================
-   招待コード
-========================================================= */
-
-.invite-code-row {
+.header-actions {
   display: flex;
 
   gap: 8px;
 }
 
-#invite-code {
-  flex: 1;
+.header-button {
+  border: none;
 
-  min-width: 0;
+  background: #5865f2;
 
-  font-family: monospace;
+  color: white;
 
-  letter-spacing: 1px;
-}
+  border-radius: 10px;
 
-.copy-code-button {
-  flex-shrink: 0;
-
-  padding: 0 14px;
-
-  border-radius: 9px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #697cff,
-      #7657e8
-    );
-
-  color: #ffffff;
-
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.copy-code-button:hover {
-  filter: brightness(1.08);
-}
-
-.room-setting-description {
-  margin: 9px 0 0;
-
-  color: #777e8c;
-
-  font-size: 12px;
-
-  line-height: 1.5;
-}
-
-
-/* =========================================================
-   部屋参加モーダル
-========================================================= */
-
-.room-join-modal {
-  position: fixed;
-
-  inset: 0;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  padding: 20px;
-
-  background: rgba(0,0,0,0.66);
-
-  backdrop-filter: blur(7px);
-
-  z-index: 2100;
-
-  opacity: 0;
-  visibility: hidden;
-
-  transition:
-    opacity 0.2s ease,
-    visibility 0.2s ease;
-}
-
-.room-join-modal.open {
-  opacity: 1;
-
-  visibility: visible;
-}
-
-.room-join-box {
-  width: 460px;
-  max-width: 100%;
-
-  overflow: hidden;
-
-  background:
-    linear-gradient(
-      145deg,
-      #31343b,
-      #292c32
-    );
-
-  border-radius: 15px;
-
-  box-shadow:
-    0 25px 70px rgba(0,0,0,0.5);
-
-  transform:
-    translateY(10px)
-    scale(0.98);
-
-  transition:
-    transform 0.2s ease;
-}
-
-.room-join-modal.open .room-join-box {
-  transform:
-    translateY(0)
-    scale(1);
-}
-
-.room-join-header {
-  display: flex;
-
-  align-items: flex-start;
-  justify-content: space-between;
-
-  padding: 24px;
-}
-
-.room-join-header h2 {
-  margin: 0;
-
-  color: #f2f3f5;
-
-  font-size: 22px;
-}
-
-.room-join-header p {
-  margin: 8px 0 0;
-
-  color: #b5bac1;
+  padding:
+    9px 14px;
 
   font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
 }
 
-.room-join-content {
-  padding: 0 24px 24px;
+.header-button:hover {
+  background: #4752c4;
 }
 
-.room-join-content label {
-  display: block;
+.header-button.secondary {
+  background: #eef0ff;
 
-  margin-bottom: 8px;
-
-  color: #b5bac1;
-
-  font-size: 11px;
-  font-weight: 800;
-
-  text-transform: uppercase;
+  color: #5865f2;
 }
 
-.room-join-footer {
-  display: flex;
-
-  align-items: center;
-  justify-content: flex-end;
-
-  gap: 10px;
-
-  padding: 16px 24px;
-
-  background: rgba(0,0,0,0.12);
-}
-
-.room-join-error {
-  min-height: 18px;
-
-  margin: 8px 0 0;
-
-  color: #f23f42;
-
-  font-size: 13px;
+.header-button.secondary:hover {
+  background: #e1e4ff;
 }
 
 
-/* =========================================================
-   設定パネル
-========================================================= */
+/* ==========================================
+   メイン
+========================================== */
 
-.settings-panel {
-  position: fixed;
-
-  inset: 0;
-
-  display: none;
-
-  align-items: center;
-  justify-content: center;
-
-  padding: 20px;
-
-  background: rgba(5, 7, 12, 0.68);
-
-  backdrop-filter: blur(8px);
-
-  z-index: 3000;
-}
-
-.settings-panel.open {
-  display: flex;
-}
-
-
-/* =========================================================
-   設定カード
-========================================================= */
-
-.settings-card {
-  width: 420px;
-  max-width: 100%;
-  max-height: 90vh;
-
-  overflow-y: auto;
-
-  background:
-    linear-gradient(
-      145deg,
-      #1c2029,
-      #171a21
-    );
-
-  border: 1px solid #303642;
-
-  border-radius: 18px;
-
-  box-shadow:
-    0 25px 70px rgba(0,0,0,0.55);
-}
-
-
-/* =========================================================
-   設定ヘッダー
-========================================================= */
-
-.settings-header {
-  display: flex;
-
-  align-items: flex-start;
-  justify-content: space-between;
-
-  padding: 24px;
-
-  border-bottom: 1px solid #2b303a;
-}
-
-.settings-header h2 {
-  margin: 0 0 5px;
-
-  color: #ffffff;
-
-  font-size: 20px;
-}
-
-.settings-header p {
-  margin: 0;
-
-  color: #858c9c;
-
-  font-size: 13px;
-}
-
-
-/* =========================================================
-   設定セクション
-========================================================= */
-
-.settings-section {
-  padding: 20px 24px 4px;
-}
-
-.settings-section:last-child {
-  padding-bottom: 24px;
-}
-
-.settings-section h3 {
-  margin: 0 0 13px;
-
-  color: #aab1c0;
-
-  font-size: 12px;
-}
-
-.settings-section > label {
-  display: block;
-
-  margin-bottom: 7px;
-
-  color: #9da4b3;
-
-  font-size: 12px;
-}
-
-
-/* =========================================================
-   ユーザー名
-========================================================= */
-
-#username-input {
+.main {
   width: 100%;
 
-  height: 42px;
+  max-width: 900px;
 
-  padding: 0 12px;
+  margin: 0 auto;
 
-  border: 1px solid #303642;
-  border-radius: 9px;
+  padding:
+    24px 20px;
 
-  outline: none;
-
-  background: #11141b;
-
-  color: #ffffff;
-
-  font-size: 14px;
-}
-
-#username-input:focus {
-  border-color: #7c83ff;
-
-  box-shadow:
-    0 0 0 3px rgba(124,131,255,0.08);
-}
-
-.save-username {
-  margin-top: 10px;
-
-  height: 38px;
-
-  padding: 0 16px;
-
-  border-radius: 8px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #697cff,
-      #7657e8
-    );
-
-  color: #ffffff;
-
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.save-username:hover {
-  filter: brightness(1.08);
-}
-
-.setting-description {
-  margin: 8px 0 0;
-
-  color: #7f8795;
-
-  font-size: 12px;
-}
-
-
-/* =========================================================
-   テーマ・言語ボタン
-========================================================= */
-
-.theme-button,
-.language-button {
-  display: flex;
-
-  align-items: center;
-
-  gap: 13px;
-
-  width: 100%;
-
-  margin-bottom: 8px;
-
-  padding: 12px 14px;
-
-  border: 1px solid #303642;
-
-  border-radius: 11px;
-
-  background: #20242e;
-
-  color: #ffffff;
-
-  text-align: left;
-
-  transition:
-    background 0.15s ease,
-    border 0.15s ease,
-    transform 0.15s ease;
-}
-
-.theme-button:hover,
-.language-button:hover {
-  background: #272c37;
-
-  border-color: #737bff;
-
-  transform: translateY(-1px);
-}
-
-.theme-button > span,
-.language-button > span {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 34px;
-  height: 34px;
-
-  flex-shrink: 0;
-
-  border-radius: 9px;
-
-  background: #2b303b;
-
-  font-size: 17px;
-}
-
-.theme-button div,
-.language-button div {
   display: flex;
 
   flex-direction: column;
 
-  gap: 3px;
+  height:
+    calc(100vh - 64px);
 }
 
-.theme-button strong,
-.language-button strong {
-  color: #f5f7fa;
+
+/* ==========================================
+   ルームヘッダー
+========================================== */
+
+.room-header {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 16px;
+}
+
+.room-label {
+  font-size: 11px;
+
+  color: #8c94a7;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+}
+
+.room-header h1 {
+  margin:
+    3px 0 0;
+
+  font-size: 24px;
+}
+
+.invite-area {
+  background: white;
+
+  border:
+    1px solid #e4e7ee;
+
+  border-radius: 10px;
+
+  padding:
+    8px 12px;
+
+  font-size: 12px;
+
+  color: #737b8e;
+}
+
+.invite-area strong {
+  color: #5865f2;
+
+  font-size: 14px;
+
+  margin-left: 6px;
+}
+
+
+/* ==========================================
+   チャット
+========================================== */
+
+.chat-container {
+  flex: 1;
+
+  min-height: 0;
+
+  background: #ffffff;
+
+  border:
+    1px solid #e4e7ee;
+
+  border-radius: 16px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 4px 18px
+    rgba(30, 40, 70, 0.04);
+}
+
+.messages {
+  height: 100%;
+
+  overflow-y: auto;
+
+  padding: 20px;
+}
+
+
+/* ==========================================
+   メッセージ
+========================================== */
+
+.message {
+  margin-bottom: 14px;
+
+  animation:
+    messageIn 0.15s ease;
+}
+
+@keyframes messageIn {
+
+  from {
+    opacity: 0;
+    transform:
+      translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0);
+  }
+
+}
+
+.message-user {
+  font-size: 13px;
+
+  font-weight: 700;
+
+  color: #5865f2;
+
+  margin-bottom: 3px;
+}
+
+.message-text {
+  display: inline-block;
+
+  max-width: 90%;
+
+  padding:
+    9px 12px;
+
+  background: #f1f3f8;
+
+  border-radius:
+    5px 12px 12px 12px;
+
+  font-size: 15px;
+
+  line-height: 1.5;
+
+  word-break: break-word;
+}
+
+.message-time {
+  font-size: 10px;
+
+  color: #a0a7b5;
+
+  margin-left: 7px;
+}
+
+
+/* ==========================================
+   入力フォーム
+========================================== */
+
+.message-form {
+  display: flex;
+
+  gap: 8px;
+
+  margin-top: 12px;
+}
+
+.message-form input {
+  border:
+    1px solid #dfe3eb;
+
+  background: white;
+
+  border-radius: 10px;
+
+  padding:
+    12px;
+
+  outline: none;
 
   font-size: 14px;
 }
 
-.theme-button small,
-.language-button small {
-  color: #858c9c;
+.message-form input:focus {
+  border-color: #5865f2;
 
-  font-size: 11px;
+  box-shadow:
+    0 0 0 3px
+    rgba(88, 101, 242, 0.10);
+}
+
+#usernameInput {
+  width: 130px;
+}
+
+#messageInput {
+  flex: 1;
+}
+
+.send-button {
+  border: none;
+
+  background: #5865f2;
+
+  color: white;
+
+  border-radius: 10px;
+
+  padding:
+    0 18px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.send-button:hover {
+  background: #4752c4;
 }
 
 
-/* =========================================================
-   設定閉じるボタン
-========================================================= */
+/* ==========================================
+   モーダル
+========================================== */
 
-.close-settings {
+.modal {
+  position: fixed;
+
+  inset: 0;
+
+  background:
+    rgba(20, 25, 40, 0.45);
+
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
-  width: 35px;
-  height: 35px;
+  padding: 20px;
 
-  padding: 0;
+  z-index: 100;
+}
+
+.modal-box {
+  width: 100%;
+
+  max-width: 400px;
+
+  background: white;
+
+  border-radius: 18px;
+
+  padding: 24px;
+
+  box-shadow:
+    0 20px 60px
+    rgba(0, 0, 0, 0.18);
+}
+
+.modal-box h2 {
+  margin:
+    0 0 18px;
+
+  font-size: 20px;
+}
+
+.modal-box input {
+  width: 100%;
+
+  padding: 12px;
+
+  border:
+    1px solid #dfe3eb;
+
+  border-radius: 10px;
+
+  outline: none;
+
+  font-size: 15px;
+}
+
+.modal-box input:focus {
+  border-color: #5865f2;
+}
+
+.modal-buttons {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  margin-top: 18px;
+}
+
+.primary-button,
+.cancel-button {
+  border: none;
 
   border-radius: 9px;
 
-  background: transparent;
+  padding:
+    10px 16px;
 
-  color: #858c9c;
+  font-weight: 600;
 
-  font-size: 25px;
+  cursor: pointer;
 }
 
-.close-settings:hover {
-  background: #292e38;
+.primary-button {
+  background: #5865f2;
 
-  color: #ffffff;
+  color: white;
 }
 
+.cancel-button {
+  background: #eef0f4;
 
-/* =========================================================
-   LIGHT THEME
-========================================================= */
-
-body[data-theme="light"] {
-  background: #f4f6fa;
-
-  color: #20232a;
+  color: #4c5362;
 }
 
-body[data-theme="light"] .sidebar {
-  background:
-    linear-gradient(
-      180deg,
-      #ffffff,
-      #f8f9fb
-    );
+.error-message {
+  color: #e5484d;
 
-  border-right-color: #e2e5eb;
-}
+  font-size: 13px;
 
-body[data-theme="light"] .sidebar h1 {
-  color: #20232a;
-}
-
-body[data-theme="light"] .channel-title {
-  color: #8a909c;
-}
-
-body[data-theme="light"] .create-room-button,
-body[data-theme="light"] .join-room-button {
-  color: #7f8795;
-}
-
-body[data-theme="light"] .create-room-button:hover,
-body[data-theme="light"] .join-room-button:hover {
-  background: #eef0f5;
-
-  color: #20232a;
-}
-
-body[data-theme="light"] .channel {
-  color: #646b78;
-}
-
-body[data-theme="light"] .channel:hover {
-  background: #f0f2f6;
-
-  color: #20232a;
-}
-
-body[data-theme="light"] .channel.active {
-  background:
-    linear-gradient(
-      90deg,
-      #e9eaff,
-      #f2f2ff
-    );
-
-  color: #3034a0;
-
-  box-shadow:
-    inset 2px 0 0 #6d72e9;
-}
-
-body[data-theme="light"] .settings-button {
-  color: #646b78;
-}
-
-body[data-theme="light"] .settings-button:hover {
-  background: #f0f2f6;
-
-  color: #20232a;
+  margin:
+    12px 0 0;
 }
 
 
-/* チャット */
+/* ==========================================
+   hidden
+========================================== */
 
-body[data-theme="light"] .chat {
-  background:
-    radial-gradient(
-      circle at top right,
-      rgba(108, 99, 255, 0.07),
-      transparent 35%
-    ),
-    #f4f6fa;
-}
-
-body[data-theme="light"] .chat-header {
-  background: rgba(255,255,255,0.92);
-
-  border-bottom-color: #e2e5eb;
-}
-
-body[data-theme="light"] .chat-header strong {
-  color: #20232a;
-}
-
-body[data-theme="light"] .message-time {
-  color: #858b98;
-}
-
-body[data-theme="light"] .message-username,
-body[data-theme="light"] .message-name {
-  color: #6e7480;
-}
-
-body[data-theme="light"] .message-wrapper.mine .message-username,
-body[data-theme="light"] .message-wrapper.mine .message-name {
-  color: #6570c9;
-}
-
-body[data-theme="light"] .message-wrapper.other .message-bubble {
-  background:
-    linear-gradient(
-      145deg,
-      #ffffff,
-      #f3f4f7
-    );
-
-  border-color: #e1e4e9;
-
-  color: #30343c;
-
-  box-shadow:
-    0 4px 15px rgba(40,45,60,0.08);
-}
-
-body[data-theme="light"] .message-form {
-  background:
-    linear-gradient(
-      180deg,
-      rgba(244,246,250,0.55),
-      #f4f6fa
-    );
-}
-
-body[data-theme="light"] .message-form textarea {
-  background: #ffffff;
-
-  color: #20232a;
-
-  border-color: #d7dbe3;
-}
-
-body[data-theme="light"] .message-form textarea:focus {
-  background: #ffffff;
+.hidden {
+  display: none !important;
 }
 
 
-/* 設定 */
-
-body[data-theme="light"] .settings-card,
-body[data-theme="light"] .room-create-box,
-body[data-theme="light"] .room-settings-box {
-  background:
-    linear-gradient(
-      145deg,
-      #ffffff,
-      #f8f9fb
-    );
-
-  border-color: #dfe3e9;
-}
-
-body[data-theme="light"] .settings-header {
-  border-bottom-color: #e5e7eb;
-}
-
-body[data-theme="light"] .settings-header h2,
-body[data-theme="light"] .room-create-header h2,
-body[data-theme="light"] .room-settings-header h2 {
-  color: #20232a;
-}
-
-body[data-theme="light"] .settings-header p,
-body[data-theme="light"] .settings-section h3,
-body[data-theme="light"] .settings-section > label,
-body[data-theme="light"] .room-create-header p,
-body[data-theme="light"] .room-settings-header p {
-  color: #707784;
-}
-
-body[data-theme="light"] #username-input,
-body[data-theme="light"] #room-name-input,
-body[data-theme="light"] #invite-code,
-body[data-theme="light"] #room-invite-input {
-  background: #f5f6f8;
-
-  color: #20232a;
-
-  border-color: #d5d9df;
-}
-
-body[data-theme="light"] .theme-button,
-body[data-theme="light"] .language-button {
-  background: #f6f7f9;
-
-  border-color: #dfe3e9;
-
-  color: #20232a;
-}
-
-body[data-theme="light"] .theme-button strong,
-body[data-theme="light"] .language-button strong {
-  color: #20232a;
-}
-
-body[data-theme="light"] .theme-button small,
-body[data-theme="light"] .language-button small {
-  color: #7a818d;
-}
-
-body[data-theme="light"] .room-create-footer,
-body[data-theme="light"] .room-settings-footer {
-  background: #f5f6f8;
-}
-
-body[data-theme="light"] .room-join-box {
-  background: #ffffff;
-}
-
-body[data-theme="light"] .room-join-header h2 {
-  color: #20232a;
-}
-
-body[data-theme="light"] .room-join-header p,
-body[data-theme="light"] .room-join-content label {
-  color: #6b7280;
-}
-
-
-/* =========================================================
-   GRAY THEME
-========================================================= */
-
-body[data-theme="gray"] {
-  background: #292c32;
-
-  color: #eeeeee;
-}
-
-body[data-theme="gray"] .sidebar {
-  background:
-    linear-gradient(
-      180deg,
-      #33373e,
-      #2d3036
-    );
-
-  border-right-color: #41454d;
-}
-
-body[data-theme="gray"] .channel:hover {
-  background: #393e46;
-}
-
-body[data-theme="gray"] .channel.active {
-  background: #41464f;
-
-  box-shadow:
-    inset 2px 0 0 #8c91ff;
-}
-
-body[data-theme="gray"] .chat {
-  background:
-    radial-gradient(
-      circle at top right,
-      rgba(120,120,180,0.07),
-      transparent 35%
-    ),
-    #292c32;
-}
-
-body[data-theme="gray"] .chat-header {
-  background: #2d3036;
-
-  border-bottom-color: #41454d;
-}
-
-body[data-theme="gray"] .message-wrapper.other .message-bubble {
-  background:
-    linear-gradient(
-      145deg,
-      #3a3e46,
-      #34383f
-    );
-
-  border-color: #484d55;
-}
-
-body[data-theme="gray"] .message-form {
-  background: #292c32;
-}
-
-body[data-theme="gray"] .message-form textarea {
-  background: #353940;
-
-  border-color: #4a4f58;
-}
-
-body[data-theme="gray"] .settings-card,
-body[data-theme="gray"] .room-create-box,
-body[data-theme="gray"] .room-settings-box {
-  background:
-    linear-gradient(
-      145deg,
-      #34383f,
-      #2e3238
-    );
-
-  border-color: #454a53;
-}
-
-body[data-theme="gray"] .theme-button,
-body[data-theme="gray"] .language-button {
-  background: #383c44;
-
-  border-color: #4a4f58;
-}
-
-
-/* =========================================================
+/* ==========================================
    スマホ
-========================================================= */
+========================================== */
 
-@media (max-width: 700px) {
+@media (max-width: 600px) {
 
-  .sidebar {
-    width: 190px;
-
-    padding: 18px 10px;
+  .header {
+    padding:
+      0 12px;
   }
 
-  .sidebar h1 {
-    margin-bottom: 25px;
-
+  .logo {
     font-size: 22px;
   }
 
-  .messages,
-  #messages {
-    padding: 18px 14px;
-
-    gap: 11px;
-  }
-
-  .message-wrapper {
-    max-width: 82%;
-  }
-
-  .message-form {
-    padding: 10px 12px 14px;
-  }
-
-  .message-form textarea {
-    min-height: 48px;
-  }
-
-  .message-form button {
-    height: 48px;
-
-    padding: 0 15px;
-  }
-}
-
-
-/* =========================================================
-   小さいスマホ
-========================================================= */
-
-@media (max-width: 520px) {
-
-  .sidebar {
-    width: 165px;
-  }
-
-  .chat-header {
-    height: 58px;
-
-    padding: 0 16px;
-  }
-
-  .messages,
-  #messages {
+  .header-button {
     padding:
-      14px 9px;
+      8px 10px;
+
+    font-size: 12px;
   }
 
-  .message-wrapper {
-    max-width: 88%;
+  .main {
+    padding:
+      16px 10px;
   }
 
-  .message-bubble {
-    padding: 9px 12px;
-
-    font-size: 14px;
-
-    border-radius: 16px;
-  }
-
-  .message-time {
-    font-size: 9px;
-  }
-
-  .message-username,
-  .message-name {
-    font-size: 10px;
-  }
-
-  .message-form button {
-    width: 50px;
-
-    padding: 0;
-
-    font-size: 0;
-  }
-
-  .message-form button::after {
-    content: "➤";
-
-    font-size: 17px;
-  }
-}
-
-
-/* =========================================================
-   さらに小さい画面
-========================================================= */
-
-@media (max-width: 400px) {
-
-  .sidebar {
-    width: 145px;
-  }
-
-  .sidebar h1 {
+  .room-header h1 {
     font-size: 20px;
   }
 
-  .channel {
-    font-size: 13px;
+  .invite-area {
+    font-size: 10px;
   }
 
-  .message-wrapper {
-    max-width: 91%;
+  #usernameInput {
+    width: 90px;
   }
+
+  .message-form {
+    gap: 5px;
+  }
+
+  .message-form input {
+    padding:
+      10px 8px;
+  }
+
+  .send-button {
+    padding:
+      0 12px;
+  }
+
 }
