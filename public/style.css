@@ -137,12 +137,12 @@ body {
 .main {
   width: 100%;
 
-  max-width: 1100px;
+  max-width: 900px;
 
   margin: 0 auto;
 
   padding:
-    20px 20px 18px;
+    16px 20px;
 
   display: flex;
 
@@ -151,7 +151,6 @@ body {
   height:
     calc(100vh - 64px);
 }
-
 
 /* ==========================================
    ルームヘッダー
