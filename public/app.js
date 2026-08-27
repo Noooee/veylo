@@ -45,29 +45,19 @@ const inviteCode =
 // ==================================================
 
 const createRoomButton =
-  document.getElementById(
-    "createRoomButton"
-  );
+  document.getElementById("createRoomButton");
 
 const createModal =
-  document.getElementById(
-    "createModal"
-  );
+  document.getElementById("createModal");
 
 const roomNameInput =
-  document.getElementById(
-    "roomNameInput"
-  );
+  document.getElementById("roomNameInput");
 
 const confirmCreateButton =
-  document.getElementById(
-    "confirmCreateButton"
-  );
+  document.getElementById("confirmCreateButton");
 
 const cancelCreateButton =
-  document.getElementById(
-    "cancelCreateButton"
-  );
+  document.getElementById("cancelCreateButton");
 
 
 // ==================================================
@@ -75,33 +65,62 @@ const cancelCreateButton =
 // ==================================================
 
 const joinRoomButton =
-  document.getElementById(
-    "joinRoomButton"
-  );
+  document.getElementById("joinRoomButton");
 
 const joinModal =
-  document.getElementById(
-    "joinModal"
-  );
+  document.getElementById("joinModal");
 
 const inviteCodeInput =
-  document.getElementById(
-    "inviteCodeInput"
-  );
+  document.getElementById("inviteCodeInput");
 
 const confirmJoinButton =
-  document.getElementById(
-    "confirmJoinButton"
-  );
+  document.getElementById("confirmJoinButton");
 
 const cancelJoinButton =
-  document.getElementById(
-    "cancelJoinButton"
-  );
+  document.getElementById("cancelJoinButton");
 
 const joinError =
+  document.getElementById("joinError");
+
+
+// ==================================================
+// 設定
+// ==================================================
+
+const settingsButton =
+  document.getElementById("settingsButton");
+
+const settingsModal =
+  document.getElementById("settingsModal");
+
+const settingsUsernameInput =
   document.getElementById(
-    "joinError"
+    "settingsUsernameInput"
+  );
+
+const closeSettingsButton =
+  document.getElementById(
+    "closeSettingsButton"
+  );
+
+const saveSettingsButton =
+  document.getElementById(
+    "saveSettingsButton"
+  );
+
+const themeToggleButton =
+  document.getElementById(
+    "themeToggleButton"
+  );
+
+const grayToggleButton =
+  document.getElementById(
+    "grayToggleButton"
+  );
+
+const languageSelect =
+  document.getElementById(
+    "languageSelect"
   );
 
 
@@ -110,6 +129,26 @@ const joinError =
 // ==================================================
 
 let currentRoom = "casual";
+
+
+// ==================================================
+// 設定
+// ==================================================
+
+let darkMode =
+  localStorage.getItem(
+    "veylo_dark_mode"
+  ) === "true";
+
+let grayMode =
+  localStorage.getItem(
+    "veylo_gray_mode"
+  ) === "true";
+
+let language =
+  localStorage.getItem(
+    "veylo_language"
+  ) || "ja";
 
 
 // ==================================================
@@ -127,7 +166,7 @@ socket.on("connect", () => {
 
 
 // ==================================================
-// ユーザー名を保存
+// ユーザー名読み込み
 // ==================================================
 
 const savedUsername =
@@ -144,7 +183,14 @@ if (savedUsername) {
 
 
 // ==================================================
-// 保存済みコメントを読み込む
+// 初期テーマ
+// ==================================================
+
+updateTheme();
+
+
+// ==================================================
+// 初期メッセージ
 // ==================================================
 
 loadLocalMessages();
@@ -167,38 +213,23 @@ messageForm.addEventListener(
       usernameInput.value.trim() ||
       "ゲスト";
 
-
     if (!text) {
       return;
     }
-
-
-    // ユーザー名を保存
 
     localStorage.setItem(
       "veylo_username",
       username
     );
 
-
-    // サーバーへ送信
-
     socket.emit(
       "chat message",
       {
-
-        room:
-          currentRoom,
-
-        text:
-          text,
-
-        username:
-          username
-
+        room: currentRoom,
+        text: text,
+        username: username
       }
     );
-
 
     messageInput.value = "";
 
@@ -224,7 +255,6 @@ socket.on(
       return;
     }
 
-
     addMessage(data);
 
     saveLocalMessage(data);
@@ -246,8 +276,6 @@ function addMessage(data) {
     "message";
 
 
-  // ユーザー名
-
   const user =
     document.createElement("div");
 
@@ -258,8 +286,6 @@ function addMessage(data) {
     data.username || "ゲスト";
 
 
-  // 本文
-
   const text =
     document.createElement("span");
 
@@ -269,8 +295,6 @@ function addMessage(data) {
   text.textContent =
     data.text;
 
-
-  // 時刻
 
   const time =
     document.createElement("span");
@@ -290,11 +314,8 @@ function addMessage(data) {
 
   message.appendChild(time);
 
-
   messages.appendChild(message);
 
-
-  // 一番下へ
 
   messages.scrollTop =
     messages.scrollHeight;
@@ -312,24 +333,21 @@ function formatTime(value) {
     return "";
   }
 
-
   const date =
     new Date(value);
-
 
   if (
     Number.isNaN(
       date.getTime()
     )
   ) {
-
     return "";
-
   }
 
-
   return date.toLocaleTimeString(
-    "ja-JP",
+    language === "en"
+      ? "en-US"
+      : "ja-JP",
     {
       hour: "2-digit",
       minute: "2-digit"
@@ -349,14 +367,10 @@ function saveLocalMessage(data) {
     !data ||
     data.room !== "casual"
   ) {
-
     return;
-
   }
 
-
   let stored = [];
-
 
   try {
 
@@ -373,8 +387,6 @@ function saveLocalMessage(data) {
 
   }
 
-
-  // 同じメッセージの重複防止
 
   const exists =
     stored.some((item) => {
@@ -407,8 +419,6 @@ function saveLocalMessage(data) {
   stored.push(data);
 
 
-  // 最大1000件
-
   if (stored.length > 1000) {
 
     stored =
@@ -435,7 +445,6 @@ function loadLocalMessages() {
 
   let stored = [];
 
-
   try {
 
     stored =
@@ -450,13 +459,6 @@ function loadLocalMessages() {
     stored = [];
 
   }
-
-
-  console.log(
-    "保存済み雑談コメント:",
-    stored
-  );
-
 
   stored.forEach((data) => {
 
@@ -514,17 +516,17 @@ confirmCreateButton.addEventListener(
     const name =
       roomNameInput.value.trim();
 
-
     if (!name) {
 
       alert(
-        "部屋の名前を入力してください。"
+        language === "en"
+          ? "Please enter a room name."
+          : "部屋の名前を入力してください。"
       );
 
       return;
 
     }
-
 
     socket.emit(
       "create room",
@@ -550,34 +552,29 @@ socket.on(
       room
     );
 
-
     currentRoom =
       room.id;
-
 
     roomName.textContent =
       room.name;
 
-
     inviteCode.textContent =
       room.inviteCode;
-
 
     inviteArea.classList.remove(
       "hidden"
     );
 
-
     createModal.classList.add(
       "hidden"
     );
 
-
     messages.innerHTML = "";
 
-
     alert(
-      `部屋を作成しました。\n\n招待コード: ${room.inviteCode}`
+      language === "en"
+        ? `Room created!\n\nInvite code: ${room.inviteCode}`
+        : `部屋を作成しました。\n\n招待コード: ${room.inviteCode}`
     );
 
   }
@@ -635,16 +632,16 @@ confirmJoinButton.addEventListener(
         .trim()
         .toUpperCase();
 
-
     if (!code) {
 
       joinError.textContent =
-        "招待コードを入力してください。";
+        language === "en"
+          ? "Please enter an invite code."
+          : "招待コードを入力してください。";
 
       return;
 
     }
-
 
     socket.emit(
       "join room",
@@ -670,28 +667,22 @@ socket.on(
       room
     );
 
-
     currentRoom =
       room.id;
-
 
     roomName.textContent =
       room.name;
 
-
     inviteCode.textContent =
       room.inviteCode;
-
 
     inviteArea.classList.remove(
       "hidden"
     );
 
-
     joinModal.classList.add(
       "hidden"
     );
-
 
     messages.innerHTML = "";
 
@@ -709,14 +700,18 @@ socket.on(
 
     joinError.textContent =
       data?.message ||
-      "部屋に参加できませんでした。";
+      (
+        language === "en"
+          ? "Could not join the room."
+          : "部屋に参加できませんでした。"
+      );
 
   }
 );
 
 
 // ==================================================
-// Enterキーで部屋作成
+// Enterキー
 // ==================================================
 
 roomNameInput.addEventListener(
@@ -737,10 +732,6 @@ roomNameInput.addEventListener(
 );
 
 
-// ==================================================
-// Enterキーで部屋参加
-// ==================================================
-
 inviteCodeInput.addEventListener(
   "keydown",
   (event) => {
@@ -758,28 +749,6 @@ inviteCodeInput.addEventListener(
   }
 );
 
-// ==================================================
-// 設定
-// ==================================================
-
-const settingsButton =
-  document.getElementById("settingsButton");
-
-const settingsModal =
-  document.getElementById("settingsModal");
-
-const settingsUsernameInput =
-  document.getElementById("settingsUsernameInput");
-
-const closeSettingsButton =
-  document.getElementById("closeSettingsButton");
-
-const saveSettingsButton =
-  document.getElementById("saveSettingsButton");
-
-const themeToggleButton =
-  document.getElementById("themeToggleButton");
-
 
 // ==================================================
 // 設定を開く
@@ -793,6 +762,9 @@ settingsButton.addEventListener(
       localStorage.getItem(
         "veylo_username"
       ) || "";
+
+    languageSelect.value =
+      language;
 
     settingsModal.classList.remove(
       "hidden"
@@ -821,7 +793,41 @@ closeSettingsButton.addEventListener(
 
 
 // ==================================================
-// 設定を保存
+// ダークモード
+// ==================================================
+
+themeToggleButton.addEventListener(
+  "click",
+  () => {
+
+    darkMode =
+      !darkMode;
+
+    updateTheme();
+
+  }
+);
+
+
+// ==================================================
+// グレーモード
+// ==================================================
+
+grayToggleButton.addEventListener(
+  "click",
+  () => {
+
+    grayMode =
+      !grayMode;
+
+    updateTheme();
+
+  }
+);
+
+
+// ==================================================
+// 設定保存
 // ==================================================
 
 saveSettingsButton.addEventListener(
@@ -843,6 +849,30 @@ saveSettingsButton.addEventListener(
 
     }
 
+
+    language =
+      languageSelect.value;
+
+
+    localStorage.setItem(
+      "veylo_language",
+      language
+    );
+
+    localStorage.setItem(
+      "veylo_dark_mode",
+      darkMode
+    );
+
+    localStorage.setItem(
+      "veylo_gray_mode",
+      grayMode
+    );
+
+
+    updateTheme();
+
+
     settingsModal.classList.add(
       "hidden"
     );
@@ -852,56 +882,42 @@ saveSettingsButton.addEventListener(
 
 
 // ==================================================
-// ダークモード
+// テーマ更新
 // ==================================================
-
-let darkMode =
-  localStorage.getItem(
-    "veylo_dark_mode"
-  ) === "true";
-
 
 function updateTheme() {
 
-  if (darkMode) {
+  document.body.classList.toggle(
+    "dark-mode",
+    darkMode
+  );
 
-    document.body.classList.add(
-      "dark-mode"
-    );
+  document.body.classList.toggle(
+    "gray-mode",
+    grayMode
+  );
 
-    themeToggleButton.textContent =
-      "ON";
 
-  } else {
+  themeToggleButton.textContent =
+    darkMode
+      ? "ON"
+      : "OFF";
 
-    document.body.classList.remove(
-      "dark-mode"
-    );
 
-    themeToggleButton.textContent =
-      "OFF";
+  grayToggleButton.textContent =
+    grayMode
+      ? "ON"
+      : "OFF";
 
-  }
+
+  themeToggleButton.classList.toggle(
+    "active",
+    darkMode
+  );
+
+  grayToggleButton.classList.toggle(
+    "active",
+    grayMode
+  );
 
 }
-
-
-themeToggleButton.addEventListener(
-  "click",
-  () => {
-
-    darkMode =
-      !darkMode;
-
-    localStorage.setItem(
-      "veylo_dark_mode",
-      darkMode
-    );
-
-    updateTheme();
-
-  }
-);
-
-
-updateTheme();
