@@ -31,21 +31,28 @@
 
     <div class="header-actions">
 
-      <button
-        id="createRoomButton"
-        class="header-button"
-      >
-        ＋ 部屋を作る
-      </button>
+  <button
+    id="createRoomButton"
+    class="header-button"
+  >
+    ＋ 部屋を作る
+  </button>
 
-      <button
-        id="joinRoomButton"
-        class="header-button secondary"
-      >
-        🔑 参加
-      </button>
+  <button
+    id="joinRoomButton"
+    class="header-button secondary"
+  >
+    🔑 参加
+  </button>
 
-    </div>
+  <button
+    id="settingsButton"
+    class="header-button settings-button"
+  >
+    ⚙ 設定
+  </button>
+
+</div>
 
   </header>
 
@@ -140,7 +147,72 @@
 
   </main>
 
+<!-- ==========================================
+     設定モーダル
+========================================== -->
 
+<div
+  id="settingsModal"
+  class="modal hidden"
+>
+
+  <div class="modal-box settings-box">
+
+    <h2>
+      ⚙ 設定
+    </h2>
+
+    <label class="settings-label">
+      表示名
+    </label>
+
+    <input
+      id="settingsUsernameInput"
+      type="text"
+      maxlength="30"
+      placeholder="名前"
+    >
+
+    <div class="settings-item">
+
+      <span>
+        ダークモード
+      </span>
+
+      <button
+        id="themeToggleButton"
+        type="button"
+        class="toggle-button"
+      >
+        OFF
+      </button>
+
+    </div>
+
+    <div class="modal-buttons">
+
+      <button
+        id="closeSettingsButton"
+        type="button"
+        class="cancel-button"
+      >
+        閉じる
+      </button>
+
+      <button
+        id="saveSettingsButton"
+        type="button"
+        class="primary-button"
+      >
+        保存
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+  
   <!-- ==========================================
        部屋作成モーダル
   =========================================== -->
