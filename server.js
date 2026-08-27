@@ -304,20 +304,41 @@ const PORT =
 // 0.0.0.0で待ち受ける
 // → インターネットからアクセス可能
 
-server.listen(
-  PORT,
-  "0.0.0.0",
-  () => {
+async function startServer() {
 
-    console.log(
-      `Veyloサーバー起動: 0.0.0.0:${PORT}`
+  try {
+
+    await initDatabase();
+
+    server.listen(
+      PORT,
+      "0.0.0.0",
+      () => {
+
+        console.log(
+          `Veyloサーバー起動: 0.0.0.0:${PORT}`
+        );
+
+        console.log(
+          `環境: ${
+            process.env.NODE_ENV || "development"
+          }`
+        );
+
+      }
     );
 
-    console.log(
-      `環境: ${
-        process.env.NODE_ENV || "development"
-      }`
+  } catch (error) {
+
+    console.error(
+      "PostgreSQLへの接続に失敗しました:",
+      error
     );
+
+    process.exit(1);
 
   }
-);
+
+}
+
+startServer();
