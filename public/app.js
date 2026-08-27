@@ -1,3 +1,15 @@
+// ==================================================
+// Veylo - app.js
+// 現在のHTML専用・完成版
+// ==================================================
+
+"use strict";
+
+
+// ==================================================
+// Socket.IO
+// ==================================================
+
 const socket = io();
 
 
@@ -51,20 +63,22 @@ if (usernameInput) {
 
 
 // ==================================================
-// 入力欄サイズ
+// 入力欄の高さ調整
 // ==================================================
 
 function resizeInput() {
 
-  if (!input) return;
+  if (!input) {
+    return;
+  }
 
   input.style.height = "auto";
 
-  const newHeight =
+  const height =
     Math.min(input.scrollHeight, 180);
 
   input.style.height =
-    newHeight + "px";
+    height + "px";
 }
 
 
@@ -84,48 +98,94 @@ if (input) {
 
 if (form) {
 
-  form.addEventListener("submit", function (event) {
+  form.addEventListener(
+    "submit",
+    (event) => {
 
-    event.preventDefault();
+      event.preventDefault();
 
-    if (!input) {
-      console.error("input が見つかりません");
-      return;
-    }
-
-    const text = input.value.trim();
-
-    if (!text) {
-      return;
-    }
-
-    console.log("メッセージ送信:", {
-      room: currentRoom,
-      text: text,
-      username: username
-    });
-
-    socket.emit(
-      "chat message",
-      {
-        room: currentRoom,
-        text: text,
-        username: username
+      if (!input) {
+        console.error("Veylo: #input が見つかりません。");
+        return;
       }
-    );
 
-    input.value = "";
+      const text =
+        input.value.trim();
 
-    input.style.height = "50px";
+      if (!text) {
+        return;
+      }
 
-    input.focus();
+      if (!currentRoom) {
+        console.error("Veylo: 現在の部屋がありません。");
+        return;
+      }
 
-  });
+      console.log(
+        "メッセージ送信:",
+        {
+          room: currentRoom,
+          text: text,
+          username: username
+        }
+      );
+
+      socket.emit(
+        "chat message",
+        {
+          room: currentRoom,
+          text: text,
+          username: username
+        }
+      );
+
+      // 入力欄を空にする
+      input.value = "";
+
+      // 高さを初期化
+      input.style.height = "50px";
+
+      // フォーカス
+      input.focus();
+
+    }
+  );
 
 }
 
+
 // ==================================================
-// 日付・時刻を表示
+// Enterキー送信
+// Shift + Enter = 改行
+// ==================================================
+
+if (input) {
+
+  input.addEventListener(
+    "keydown",
+    (event) => {
+
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey
+      ) {
+
+        event.preventDefault();
+
+        if (form) {
+          form.requestSubmit();
+        }
+
+      }
+
+    }
+  );
+
+}
+
+
+// ==================================================
+// 時刻
 // ==================================================
 
 function formatMessageTime(dateValue) {
@@ -134,22 +194,26 @@ function formatMessageTime(dateValue) {
     return "";
   }
 
-
   const date =
     new Date(dateValue);
 
-
-  if (Number.isNaN(date.getTime())) {
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
     return "";
   }
 
-
   const hours =
-    String(date.getHours()).padStart(2, "0");
+    String(
+      date.getHours()
+    ).padStart(2, "0");
 
   const minutes =
-    String(date.getMinutes()).padStart(2, "0");
-
+    String(
+      date.getMinutes()
+    ).padStart(2, "0");
 
   return `${hours}:${minutes}`;
 }
@@ -165,9 +229,19 @@ function displayMessage(data) {
     return;
   }
 
+  // ------------------------------------------
+  // 別の部屋のコメントは表示しない
+  // ------------------------------------------
+
+  if (
+    data.room &&
+    data.room !== currentRoom
+  ) {
+    return;
+  }
 
   // ------------------------------------------
-  // すでに表示されているコメントなら無視
+  // 重複防止
   // ------------------------------------------
 
   if (data.id) {
@@ -183,36 +257,33 @@ function displayMessage(data) {
 
   }
 
-
   // ------------------------------------------
-  // 自分かどうか
+  // 自分のコメントか
   // ------------------------------------------
 
   const isMine =
-    data.username === username;
-
+    String(
+      data.username || "ゲスト"
+    ) === String(username);
 
   // ------------------------------------------
-  // 全体
+  // 外側
   // ------------------------------------------
 
   const wrapper =
     document.createElement("div");
-
 
   wrapper.className =
     isMine
       ? "message-wrapper mine"
       : "message-wrapper other";
 
-
   if (data.id) {
 
     wrapper.dataset.messageId =
-      data.id;
+      String(data.id);
 
   }
-
 
   // ------------------------------------------
   // 時刻
@@ -221,16 +292,13 @@ function displayMessage(data) {
   const time =
     document.createElement("div");
 
-
   time.className =
     "message-time";
-
 
   time.textContent =
     formatMessageTime(
       data.createdAt
     );
-
 
   // ------------------------------------------
   // ユーザー名
@@ -239,14 +307,11 @@ function displayMessage(data) {
   const name =
     document.createElement("div");
 
-
   name.className =
     "message-username";
 
-
   name.textContent =
     data.username || "ゲスト";
-
 
   // ------------------------------------------
   // 吹き出し
@@ -255,10 +320,8 @@ function displayMessage(data) {
   const bubble =
     document.createElement("div");
 
-
   bubble.className =
     "message-bubble";
-
 
   // ------------------------------------------
   // 本文
@@ -267,27 +330,19 @@ function displayMessage(data) {
   const text =
     document.createElement("div");
 
-
   text.className =
     "message-text";
-
 
   text.textContent =
     data.text || "";
 
-
   bubble.appendChild(text);
 
-
   wrapper.appendChild(time);
-
   wrapper.appendChild(name);
-
   wrapper.appendChild(bubble);
 
-
   messages.appendChild(wrapper);
-
 
   // ------------------------------------------
   // 一番下へ
@@ -299,7 +354,7 @@ function displayMessage(data) {
 
 
 // ==================================================
-// 部屋のコメントを全部表示
+// 部屋のコメント表示
 // ==================================================
 
 function displayRoomMessages(roomMessages) {
@@ -308,14 +363,13 @@ function displayRoomMessages(roomMessages) {
     return;
   }
 
-
   messages.innerHTML = "";
 
-
-  if (!Array.isArray(roomMessages)) {
+  if (
+    !Array.isArray(roomMessages)
+  ) {
     return;
   }
-
 
   roomMessages.forEach(
     (message) => {
@@ -324,7 +378,6 @@ function displayRoomMessages(roomMessages) {
 
     }
   );
-
 
   messages.scrollTop =
     messages.scrollHeight;
@@ -340,15 +393,21 @@ socket.on(
   "chat message",
   (data) => {
 
+    console.log(
+      "コメント受信:",
+      data
+    );
+
     if (!data) {
       return;
     }
 
-
-    if (data.room !== currentRoom) {
+    if (
+      data.room &&
+      data.room !== currentRoom
+    ) {
       return;
     }
-
 
     displayMessage(data);
 
@@ -369,7 +428,6 @@ socket.on(
       data
     );
 
-
     displayRoomMessages(data);
 
   }
@@ -377,7 +435,7 @@ socket.on(
 
 
 // ==================================================
-// 部屋のコメントを読み込む
+// 部屋コメント読み込み
 // ==================================================
 
 function loadRoomMessages(roomId) {
@@ -386,11 +444,9 @@ function loadRoomMessages(roomId) {
     return;
   }
 
-
   if (messages) {
     messages.innerHTML = "";
   }
-
 
   socket.emit(
     "load room messages",
@@ -401,7 +457,7 @@ function loadRoomMessages(roomId) {
 
 
 // ==================================================
-// 部屋ボタン
+// 部屋ボタン設定
 // ==================================================
 
 function setupRoomButton(button) {
@@ -410,25 +466,23 @@ function setupRoomButton(button) {
     return;
   }
 
-
   // 二重登録防止
-
-  if (button.dataset.listenerAttached === "true") {
+  if (
+    button.dataset.listenerAttached === "true"
+  ) {
     return;
   }
 
-
   button.dataset.listenerAttached =
     "true";
-
 
   button.addEventListener(
     "click",
     () => {
 
-      // ------------------------------------------
+      // ----------------------------------------
       // active解除
-      // ------------------------------------------
+      // ----------------------------------------
 
       document
         .querySelectorAll(".channel")
@@ -442,31 +496,29 @@ function setupRoomButton(button) {
           }
         );
 
-
-      // ------------------------------------------
+      // ----------------------------------------
       // active
-      // ------------------------------------------
+      // ----------------------------------------
 
-      button.classList.add("active");
+      button.classList.add(
+        "active"
+      );
 
-
-      // ------------------------------------------
+      // ----------------------------------------
       // 現在の部屋
-      // ------------------------------------------
+      // ----------------------------------------
 
       currentRoom =
-        button.dataset.room;
-
+        button.dataset.room || "casual";
 
       console.log(
         "部屋を移動:",
         currentRoom
       );
 
-
-      // ------------------------------------------
+      // ----------------------------------------
       // ヘッダー
-      // ------------------------------------------
+      // ----------------------------------------
 
       if (chatHeaderTitle) {
 
@@ -475,10 +527,9 @@ function setupRoomButton(button) {
 
       }
 
-
-      // ------------------------------------------
+      // ----------------------------------------
       // 部屋設定
-      // ------------------------------------------
+      // ----------------------------------------
 
       if (
         button.dataset.owner === "true"
@@ -492,11 +543,9 @@ function setupRoomButton(button) {
 
       }
 
-
-      // ------------------------------------------
-      // ★重要
-      // 部屋移動時に過去コメント取得
-      // ------------------------------------------
+      // ----------------------------------------
+      // コメント読み込み
+      // ----------------------------------------
 
       loadRoomMessages(
         currentRoom
@@ -523,11 +572,12 @@ if (casualRoom) {
   casualRoom.dataset.name =
     casualRoom.dataset.name || "雑談";
 
+  casualRoom.dataset.owner =
+    casualRoom.dataset.owner || "false";
 
   setupRoomButton(
     casualRoom
   );
-
 
   casualRoom.classList.add(
     "active"
@@ -580,22 +630,17 @@ if (createRoomButton) {
         return;
       }
 
-
       roomCreateModal.classList.add(
         "open"
       );
-
 
       if (roomNameInput) {
 
         roomNameInput.value = "";
 
-
         setTimeout(
           () => {
-
             roomNameInput.focus();
-
           },
           100
         );
@@ -617,7 +662,6 @@ function hideRoomCreateModal() {
   if (!roomCreateModal) {
     return;
   }
-
 
   roomCreateModal.classList.remove(
     "open"
@@ -706,10 +750,8 @@ function createRoom() {
     return;
   }
 
-
   const name =
     roomNameInput.value.trim();
-
 
   if (!name) {
 
@@ -718,7 +760,6 @@ function createRoom() {
     return;
 
   }
-
 
   socket.emit(
     "create room",
@@ -743,21 +784,18 @@ socket.on(
       room
     );
 
-
     if (!room || !roomList) {
       return;
     }
 
-
     let button =
       document.querySelector(
-        `[data-room="${room.id}"]`
+        `[data-room="${CSS.escape(room.id)}"]`
       );
 
-
-    // ------------------------------------------
+    // ----------------------------------------
     // 既に存在
-    // ------------------------------------------
+    // ----------------------------------------
 
     if (button) {
 
@@ -769,62 +807,47 @@ socket.on(
 
     }
 
-
-    // ------------------------------------------
+    // ----------------------------------------
     // 部屋ボタン作成
-    // ------------------------------------------
+    // ----------------------------------------
 
     button =
       document.createElement("button");
 
-
     button.type =
       "button";
-
 
     button.className =
       "channel";
 
-
     button.dataset.room =
       room.id;
-
 
     button.dataset.name =
       room.name;
 
-
     button.dataset.owner =
       "true";
-
 
     button.dataset.code =
       room.inviteCode ||
       room.code ||
       "";
 
-
     button.textContent =
       "# " + room.name;
-
 
     roomList.appendChild(
       button
     );
 
-
     setupRoomButton(
       button
     );
 
-
     hideRoomCreateModal();
 
-
-    // ------------------------------------------
     // 作成した部屋へ移動
-    // ------------------------------------------
-
     button.click();
 
   }
@@ -843,7 +866,6 @@ socket.on(
       "部屋作成エラー:",
       data
     );
-
 
     alert(
       data?.message ||
@@ -891,7 +913,7 @@ const confirmRoomJoin =
 
 
 // ==================================================
-// 参加モーダル
+// 参加モーダルを開く
 // ==================================================
 
 if (joinRoomButton) {
@@ -910,28 +932,22 @@ function openJoinModal() {
     return;
   }
 
-
   roomJoinModal.classList.add(
     "open"
   );
-
 
   if (roomInviteInput) {
 
     roomInviteInput.value = "";
 
-
     setTimeout(
       () => {
-
         roomInviteInput.focus();
-
       },
       100
     );
 
   }
-
 
   if (roomJoinError) {
 
@@ -943,7 +959,7 @@ function openJoinModal() {
 
 
 // ==================================================
-// 参加モーダル閉じる
+// 参加モーダルを閉じる
 // ==================================================
 
 function closeJoinModal() {
@@ -951,7 +967,6 @@ function closeJoinModal() {
   if (!roomJoinModal) {
     return;
   }
-
 
   roomJoinModal.classList.remove(
     "open"
@@ -1040,12 +1055,10 @@ function joinRoom() {
     return;
   }
 
-
   const code =
     roomInviteInput.value
       .trim()
       .toUpperCase();
-
 
   if (!code) {
 
@@ -1060,13 +1073,11 @@ function joinRoom() {
 
   }
 
-
   if (roomJoinError) {
 
     roomJoinError.textContent = "";
 
   }
-
 
   socket.emit(
     "join room",
@@ -1091,82 +1102,90 @@ socket.on(
       room
     );
 
-
     if (!room || !roomList) {
       return;
     }
 
-
     let button =
       document.querySelector(
-        `[data-room="${room.id}"]`
+        `[data-room="${CSS.escape(room.id)}"]`
       );
 
-
-    // ------------------------------------------
+    // ----------------------------------------
     // 部屋ボタンがない場合
-    // ------------------------------------------
+    // ----------------------------------------
 
     if (!button) {
 
       button =
         document.createElement("button");
 
-
       button.type =
         "button";
-
 
       button.className =
         "channel";
 
-
       button.dataset.room =
         room.id;
 
-
       button.dataset.name =
         room.name;
-
 
       button.dataset.owner =
         String(
           room.owner === socket.id
         );
 
+      button.dataset.code =
+        room.inviteCode ||
+        room.code ||
+        "";
+
+      button.textContent =
+        "# " + room.name;
+
+      roomList.appendChild(
+        button
+      );
+
+      setupRoomButton(
+        button
+      );
+
+    } else {
+
+      // ----------------------------------------
+      // 既存ボタンの情報を更新
+      // ----------------------------------------
+
+      button.dataset.name =
+        room.name;
+
+      button.dataset.owner =
+        String(
+          room.owner === socket.id
+        );
 
       button.dataset.code =
         room.inviteCode ||
         room.code ||
         "";
 
-
       button.textContent =
         "# " + room.name;
 
-
-      roomList.appendChild(
-        button
-      );
-
-
-      setupRoomButton(
-        button
-      );
-
     }
 
-
-    // ------------------------------------------
+    // ----------------------------------------
     // 部屋選択
-    // ------------------------------------------
+    // ----------------------------------------
 
     button.click();
 
-
-    // ------------------------------------------
+    // ----------------------------------------
     // モーダル閉じる
-    // ------------------------------------------
+    // ----------------------------------------
 
     closeJoinModal();
 
@@ -1187,13 +1206,11 @@ socket.on(
       data
     );
 
-
     const message =
       typeof data === "string"
         ? data
         : data?.message ||
           "部屋に参加できませんでした。";
-
 
     if (roomJoinError) {
 
@@ -1251,18 +1268,15 @@ const copyInviteCode =
 
 function showRoomSettings(button) {
 
-  if (!roomSettingsModal) {
+  if (!roomSettingsModal || !button) {
     return;
   }
-
 
   const name =
     button.dataset.name || "部屋";
 
-
   const code =
     button.dataset.code || "";
-
 
   if (roomSettingsTitle) {
 
@@ -1271,14 +1285,12 @@ function showRoomSettings(button) {
 
   }
 
-
   if (inviteCodeInput) {
 
     inviteCodeInput.value =
       code;
 
   }
-
 
   roomSettingsModal.classList.add(
     "open"
@@ -1296,7 +1308,6 @@ function hideRoomSettings() {
   if (!roomSettingsModal) {
     return;
   }
-
 
   roomSettingsModal.classList.remove(
     "open"
@@ -1358,11 +1369,9 @@ if (copyInviteCode) {
       const code =
         inviteCodeInput?.value || "";
 
-
       if (!code) {
         return;
       }
-
 
       try {
 
@@ -1370,10 +1379,8 @@ if (copyInviteCode) {
           code
         );
 
-
         copyInviteCode.textContent =
           "✅ コピーしました";
-
 
         setTimeout(
           () => {
@@ -1385,14 +1392,12 @@ if (copyInviteCode) {
           1500
         );
 
-
       } catch (error) {
 
         console.error(
           "コピー失敗:",
           error
         );
-
 
         alert(
           "コピーできませんでした。"
@@ -1440,7 +1445,6 @@ if (settingsButton) {
         return;
       }
 
-
       settingsPanel.classList.add(
         "open"
       );
@@ -1464,7 +1468,6 @@ if (closeSettings) {
       if (!settingsPanel) {
         return;
       }
-
 
       settingsPanel.classList.remove(
         "open"
@@ -1538,10 +1541,8 @@ function saveUsername() {
     return;
   }
 
-
   const newUsername =
     usernameInput.value.trim();
-
 
   if (!newUsername) {
 
@@ -1556,22 +1557,18 @@ function saveUsername() {
 
   }
 
-
   username =
     newUsername;
-
 
   localStorage.setItem(
     "username",
     username
   );
 
-
   if (usernameStatus) {
 
     usernameStatus.textContent =
       "✅ ユーザー名を保存しました";
-
 
     setTimeout(
       () => {
@@ -1608,15 +1605,12 @@ themeButtons.forEach(
         const theme =
           button.dataset.theme;
 
-
         if (!theme) {
           return;
         }
 
-
         document.body.dataset.theme =
           theme;
-
 
         localStorage.setItem(
           "theme",
@@ -1636,7 +1630,6 @@ themeButtons.forEach(
 
 const savedTheme =
   localStorage.getItem("theme") || "dark";
-
 
 document.body.dataset.theme =
   savedTheme;
@@ -1664,7 +1657,6 @@ const translations = {
       "メッセージを入力..."
 
   },
-
 
   en: {
 
@@ -1697,7 +1689,6 @@ function updateRoomNames(language) {
       ".channel"
     );
 
-
   rooms.forEach(
     (room) => {
 
@@ -1710,10 +1701,8 @@ function updateRoomNames(language) {
             ? "General"
             : "雑談";
 
-
         room.dataset.name =
           name;
-
 
         room.textContent =
           "# " + name;
@@ -1723,12 +1712,10 @@ function updateRoomNames(language) {
     }
   );
 
-
   const current =
     document.querySelector(
       ".channel.active"
     );
-
 
   if (
     current &&
@@ -1736,7 +1723,8 @@ function updateRoomNames(language) {
   ) {
 
     chatHeaderTitle.textContent =
-      current.dataset.name;
+      current.dataset.name ||
+      "雑談";
 
   }
 
@@ -1752,17 +1740,18 @@ function changeLanguage(language) {
   const t =
     translations[language];
 
-
   if (!t) {
     return;
   }
 
+  // ----------------------------------------
+  // ROOMS
+  // ----------------------------------------
 
   const channelTitle =
     document.querySelector(
       ".channel-title"
     );
-
 
   if (channelTitle) {
 
@@ -1771,6 +1760,9 @@ function changeLanguage(language) {
 
   }
 
+  // ----------------------------------------
+  // 設定ボタン
+  // ----------------------------------------
 
   if (settingsButton) {
 
@@ -1779,12 +1771,14 @@ function changeLanguage(language) {
 
   }
 
+  // ----------------------------------------
+  // 設定タイトル
+  // ----------------------------------------
 
   const settingsTitle =
     document.querySelector(
       ".settings-header h2"
     );
-
 
   if (settingsTitle) {
 
@@ -1793,12 +1787,14 @@ function changeLanguage(language) {
 
   }
 
+  // ----------------------------------------
+  // 設定セクション
+  // ----------------------------------------
 
   const sections =
     document.querySelectorAll(
       ".settings-section h3"
     );
-
 
   if (sections[1]) {
 
@@ -1807,7 +1803,6 @@ function changeLanguage(language) {
 
   }
 
-
   if (sections[2]) {
 
     sections[2].textContent =
@@ -1815,6 +1810,9 @@ function changeLanguage(language) {
 
   }
 
+  // ----------------------------------------
+  // 入力欄
+  // ----------------------------------------
 
   if (input) {
 
@@ -1823,12 +1821,14 @@ function changeLanguage(language) {
 
   }
 
+  // ----------------------------------------
+  // 送信ボタン
+  // ----------------------------------------
 
   const sendButton =
     document.querySelector(
-      "#form button"
+      "#form button[type='submit']"
     );
-
 
   if (sendButton) {
 
@@ -1837,6 +1837,9 @@ function changeLanguage(language) {
 
   }
 
+  // ----------------------------------------
+  // 部屋名
+  // ----------------------------------------
 
   updateRoomNames(
     language
@@ -1865,12 +1868,14 @@ languageButtons.forEach(
         const language =
           button.dataset.language;
 
+        if (!language) {
+          return;
+        }
 
         localStorage.setItem(
           "language",
           language
         );
-
 
         changeLanguage(
           language
@@ -1890,7 +1895,6 @@ languageButtons.forEach(
 const savedLanguage =
   localStorage.getItem("language") || "ja";
 
-
 changeLanguage(
   savedLanguage
 );
@@ -1909,22 +1913,17 @@ socket.on(
       socket.id
     );
 
-
-    // ==================================================
-    // ★重要
-    // 更新・再接続したとき
-    // 雑談の過去コメントを取得
-    // ==================================================
+    // ----------------------------------------
+    // 接続時は雑談へ
+    // ----------------------------------------
 
     currentRoom =
       "casual";
-
 
     const casual =
       document.querySelector(
         '[data-room="casual"]'
       );
-
 
     if (casual) {
 
@@ -1940,21 +1939,23 @@ socket.on(
           }
         );
 
-
       casual.classList.add(
         "active"
       );
 
-
       if (chatHeaderTitle) {
 
         chatHeaderTitle.textContent =
-          casual.dataset.name || "雑談";
+          casual.dataset.name ||
+          "雑談";
 
       }
 
     }
 
+    // ----------------------------------------
+    // 雑談コメント読み込み
+    // ----------------------------------------
 
     loadRoomMessages(
       "casual"
@@ -1970,11 +1971,38 @@ socket.on(
 
 socket.on(
   "disconnect",
-  () => {
+  (reason) => {
 
     console.log(
-      "Veylo Socket.IO disconnected"
+      "Veylo Socket.IO disconnected:",
+      reason
     );
 
   }
+);
+
+
+// ==================================================
+// Socket.IO 接続エラー
+// ==================================================
+
+socket.on(
+  "connect_error",
+  (error) => {
+
+    console.error(
+      "Veylo Socket.IO connection error:",
+      error
+    );
+
+  }
+);
+
+
+// ==================================================
+// 初期化完了
+// ==================================================
+
+console.log(
+  "Veylo app.js loaded successfully."
 );
