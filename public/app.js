@@ -1,4 +1,17 @@
 const socket = io();
+// 自分専用のID
+let userId = localStorage.getItem("veylo-user-id");
+
+if (!userId) {
+  userId =
+    "user-" +
+    crypto.randomUUID();
+
+  localStorage.setItem(
+    "veylo-user-id",
+    userId
+  );
+}
 
 
 // ==================================================
@@ -100,14 +113,15 @@ if (form) {
       }
 
 
-      socket.emit(
-        "chat message",
-        {
-          room: currentRoom,
-          text: message,
-          username: username
-        }
-      );
+     socket.emit(
+  "chat message",
+  {
+    room: currentRoom,
+    text: message,
+    username: username,
+    userId: userId
+  }
+);
 
 
       input.value = "";
@@ -131,36 +145,77 @@ function displayMessage(data) {
   if (!messages) return;
 
 
-  const div =
+  const wrapper =
     document.createElement("div");
 
-  div.className = "message";
+  // 自分かどうか
+  const isMine =
+    data.userId === userId;
 
+  wrapper.className =
+    isMine
+      ? "message-wrapper mine"
+      : "message-wrapper other";
+
+
+  // 時刻
+
+  const time =
+    document.createElement("div");
+
+  time.className =
+    "message-time";
+
+  const date =
+    new Date(data.createdAt || Date.now());
+
+  time.textContent =
+    date.toLocaleTimeString(
+      "ja-JP",
+      {
+        hour: "2-digit",
+        minute: "2-digit"
+      }
+    );
+
+
+  // 名前
 
   const name =
-    document.createElement("strong");
+    document.createElement("div");
+
+  name.className =
+    "message-name";
 
   name.textContent =
     data.username || "ゲスト";
 
 
-  const text =
-    document.createElement("p");
+  // 吹き出し
 
-  text.textContent =
+  const bubble =
+    document.createElement("div");
+
+  bubble.className =
+    "message-bubble";
+
+  bubble.textContent =
     data.text || "";
 
 
-  div.appendChild(name);
-  div.appendChild(text);
+  // 時刻 → 名前 → 吹き出し
 
-  messages.appendChild(div);
+  wrapper.appendChild(time);
+  wrapper.appendChild(name);
+  wrapper.appendChild(bubble);
+
+
+  messages.appendChild(wrapper);
 
 
   messages.scrollTop =
     messages.scrollHeight;
 }
-
 
 // ==================================================
 // メッセージ受信
