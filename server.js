@@ -62,6 +62,18 @@ app.get("/health", (req, res) => {
 // ==================================================
 
 async function initDatabase() {
+  const check = await pool.query(`
+  SELECT column_name
+  FROM information_schema.columns
+  WHERE table_name = 'messages'
+  ORDER BY ordinal_position
+`);
+
+console.log(
+  "★★★★★ messagesテーブルのカラム ★★★★★"
+);
+
+console.log(check.rows);
 
   // ------------------------------
   // 部屋テーブル
