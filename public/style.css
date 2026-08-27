@@ -1,27 +1,41 @@
+/* =========================================================
+   Veylo
+   完成版 CSS
+========================================================= */
+
+
+/* =========================================================
+   基本設定
+========================================================= */
+
 * {
   box-sizing: border-box;
 }
 
 html,
 body {
-  margin: 0;
   width: 100%;
   height: 100%;
+  margin: 0;
+}
+
+body {
   font-family:
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
+    "Noto Sans JP",
     sans-serif;
-}
 
-body {
   background: #0f1117;
   color: #f5f7fa;
+
+  overflow: hidden;
 }
 
 button,
-textarea,
-input {
+input,
+textarea {
   font-family: inherit;
 }
 
@@ -30,21 +44,26 @@ button {
   cursor: pointer;
 }
 
+
+/* =========================================================
+   アプリ全体
+========================================================= */
+
 .app {
   display: flex;
+
   width: 100%;
   height: 100vh;
+
   overflow: hidden;
 }
 
 
-/* ==================================================
-   SIDEBAR
-================================================== */
+/* =========================================================
+   サイドバー
+========================================================= */
 
 .sidebar {
-  position: relative;
-
   display: flex;
   flex-direction: column;
 
@@ -55,9 +74,14 @@ button {
 
   padding: 22px 14px;
 
-  background: #171a22;
+  background:
+    linear-gradient(
+      180deg,
+      #191c25 0%,
+      #151820 100%
+    );
 
-  border-right: 1px solid #272b35;
+  border-right: 1px solid #292e38;
 }
 
 .sidebar h1 {
@@ -66,15 +90,15 @@ button {
   color: #ffffff;
 
   font-size: 25px;
-  font-weight: 700;
+  font-weight: 800;
 
   letter-spacing: 1px;
 }
 
 
-/* ==================================================
-   ROOMS HEADER
-================================================== */
+/* =========================================================
+   Rooms ヘッダー
+========================================================= */
 
 .rooms-header {
   display: flex;
@@ -85,24 +109,25 @@ button {
 }
 
 .channel-title {
-  color: #858c9c;
+  color: #777f91;
 
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
 
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
 }
 
 .rooms-actions {
   display: flex;
   align-items: center;
-  gap: 5px;
+
+  gap: 4px;
 }
 
 
-/* ==================================================
-   CREATE / JOIN
-================================================== */
+/* =========================================================
+   部屋ボタン
+========================================================= */
 
 .create-room-button,
 .join-room-button {
@@ -110,40 +135,44 @@ button {
   align-items: center;
   justify-content: center;
 
-  width: 28px;
-  height: 28px;
+  width: 29px;
+  height: 29px;
 
   padding: 0;
 
-  border-radius: 7px;
+  border-radius: 8px;
 
   background: transparent;
 
-  color: #858c9c;
+  color: #858d9e;
 
-  font-size: 20px;
+  font-size: 19px;
 
-  transition: 0.15s;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .create-room-button:hover,
 .join-room-button:hover {
-  background: #292e3a;
+  background: #292e39;
+
   color: #ffffff;
 
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
 
-/* ==================================================
-   ROOM LIST
-================================================== */
+/* =========================================================
+   部屋一覧
+========================================================= */
 
 .room-list {
   display: flex;
   flex-direction: column;
 
-  gap: 3px;
+  gap: 4px;
 
   overflow-y: auto;
 }
@@ -153,70 +182,87 @@ button {
   align-items: center;
 
   width: 100%;
-  min-height: 40px;
+  min-height: 42px;
 
-  padding: 0 12px;
+  padding: 0 13px;
 
   border-radius: 9px;
 
   background: transparent;
 
-  color: #9da4b3;
-
-  text-align: left;
+  color: #9ca4b4;
 
   font-size: 14px;
 
-  transition: 0.15s;
+  text-align: left;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .channel:hover {
-  background: #222631;
+  background: #242934;
+
   color: #ffffff;
 }
 
 .channel.active {
-  background: #2b3040;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(108, 99, 255, 0.22),
+      rgba(118, 87, 232, 0.12)
+    );
+
   color: #ffffff;
+
+  box-shadow:
+    inset 2px 0 0 #7c83ff;
 }
 
 
-/* ==================================================
-   SETTINGS BUTTON
-================================================== */
+/* =========================================================
+   設定ボタン
+========================================================= */
 
 .settings-button {
   display: flex;
   align-items: center;
 
   width: 100%;
-  min-height: 42px;
+  min-height: 43px;
 
   margin-top: auto;
-  padding: 0 12px;
+
+  padding: 0 13px;
 
   border-radius: 9px;
 
   background: transparent;
 
-  color: #9da4b3;
-
-  text-align: left;
+  color: #969ead;
 
   font-size: 14px;
 
-  transition: 0.15s;
+  text-align: left;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .settings-button:hover {
-  background: #222631;
+  background: #242934;
+
   color: #ffffff;
 }
 
 
-/* ==================================================
-   CHAT
-================================================== */
+/* =========================================================
+   チャット全体
+========================================================= */
 
 .chat {
   display: flex;
@@ -227,50 +273,71 @@ button {
 
   height: 100vh;
 
-  background: #0f1117;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(92, 79, 190, 0.08),
+      transparent 35%
+    ),
+    #0f1117;
 }
 
 
-/* ==================================================
-   CHAT HEADER
-================================================== */
+/* =========================================================
+   チャットヘッダー
+========================================================= */
 
 .chat-header {
   display: flex;
   align-items: center;
 
-  height: 62px;
+  height: 64px;
 
   flex-shrink: 0;
 
-  padding: 0 24px;
+  padding: 0 25px;
 
-  background: #11141b;
+  background: rgba(17, 20, 27, 0.94);
 
-  border-bottom: 1px solid #272b35;
+  border-bottom: 1px solid #292e38;
+
+  backdrop-filter: blur(10px);
 }
 
 .chat-header span {
-  margin-right: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 27px;
+  height: 27px;
+
+  margin-right: 8px;
+
+  border-radius: 8px;
+
+  background: rgba(124, 131, 255, 0.12);
 
   color: #7c83ff;
 
-  font-size: 21px;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .chat-header strong {
   color: #f5f7fa;
 
   font-size: 15px;
+  font-weight: 700;
 }
 
 
-/* ==================================================
-   MESSAGE AREA
-================================================== */
+/* =========================================================
+   メッセージエリア
+========================================================= */
 
-#messages,
-.messages {
+.messages,
+#messages {
   display: flex;
   flex-direction: column;
 
@@ -278,36 +345,58 @@ button {
 
   min-height: 0;
 
-  gap: 14px;
+  gap: 13px;
+
+  padding: 24px 28px;
 
   overflow-y: auto;
-
-  padding: 22px 24px;
 
   scroll-behavior: smooth;
 }
 
 
-/* ==================================================
-   MESSAGE WRAPPER
-================================================== */
+/* =========================================================
+   スクロールバー
+========================================================= */
+
+#messages::-webkit-scrollbar {
+  width: 7px;
+}
+
+#messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#messages::-webkit-scrollbar-thumb {
+  background: rgba(150, 160, 180, 0.24);
+
+  border-radius: 20px;
+}
+
+#messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 160, 180, 0.42);
+}
+
+
+/* =========================================================
+   メッセージ全体
+========================================================= */
 
 .message-wrapper {
   display: flex;
   flex-direction: column;
 
   width: fit-content;
-  max-width: 78%;
+  max-width: min(75%, 720px);
 
-  margin: 0;
-
-  animation: messageAppear 0.2s ease-out;
+  animation:
+    messageAppear 0.22s ease-out;
 }
 
 
-/* ==================================================
-   MY MESSAGE → RIGHT
-================================================== */
+/* =========================================================
+   自分 → 右
+========================================================= */
 
 .message-wrapper.mine {
   align-self: flex-end;
@@ -316,9 +405,9 @@ button {
 }
 
 
-/* ==================================================
-   OTHER MESSAGE → LEFT
-================================================== */
+/* =========================================================
+   他人 → 左
+========================================================= */
 
 .message-wrapper.other {
   align-self: flex-start;
@@ -327,18 +416,19 @@ button {
 }
 
 
-/* ==================================================
-   TIME
-================================================== */
+/* =========================================================
+   時刻
+========================================================= */
 
 .message-time {
   margin-bottom: 3px;
 
-  padding: 0 6px;
+  padding: 0 7px;
 
-  color: #777f90;
+  color: #737b8c;
 
   font-size: 10px;
+  font-weight: 500;
 
   line-height: 1.2;
 
@@ -346,11 +436,12 @@ button {
 }
 
 
-/* ==================================================
-   USERNAME
-================================================== */
+/* =========================================================
+   ユーザー名
+========================================================= */
 
-.message-username {
+.message-username,
+.message-name {
   margin-bottom: 5px;
 
   padding: 0 7px;
@@ -364,32 +455,24 @@ button {
 }
 
 
-/* ==================================================
-   MY USERNAME
-================================================== */
+/* 自分の名前 */
 
-.message-wrapper.mine .message-username {
-  color: #aabaff;
+.message-wrapper.mine .message-username,
+.message-wrapper.mine .message-name {
+  color: #aebaff;
 }
 
 
-/* ==================================================
-   OTHER USERNAME
-================================================== */
-
-.message-wrapper.other .message-username {
-  color: #b8becb;
-}
-
-
-/* ==================================================
-   MESSAGE BUBBLE
-================================================== */
+/* =========================================================
+   吹き出し
+========================================================= */
 
 .message-bubble {
   position: relative;
 
-  padding: 10px 15px;
+  max-width: 100%;
+
+  padding: 11px 15px;
 
   border-radius: 18px;
 
@@ -398,11 +481,12 @@ button {
   line-height: 1.55;
 
   word-break: break-word;
+  overflow-wrap: anywhere;
 
   white-space: pre-wrap;
 
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.18);
+    0 5px 18px rgba(0, 0, 0, 0.18);
 
   transition:
     transform 0.15s ease,
@@ -410,42 +494,65 @@ button {
 }
 
 
-/* ==================================================
-   MY BUBBLE
-================================================== */
+/* =========================================================
+   他人の吹き出し
+========================================================= */
+
+.message-wrapper.other .message-bubble {
+  background:
+    linear-gradient(
+      145deg,
+      #292e3a,
+      #232731
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.055);
+
+  border-bottom-left-radius: 5px;
+
+  color: #f1f3f7;
+}
+
+
+/* =========================================================
+   自分の吹き出し
+========================================================= */
 
 .message-wrapper.mine .message-bubble {
   background:
     linear-gradient(
       135deg,
-      #5b7cfa,
-      #7657e8
+      #617cf6 0%,
+      #705be8 55%,
+      #8252df 100%
     );
+
+  border: 1px solid rgba(255, 255, 255, 0.10);
+
+  border-bottom-right-radius: 5px;
 
   color: #ffffff;
 
-  border-bottom-right-radius: 5px;
+  box-shadow:
+    0 6px 20px rgba(96, 82, 220, 0.25);
 }
 
 
-/* ==================================================
-   OTHER BUBBLE
-================================================== */
+/* =========================================================
+   吹き出しホバー
+========================================================= */
 
-.message-wrapper.other .message-bubble {
-  background: #252b38;
+.message-bubble:hover {
+  transform: translateY(-1px);
 
-  color: #f1f3f7;
-
-  border: 1px solid rgba(255, 255, 255, 0.06);
-
-  border-bottom-left-radius: 5px;
+  box-shadow:
+    0 8px 23px rgba(0, 0, 0, 0.24);
 }
 
 
-/* ==================================================
-   MESSAGE TEXT
-================================================== */
+/* =========================================================
+   コメント本文
+========================================================= */
 
 .message-text {
   white-space: pre-wrap;
@@ -454,121 +561,17 @@ button {
 }
 
 
-/* ==================================================
-   HOVER
-================================================== */
-
-.message-bubble:hover {
-  transform: translateY(-1px);
-
-  box-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.24);
-}
-
-
-/* ==================================================
-   MESSAGE FORM
-================================================== */
-
-.message-form {
-  flex-shrink: 0;
-
-  padding: 14px 24px 22px;
-
-  background: #0f1117;
-}
-
-.message-form form {
-  display: flex;
-  align-items: flex-end;
-
-  gap: 10px;
-
-  width: 100%;
-}
-
-.message-form textarea {
-  flex: 1;
-
-  min-width: 0;
-  min-height: 50px;
-  max-height: 180px;
-
-  padding: 13px 16px;
-
-  border: 1px solid #303642;
-  border-radius: 12px;
-
-  outline: none;
-
-  resize: none;
-
-  overflow-y: auto;
-
-  background: #191d26;
-
-  color: #ffffff;
-
-  font-size: 15px;
-
-  line-height: 1.5;
-
-  transition: 0.15s;
-}
-
-.message-form textarea:focus {
-  border-color: #7c83ff;
-
-  background: #1b1f29;
-
-  box-shadow:
-    0 0 0 2px rgba(124, 131, 255, 0.12);
-}
-
-.message-form textarea::placeholder {
-  color: #707887;
-}
-
-.message-form button {
-  flex-shrink: 0;
-
-  height: 50px;
-
-  padding: 0 20px;
-
-  border-radius: 12px;
-
-  background: #7c83ff;
-
-  color: #ffffff;
-
-  font-size: 14px;
-  font-weight: 600;
-
-  transition: 0.15s;
-}
-
-.message-form button:hover {
-  background: #6e76f2;
-
-  transform: translateY(-1px);
-
-  box-shadow:
-    0 5px 15px rgba(124, 131, 255, 0.25);
-}
-
-
-/* ==================================================
-   MESSAGE ANIMATION
-================================================== */
+/* =========================================================
+   メッセージ登場アニメーション
+========================================================= */
 
 @keyframes messageAppear {
   from {
     opacity: 0;
 
     transform:
-      translateY(6px)
-      scale(0.98);
+      translateY(7px)
+      scale(0.97);
   }
 
   to {
@@ -581,46 +584,154 @@ button {
 }
 
 
-/* ==================================================
-   SCROLLBAR
-================================================== */
+/* =========================================================
+   メッセージ入力エリア
+========================================================= */
 
-#messages::-webkit-scrollbar {
-  width: 6px;
-}
+.message-form {
+  flex-shrink: 0;
 
-#messages::-webkit-scrollbar-track {
-  background: transparent;
-}
+  padding: 13px 24px 22px;
 
-#messages::-webkit-scrollbar-thumb {
   background:
-    rgba(150, 160, 180, 0.25);
-
-  border-radius: 10px;
+    linear-gradient(
+      180deg,
+      rgba(15, 17, 23, 0.55),
+      #0f1117
+    );
 }
 
-#messages::-webkit-scrollbar-thumb:hover {
+.message-form form {
+  display: flex;
+  align-items: flex-end;
+
+  gap: 10px;
+
+  width: 100%;
+}
+
+
+/* =========================================================
+   テキスト入力
+========================================================= */
+
+.message-form textarea {
+  flex: 1;
+
+  min-width: 0;
+
+  min-height: 50px;
+  max-height: 180px;
+
+  padding: 13px 16px;
+
+  border: 1px solid #303642;
+  border-radius: 14px;
+
+  outline: none;
+
+  resize: none;
+
+  overflow-y: auto;
+
   background:
-    rgba(150, 160, 180, 0.4);
+    linear-gradient(
+      145deg,
+      #191d26,
+      #161a22
+    );
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+
+  transition:
+    border 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+.message-form textarea:focus {
+  border-color: #737bff;
+
+  background: #1b1f29;
+
+  box-shadow:
+    0 0 0 3px rgba(115, 123, 255, 0.10);
+}
+
+.message-form textarea::placeholder {
+  color: #707887;
 }
 
 
-/* ==================================================
-   COMMON MODAL
-================================================== */
+/* =========================================================
+   送信ボタン
+========================================================= */
+
+.message-form button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 50px;
+
+  padding: 0 20px;
+
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #697cff,
+      #7657e8
+    );
+
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  box-shadow:
+    0 5px 16px rgba(105, 92, 235, 0.22);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
+}
+
+.message-form button:hover {
+  transform: translateY(-1px);
+
+  filter: brightness(1.08);
+
+  box-shadow:
+    0 7px 20px rgba(105, 92, 235, 0.30);
+}
+
+.message-form button:active {
+  transform: translateY(1px);
+}
+
+
+/* =========================================================
+   モーダル共通
+========================================================= */
 
 .modal-close {
   display: flex;
   align-items: center;
   justify-content: center;
 
-  width: 34px;
-  height: 34px;
+  width: 35px;
+  height: 35px;
 
   padding: 0;
 
-  border-radius: 8px;
+  border-radius: 9px;
 
   background: transparent;
 
@@ -628,7 +739,9 @@ button {
 
   font-size: 25px;
 
-  transition: 0.15s;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .modal-close:hover {
@@ -638,9 +751,9 @@ button {
 }
 
 
-/* ==================================================
-   CREATE / SETTINGS MODAL
-================================================== */
+/* =========================================================
+   部屋作成・部屋設定モーダル
+========================================================= */
 
 .room-create-modal,
 .room-settings-modal {
@@ -655,9 +768,9 @@ button {
 
   padding: 20px;
 
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.66);
 
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(7px);
 
   z-index: 2000;
 }
@@ -667,6 +780,11 @@ button {
   display: flex;
 }
 
+
+/* =========================================================
+   モーダルBOX
+========================================================= */
+
 .room-create-box,
 .room-settings-box {
   width: 440px;
@@ -674,19 +792,25 @@ button {
 
   overflow: hidden;
 
-  background: #191c22;
+  background:
+    linear-gradient(
+      145deg,
+      #1c2029,
+      #171a21
+    );
 
   border: 1px solid #343943;
 
-  border-radius: 14px;
+  border-radius: 16px;
 
   box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.55);
+    0 25px 70px rgba(0, 0, 0, 0.55);
 }
 
-.room-settings-box {
-  width: 460px;
-}
+
+/* =========================================================
+   モーダルヘッダー
+========================================================= */
 
 .room-create-header,
 .room-settings-header {
@@ -696,6 +820,8 @@ button {
   justify-content: space-between;
 
   padding: 24px;
+
+  border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 
 .room-create-header h2,
@@ -718,9 +844,14 @@ button {
   line-height: 1.5;
 }
 
+
+/* =========================================================
+   モーダル本文
+========================================================= */
+
 .room-create-content,
 .room-settings-content {
-  padding: 0 24px 24px;
+  padding: 22px 24px 24px;
 }
 
 .room-create-content label,
@@ -731,11 +862,18 @@ button {
 
   color: #aeb4c0;
 
-  font-size: 12px;
-  font-weight: bold;
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 0.5px;
 
   text-transform: uppercase;
 }
+
+
+/* =========================================================
+   入力欄
+========================================================= */
 
 #room-name-input,
 #invite-code,
@@ -747,8 +885,7 @@ button {
   padding: 0 13px;
 
   border: 1px solid #343943;
-
-  border-radius: 8px;
+  border-radius: 9px;
 
   outline: none;
 
@@ -756,16 +893,19 @@ button {
 
   color: #ffffff;
 
-  font-size: 15px;
+  font-size: 14px;
+
+  transition:
+    border 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 #room-name-input:focus,
-#invite-code:focus,
 #room-invite-input:focus {
   border-color: #7c83ff;
 
   box-shadow:
-    0 0 0 1px #7c83ff;
+    0 0 0 3px rgba(124, 131, 255, 0.10);
 }
 
 #room-name-input::placeholder,
@@ -773,31 +913,42 @@ button {
   color: #777e8c;
 }
 
+
+/* =========================================================
+   モーダルフッター
+========================================================= */
+
 .room-create-footer,
 .room-settings-footer {
   display: flex;
 
-  justify-content: flex-end;
   align-items: center;
+  justify-content: flex-end;
 
   gap: 10px;
 
   padding: 16px 24px;
 
-  background: #15171c;
+  background: rgba(0,0,0,0.10);
+
+  border-top: 1px solid rgba(255,255,255,0.035);
 }
+
+
+/* =========================================================
+   キャンセル・確認ボタン
+========================================================= */
 
 .cancel-button,
 .confirm-button {
-  height: 38px;
+  height: 39px;
 
   padding: 0 18px;
 
-  border-radius: 7px;
+  border-radius: 8px;
 
-  font-size: 14px;
-
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .cancel-button {
@@ -807,23 +958,28 @@ button {
 }
 
 .cancel-button:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255,255,255,0.06);
 }
 
 .confirm-button {
-  background: #7c83ff;
+  background:
+    linear-gradient(
+      135deg,
+      #697cff,
+      #7657e8
+    );
 
   color: #ffffff;
 }
 
 .confirm-button:hover {
-  background: #6971ee;
+  filter: brightness(1.08);
 }
 
 
-/* ==================================================
-   INVITE CODE
-================================================== */
+/* =========================================================
+   招待コード
+========================================================= */
 
 .invite-code-row {
   display: flex;
@@ -837,6 +993,8 @@ button {
   min-width: 0;
 
   font-family: monospace;
+
+  letter-spacing: 1px;
 }
 
 .copy-code-button {
@@ -844,17 +1002,23 @@ button {
 
   padding: 0 14px;
 
-  border-radius: 8px;
+  border-radius: 9px;
 
-  background: #7c83ff;
+  background:
+    linear-gradient(
+      135deg,
+      #697cff,
+      #7657e8
+    );
 
   color: #ffffff;
 
-  font-weight: bold;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .copy-code-button:hover {
-  background: #6971ee;
+  filter: brightness(1.08);
 }
 
 .room-setting-description {
@@ -868,9 +1032,9 @@ button {
 }
 
 
-/* ==================================================
-   JOIN ROOM
-================================================== */
+/* =========================================================
+   部屋参加モーダル
+========================================================= */
 
 .room-join-modal {
   position: fixed;
@@ -884,14 +1048,13 @@ button {
 
   padding: 20px;
 
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0,0,0,0.66);
 
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(7px);
 
   z-index: 2100;
 
   opacity: 0;
-
   visibility: hidden;
 
   transition:
@@ -911,12 +1074,17 @@ button {
 
   overflow: hidden;
 
-  background: #313338;
+  background:
+    linear-gradient(
+      145deg,
+      #31343b,
+      #292c32
+    );
 
-  border-radius: 12px;
+  border-radius: 15px;
 
   box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.45);
+    0 25px 70px rgba(0,0,0,0.5);
 
   transform:
     translateY(10px)
@@ -968,8 +1136,8 @@ button {
 
   color: #b5bac1;
 
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
 
   text-transform: uppercase;
 }
@@ -984,7 +1152,7 @@ button {
 
   padding: 16px 24px;
 
-  background: #2b2d31;
+  background: rgba(0,0,0,0.12);
 }
 
 .room-join-error {
@@ -998,9 +1166,9 @@ button {
 }
 
 
-/* ==================================================
-   SETTINGS
-================================================== */
+/* =========================================================
+   設定パネル
+========================================================= */
 
 .settings-panel {
   position: fixed;
@@ -1014,7 +1182,7 @@ button {
 
   padding: 20px;
 
-  background: rgba(5, 7, 12, 0.65);
+  background: rgba(5, 7, 12, 0.68);
 
   backdrop-filter: blur(8px);
 
@@ -1025,6 +1193,11 @@ button {
   display: flex;
 }
 
+
+/* =========================================================
+   設定カード
+========================================================= */
+
 .settings-card {
   width: 420px;
   max-width: 100%;
@@ -1032,15 +1205,25 @@ button {
 
   overflow-y: auto;
 
-  background: #191d26;
+  background:
+    linear-gradient(
+      145deg,
+      #1c2029,
+      #171a21
+    );
 
   border: 1px solid #303642;
 
   border-radius: 18px;
 
   box-shadow:
-    0 25px 70px rgba(0, 0, 0, 0.55);
+    0 25px 70px rgba(0,0,0,0.55);
 }
+
+
+/* =========================================================
+   設定ヘッダー
+========================================================= */
 
 .settings-header {
   display: flex;
@@ -1069,6 +1252,11 @@ button {
   font-size: 13px;
 }
 
+
+/* =========================================================
+   設定セクション
+========================================================= */
+
 .settings-section {
   padding: 20px 24px 4px;
 }
@@ -1078,9 +1266,9 @@ button {
 }
 
 .settings-section h3 {
-  margin: 0 0 12px;
+  margin: 0 0 13px;
 
-  color: #9da4b3;
+  color: #aab1c0;
 
   font-size: 12px;
 }
@@ -1095,6 +1283,11 @@ button {
   font-size: 12px;
 }
 
+
+/* =========================================================
+   ユーザー名
+========================================================= */
+
 #username-input {
   width: 100%;
 
@@ -1103,8 +1296,7 @@ button {
   padding: 0 12px;
 
   border: 1px solid #303642;
-
-  border-radius: 8px;
+  border-radius: 9px;
 
   outline: none;
 
@@ -1117,6 +1309,9 @@ button {
 
 #username-input:focus {
   border-color: #7c83ff;
+
+  box-shadow:
+    0 0 0 3px rgba(124,131,255,0.08);
 }
 
 .save-username {
@@ -1128,15 +1323,21 @@ button {
 
   border-radius: 8px;
 
-  background: #7c83ff;
+  background:
+    linear-gradient(
+      135deg,
+      #697cff,
+      #7657e8
+    );
 
-  color: white;
+  color: #ffffff;
 
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .save-username:hover {
-  background: #6971ee;
+  filter: brightness(1.08);
 }
 
 .setting-description {
@@ -1146,6 +1347,11 @@ button {
 
   font-size: 12px;
 }
+
+
+/* =========================================================
+   テーマ・言語ボタン
+========================================================= */
 
 .theme-button,
 .language-button {
@@ -1171,14 +1377,17 @@ button {
 
   text-align: left;
 
-  transition: 0.15s;
+  transition:
+    background 0.15s ease,
+    border 0.15s ease,
+    transform 0.15s ease;
 }
 
 .theme-button:hover,
 .language-button:hover {
   background: #272c37;
 
-  border-color: #7c83ff;
+  border-color: #737bff;
 
   transform: translateY(-1px);
 }
@@ -1186,7 +1395,6 @@ button {
 .theme-button > span,
 .language-button > span {
   display: flex;
-
   align-items: center;
   justify-content: center;
 
@@ -1226,9 +1434,39 @@ button {
 }
 
 
-/* ==================================================
+/* =========================================================
+   設定閉じるボタン
+========================================================= */
+
+.close-settings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 35px;
+  height: 35px;
+
+  padding: 0;
+
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #858c9c;
+
+  font-size: 25px;
+}
+
+.close-settings:hover {
+  background: #292e38;
+
+  color: #ffffff;
+}
+
+
+/* =========================================================
    LIGHT THEME
-================================================== */
+========================================================= */
 
 body[data-theme="light"] {
   background: #f4f6fa;
@@ -1237,7 +1475,12 @@ body[data-theme="light"] {
 }
 
 body[data-theme="light"] .sidebar {
-  background: #ffffff;
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f8f9fb
+    );
 
   border-right-color: #e2e5eb;
 }
@@ -1273,9 +1516,17 @@ body[data-theme="light"] .channel:hover {
 }
 
 body[data-theme="light"] .channel.active {
-  background: #e8eaf0;
+  background:
+    linear-gradient(
+      90deg,
+      #e9eaff,
+      #f2f2ff
+    );
 
-  color: #20232a;
+  color: #3034a0;
+
+  box-shadow:
+    inset 2px 0 0 #6d72e9;
 }
 
 body[data-theme="light"] .settings-button {
@@ -1288,12 +1539,21 @@ body[data-theme="light"] .settings-button:hover {
   color: #20232a;
 }
 
+
+/* チャット */
+
 body[data-theme="light"] .chat {
-  background: #f4f6fa;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(108, 99, 255, 0.07),
+      transparent 35%
+    ),
+    #f4f6fa;
 }
 
 body[data-theme="light"] .chat-header {
-  background: #ffffff;
+  background: rgba(255,255,255,0.92);
 
   border-bottom-color: #e2e5eb;
 }
@@ -1303,27 +1563,42 @@ body[data-theme="light"] .chat-header strong {
 }
 
 body[data-theme="light"] .message-time {
-  color: #8a909c;
+  color: #858b98;
+}
+
+body[data-theme="light"] .message-username,
+body[data-theme="light"] .message-name {
+  color: #6e7480;
+}
+
+body[data-theme="light"] .message-wrapper.mine .message-username,
+body[data-theme="light"] .message-wrapper.mine .message-name {
+  color: #6570c9;
 }
 
 body[data-theme="light"] .message-wrapper.other .message-bubble {
-  background: #e7e9ee;
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #f3f4f7
+    );
 
-  color: #20232a;
+  border-color: #e1e4e9;
 
-  border-color: #d9dce3;
-}
+  color: #30343c;
 
-body[data-theme="light"] .message-wrapper.other .message-username {
-  color: #626a77;
-}
-
-body[data-theme="light"] .message-wrapper.mine .message-bubble {
-  color: #ffffff;
+  box-shadow:
+    0 4px 15px rgba(40,45,60,0.08);
 }
 
 body[data-theme="light"] .message-form {
-  background: #f4f6fa;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(244,246,250,0.55),
+      #f4f6fa
+    );
 }
 
 body[data-theme="light"] .message-form textarea {
@@ -1334,8 +1609,22 @@ body[data-theme="light"] .message-form textarea {
   border-color: #d7dbe3;
 }
 
-body[data-theme="light"] .settings-card {
+body[data-theme="light"] .message-form textarea:focus {
   background: #ffffff;
+}
+
+
+/* 設定 */
+
+body[data-theme="light"] .settings-card,
+body[data-theme="light"] .room-create-box,
+body[data-theme="light"] .room-settings-box {
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #f8f9fb
+    );
 
   border-color: #dfe3e9;
 }
@@ -1344,17 +1633,24 @@ body[data-theme="light"] .settings-header {
   border-bottom-color: #e5e7eb;
 }
 
-body[data-theme="light"] .settings-header h2 {
+body[data-theme="light"] .settings-header h2,
+body[data-theme="light"] .room-create-header h2,
+body[data-theme="light"] .room-settings-header h2 {
   color: #20232a;
 }
 
 body[data-theme="light"] .settings-header p,
 body[data-theme="light"] .settings-section h3,
-body[data-theme="light"] .settings-section > label {
+body[data-theme="light"] .settings-section > label,
+body[data-theme="light"] .room-create-header p,
+body[data-theme="light"] .room-settings-header p {
   color: #707784;
 }
 
-body[data-theme="light"] #username-input {
+body[data-theme="light"] #username-input,
+body[data-theme="light"] #room-name-input,
+body[data-theme="light"] #invite-code,
+body[data-theme="light"] #room-invite-input {
   background: #f5f6f8;
 
   color: #20232a;
@@ -1381,32 +1677,6 @@ body[data-theme="light"] .language-button small {
   color: #7a818d;
 }
 
-body[data-theme="light"] .room-create-box,
-body[data-theme="light"] .room-settings-box {
-  background: #ffffff;
-
-  border-color: #d5d9df;
-}
-
-body[data-theme="light"] .room-create-header h2,
-body[data-theme="light"] .room-settings-header h2 {
-  color: #20232a;
-}
-
-body[data-theme="light"] .room-create-header p,
-body[data-theme="light"] .room-settings-header p {
-  color: #6b7280;
-}
-
-body[data-theme="light"] #room-name-input,
-body[data-theme="light"] #invite-code {
-  background: #f5f6f8;
-
-  color: #20232a;
-
-  border-color: #d5d9df;
-}
-
 body[data-theme="light"] .room-create-footer,
 body[data-theme="light"] .room-settings-footer {
   background: #f5f6f8;
@@ -1425,18 +1695,10 @@ body[data-theme="light"] .room-join-content label {
   color: #6b7280;
 }
 
-body[data-theme="light"] #room-invite-input {
-  background: #f5f6f8;
 
-  color: #20232a;
-
-  border-color: #d5d9df;
-}
-
-
-/* ==================================================
+/* =========================================================
    GRAY THEME
-================================================== */
+========================================================= */
 
 body[data-theme="gray"] {
   background: #292c32;
@@ -1445,7 +1707,12 @@ body[data-theme="gray"] {
 }
 
 body[data-theme="gray"] .sidebar {
-  background: #30343b;
+  background:
+    linear-gradient(
+      180deg,
+      #33373e,
+      #2d3036
+    );
 
   border-right-color: #41454d;
 }
@@ -1456,10 +1723,19 @@ body[data-theme="gray"] .channel:hover {
 
 body[data-theme="gray"] .channel.active {
   background: #41464f;
+
+  box-shadow:
+    inset 2px 0 0 #8c91ff;
 }
 
 body[data-theme="gray"] .chat {
-  background: #292c32;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(120,120,180,0.07),
+      transparent 35%
+    ),
+    #292c32;
 }
 
 body[data-theme="gray"] .chat-header {
@@ -1469,13 +1745,14 @@ body[data-theme="gray"] .chat-header {
 }
 
 body[data-theme="gray"] .message-wrapper.other .message-bubble {
-  background: #383d45;
+  background:
+    linear-gradient(
+      145deg,
+      #3a3e46,
+      #34383f
+    );
 
-  color: #eeeeee;
-}
-
-body[data-theme="gray"] .message-wrapper.other .message-username {
-  color: #c3c7cd;
+  border-color: #484d55;
 }
 
 body[data-theme="gray"] .message-form {
@@ -1491,7 +1768,12 @@ body[data-theme="gray"] .message-form textarea {
 body[data-theme="gray"] .settings-card,
 body[data-theme="gray"] .room-create-box,
 body[data-theme="gray"] .room-settings-box {
-  background: #30343b;
+  background:
+    linear-gradient(
+      145deg,
+      #34383f,
+      #2e3238
+    );
 
   border-color: #454a53;
 }
@@ -1504,9 +1786,9 @@ body[data-theme="gray"] .language-button {
 }
 
 
-/* ==================================================
-   MOBILE
-================================================== */
+/* =========================================================
+   スマホ
+========================================================= */
 
 @media (max-width: 700px) {
 
@@ -1522,30 +1804,53 @@ body[data-theme="gray"] .language-button {
     font-size: 22px;
   }
 
-  #messages,
-  .messages {
+  .messages,
+  #messages {
     padding: 18px 14px;
+
+    gap: 11px;
   }
 
   .message-wrapper {
-    max-width: 84%;
+    max-width: 82%;
   }
 
   .message-form {
     padding: 10px 12px 14px;
   }
 
-  .message-form button {
-    padding: 0 15px;
+  .message-form textarea {
+    min-height: 48px;
   }
 
+  .message-form button {
+    height: 48px;
+
+    padding: 0 15px;
+  }
 }
 
+
+/* =========================================================
+   小さいスマホ
+========================================================= */
 
 @media (max-width: 520px) {
 
   .sidebar {
-    width: 170px;
+    width: 165px;
+  }
+
+  .chat-header {
+    height: 58px;
+
+    padding: 0 16px;
+  }
+
+  .messages,
+  #messages {
+    padding:
+      14px 9px;
   }
 
   .message-wrapper {
@@ -1556,6 +1861,17 @@ body[data-theme="gray"] .language-button {
     padding: 9px 12px;
 
     font-size: 14px;
+
+    border-radius: 16px;
+  }
+
+  .message-time {
+    font-size: 9px;
+  }
+
+  .message-username,
+  .message-name {
+    font-size: 10px;
   }
 
   .message-form button {
@@ -1571,5 +1887,28 @@ body[data-theme="gray"] .language-button {
 
     font-size: 17px;
   }
+}
 
+
+/* =========================================================
+   さらに小さい画面
+========================================================= */
+
+@media (max-width: 400px) {
+
+  .sidebar {
+    width: 145px;
+  }
+
+  .sidebar h1 {
+    font-size: 20px;
+  }
+
+  .channel {
+    font-size: 13px;
+  }
+
+  .message-wrapper {
+    max-width: 91%;
+  }
 }
