@@ -134,22 +134,20 @@ body {
    メイン
 ========================================== */
 
-.main {
+..main {
   width: 100%;
 
   max-width: 900px;
 
   margin: 0 auto;
 
-  padding:
-    16px 20px;
+  padding: 24px 20px;
 
   display: flex;
 
   flex-direction: column;
 
-  height:
-    calc(100vh - 64px);
+  height: calc(100vh - 64px);
 }
 
 /* ==========================================
@@ -234,6 +232,8 @@ body {
   box-shadow:
     0 4px 18px
     rgba(30, 40, 70, 0.04);
+
+  min-height: 520px;
 }
 
 .messages {
