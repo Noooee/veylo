@@ -521,3 +521,119 @@ body {
   }
 
 }
+
+/* ==========================================
+   設定
+========================================== */
+
+.settings-box {
+  max-width: 420px;
+}
+
+.settings-label {
+  display: block;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  color: #626b7f;
+
+  margin-bottom: 6px;
+}
+
+.settings-item {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-top: 20px;
+
+  padding: 14px 0;
+
+  border-top:
+    1px solid #e7eaf0;
+}
+
+.toggle-button {
+  border: none;
+
+  min-width: 60px;
+
+  padding: 8px 14px;
+
+  border-radius: 20px;
+
+  background: #eef0f4;
+
+  color: #596174;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.settings-button {
+  background: #f1f3f8;
+
+  color: #5865f2;
+}
+
+.settings-button:hover {
+  background: #e5e8f2;
+}
+
+
+/* ==========================================
+   ダークモード
+========================================== */
+
+body.dark-mode {
+  background: #111827;
+
+  color: #f3f4f6;
+}
+
+body.dark-mode .header {
+  background: #1f2937;
+
+  border-color: #374151;
+}
+
+body.dark-mode .chat-container {
+  background: #1f2937;
+
+  border-color: #374151;
+}
+
+body.dark-mode .message-text {
+  background: #374151;
+
+  color: #f3f4f6;
+}
+
+body.dark-mode .message-form input,
+body.dark-mode .modal-box,
+body.dark-mode .invite-area {
+  background: #1f2937;
+
+  color: #f3f4f6;
+
+  border-color: #374151;
+}
+
+body.dark-mode .settings-item {
+  border-color: #374151;
+}
+
+body.dark-mode .settings-label {
+  color: #9ca3af;
+}
+
+body.dark-mode .settings-button {
+  background: #374151;
+
+  color: #a5b4fc;
+}
