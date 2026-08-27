@@ -232,7 +232,7 @@ try {
   // 招待コードで部屋に参加
   // ==================================================
 
-  socket.on("join room", (data) => {
+  socket.on("join room", async (data) => {
 
     const code =
       String(
@@ -260,11 +260,40 @@ try {
 
     // 招待コードから部屋を探す
 
-    const room =
-      Object.values(rooms).find(
-        (room) =>
-          room.inviteCode === code
-      );
+    const result = await pool.query(
+  `
+  SELECT
+    id,
+    name,
+    invite_code,
+    owner
+  FROM rooms
+  WHERE invite_code = $1
+  `,
+  [code]
+);
+
+if (result.rows.length === 0) {
+
+  socket.emit(
+    "join room error",
+    {
+      message:
+        "招待コードが正しくありません。"
+    }
+  );
+
+  return;
+}
+
+const dbRoom = result.rows[0];
+
+const room = {
+  id: dbRoom.id,
+  name: dbRoom.name,
+  inviteCode: dbRoom.invite_code,
+  owner: dbRoom.owner
+};
 
 
     // 部屋が存在しない
