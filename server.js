@@ -112,14 +112,23 @@ console.log(check.rows);
   // ------------------------------
 
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS messages (
-      id SERIAL PRIMARY KEY,
-      room_id TEXT NOT NULL,
-      username TEXT NOT NULL,
-      text TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+  CREATE TABLE IF NOT EXISTS messages (
+    id SERIAL PRIMARY KEY,
+    room_id TEXT,
+    username TEXT NOT NULL,
+    text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+  　// ------------------------------
+// room_id が存在しない古いDBにも追加
+// ------------------------------
+
+await pool.query(`
+  ALTER TABLE messages
+  ADD COLUMN IF NOT EXISTS room_id TEXT
+`);
 
 
   // ------------------------------
