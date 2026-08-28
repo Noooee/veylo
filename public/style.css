@@ -428,29 +428,28 @@ select {
 }
 
 
-/* ==================================================
-   メッセージ
-================================================== */
+/* ==========================================
+   メッセージ一覧
+   → 一番下の編集・削除ボタンまで
+      しっかり表示できるようにする
+========================================== */
 
-.message {
-  margin-bottom: 19px;
+.messages {
+  height: 100%;
 
-  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
 
-  animation:
-    messageIn 0.18s ease;
+  padding: 24px;
+
+  /* 一番下に余裕を作る */
+  padding-bottom: 60px;
+
+  scroll-behavior: smooth;
+
+  /* スクロールバー分も含めて計算 */
+  scrollbar-gutter: stable;
 }
-
-@keyframes messageIn {
-
-  from {
-    opacity: 0;
-
-    transform:
-      translateY(5px)
-      scale(0.99);
-  }
-
   to {
     opacity: 1;
 
@@ -1703,9 +1702,16 @@ body.gray-mode {
   }
 
   .messages {
-    padding:
-      16px;
-  }
+  padding: 16px;
+
+  /* 一番下の操作ボタンが切れないようにする */
+  padding-bottom: 55px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-gutter: stable;
+}
 
 
   /* メッセージ */
