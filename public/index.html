@@ -33,28 +33,40 @@
 
     <div class="header-actions">
 
-  <button
-    id="casualRoomButton"
-    class="header-button secondary"
-  >
-    💬 雑談
-  </button>
+      <button
+        id="casualRoomButton"
+        class="header-button secondary"
+        type="button"
+      >
+        💬 雑談
+      </button>
 
-  <button
-    id="createRoomButton"
-    class="header-button"
-  >
-    ＋ 部屋を作る
-  </button>
+      <button
+        id="createRoomButton"
+        class="header-button"
+        type="button"
+      >
+        ＋ 部屋を作る
+      </button>
 
-  <button
-    id="joinRoomButton"
-    class="header-button secondary"
-  >
-    🔑 参加
-  </button>
+      <button
+        id="joinRoomButton"
+        class="header-button secondary"
+        type="button"
+      >
+        🔑 参加
+      </button>
 
-</div>
+      <button
+        id="settingsButton"
+        class="header-button secondary"
+        type="button"
+      >
+        ⚙️
+      </button>
+
+    </div>
+
   </header>
 
 
@@ -63,6 +75,7 @@
   =========================================== -->
 
   <main class="main">
+
 
     <!-- ========================================
          部屋情報
@@ -81,6 +94,7 @@
         </h1>
 
       </div>
+
 
       <div
         id="inviteArea"
@@ -111,7 +125,65 @@
         class="messages"
       ></div>
 
+
+      <!-- ======================================
+           上へ / 下へ
+      ======================================= -->
+
+      <div class="scroll-buttons">
+
+        <button
+          id="scrollTopButton"
+          type="button"
+          class="scroll-button"
+          title="一番上へ"
+        >
+          ↑
+        </button>
+
+        <button
+          id="scrollBottomButton"
+          type="button"
+          class="scroll-button"
+          title="一番下へ"
+        >
+          ↓
+        </button>
+
+      </div>
+
     </section>
+
+
+    <!-- ========================================
+         返信中表示
+    ========================================= -->
+
+    <div
+      id="replyPreview"
+      class="reply-preview hidden"
+    >
+
+      <div>
+
+        <strong>
+          ↩️ 返信中
+        </strong>
+
+        <span id="replyPreviewText">
+        </span>
+
+      </div>
+
+      <button
+        id="cancelReplyButton"
+        type="button"
+        class="reply-cancel-button"
+      >
+        ×
+      </button>
+
+    </div>
 
 
     <!-- ========================================
