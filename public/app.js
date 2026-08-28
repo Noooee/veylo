@@ -16,6 +16,45 @@ const socket = io();
 // DOM
 // ==================================================
 
+const scrollTopButton =
+  document.getElementById("scrollTopButton");
+
+const scrollBottomButton =
+  document.getElementById("scrollBottomButton");
+
+// ==================================================
+// チャットを一番上へ
+// ==================================================
+
+scrollTopButton.addEventListener(
+  "click",
+  () => {
+
+    messages.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+
+  }
+);
+
+
+// ==================================================
+// チャットを一番下へ
+// ==================================================
+
+scrollBottomButton.addEventListener(
+  "click",
+  () => {
+
+    messages.scrollTo({
+      top: messages.scrollHeight,
+      behavior: "smooth"
+    });
+
+  }
+);
+
 const messages =
   document.getElementById("messages");
 
