@@ -79,6 +79,7 @@ async function prepareDatabase() {
       "PostgreSQL: テーブル準備完了"
     );
 
+
   } catch (error) {
 
     console.error(
@@ -103,7 +104,7 @@ async function deleteOldMessages() {
       await pool.query(`
         DELETE FROM messages
         WHERE created_at <
-          NOW() - INTERVAL '24 hours'
+        NOW() - INTERVAL '24 hours'
       `);
 
 
@@ -114,6 +115,7 @@ async function deleteOldMessages() {
       );
 
     }
+
 
   } catch (error) {
 
@@ -128,23 +130,14 @@ async function deleteOldMessages() {
 
 
 // ==================================================
-// データベース準備完了後の処理
+// データベース準備後に古いコメント削除
 // ==================================================
 
-prepareDatabase()
-  .then(() => {
+prepareDatabase().then(() => {
 
-    return deleteOldMessages();
+  deleteOldMessages();
 
-  })
-  .catch((error) => {
-
-    console.error(
-      "初期データベース処理エラー:",
-      error
-    );
-
-  });
+});
 
 
 // ==================================================
@@ -165,6 +158,21 @@ const rooms = {};
 
 
 // ==================================================
+// メッセージ所有者
+//
+// messageOwners
+//
+// {
+//   "123": "socket-id"
+// }
+//
+// という形で管理します。
+// ==================================================
+
+const messageOwners = new Map();
+
+
+// ==================================================
 // ユーザー接続
 // ==================================================
 
@@ -182,31 +190,11 @@ io.on("connection", (socket) => {
 
   socket.join("casual");
 
+
   console.log(
     "casualルームへ参加:",
     socket.id
   );
-
-
-  // ==================================================
-  // 現在の部屋を取得
-  // ==================================================
-
-  function getCurrentRoom() {
-
-    for (const roomName of socket.rooms) {
-
-      if (roomName !== socket.id) {
-
-        return roomName;
-
-      }
-
-    }
-
-    return "casual";
-
-  }
 
 
   // ==================================================
@@ -291,7 +279,7 @@ io.on("connection", (socket) => {
 
 
   // ==================================================
-  // 最初に雑談の過去コメントを取得
+  // 接続時に雑談の過去コメントを取得
   // ==================================================
 
   sendRoomMessages("casual");
@@ -329,13 +317,11 @@ io.on("connection", (socket) => {
       const username =
         String(
           msg.username || "ゲスト"
-        ).trim() || "ゲスト";
+        ).trim();
 
 
       const text =
-        String(
-          msg.text
-        ).trim();
+        String(msg.text).trim();
 
 
       if (!text) {
@@ -395,6 +381,16 @@ io.on("connection", (socket) => {
         };
 
 
+        // ==================================================
+        // このコメントの所有者を記録
+        // ==================================================
+
+        messageOwners.set(
+          String(saved.id),
+          socket.id
+        );
+
+
         console.log(
           "コメント保存成功:",
           messageData
@@ -414,7 +410,7 @@ io.on("connection", (socket) => {
       } catch (error) {
 
         console.error(
-          "メッセージ保存エラー:",
+          "❌ メッセージ保存エラー:",
           error
         );
 
@@ -425,7 +421,7 @@ io.on("connection", (socket) => {
 
 
   // ==================================================
-  // コメント編集
+  // メッセージ編集
   // ==================================================
 
   socket.on(
@@ -450,8 +446,9 @@ io.on("connection", (socket) => {
 
 
         if (
-          !Number.isInteger(messageId) ||
-          messageId <= 0
+          !Number.isInteger(
+            messageId
+          )
         ) {
 
           return;
@@ -475,66 +472,18 @@ io.on("connection", (socket) => {
 
 
         // ==================================================
-        // 編集対象コメントを取得
+        // メッセージ所有者確認
         // ==================================================
 
-        const result =
-          await pool.query(
-            `
-            SELECT
-              id,
-              room,
-              username,
-              text,
-              created_at
-            FROM messages
-            WHERE id = $1
-            AND created_at >=
-              NOW() - INTERVAL '24 hours'
-            `,
-            [messageId]
+        const owner =
+          messageOwners.get(
+            String(messageId)
           );
 
 
         if (
-          result.rows.length === 0
-        ) {
-
-          socket.emit(
-            "message edit error",
-            {
-              message:
-                "コメントが見つかりません。"
-            }
-          );
-
-          return;
-
-        }
-
-
-        const message =
-          result.rows[0];
-
-
-        // ==================================================
-        // 編集できるのは自分のコメントだけ
-        //
-        // サーバー側では
-        // socketに保存したユーザー名を使わず、
-        // クライアントから送られた username と
-        // コメントの username を比較する。
-        // ==================================================
-
-        const username =
-          String(
-            data.username || ""
-          ).trim();
-
-
-        if (
-          !username ||
-          username !== message.username
+          owner &&
+          owner !== socket.id
         ) {
 
           socket.emit(
@@ -551,10 +500,122 @@ io.on("connection", (socket) => {
 
 
         // ==================================================
-        // PostgreSQL更新
+        // DBからコメント取得
         // ==================================================
 
-        const updateResult =
+        const existingResult =
+          await pool.query(
+            `
+            SELECT
+              id,
+              room,
+              username,
+              text,
+              created_at
+            FROM messages
+            WHERE id = $1
+            `,
+            [messageId]
+          );
+
+
+        if (
+          existingResult.rows.length === 0
+        ) {
+
+          socket.emit(
+            "message edit error",
+            {
+              message:
+                "コメントが見つかりません。"
+            }
+          );
+
+          return;
+
+        }
+
+
+        const existing =
+          existingResult.rows[0];
+
+
+        // ==================================================
+        // 所有者情報がまだない場合
+        //
+        // 再起動後などは username を
+        // 現在のユーザー名と照合
+        // ==================================================
+
+        if (!owner) {
+
+          const currentUsername =
+            String(
+              data.username || ""
+            ).trim();
+
+
+          if (
+            !currentUsername ||
+            currentUsername !==
+              existing.username
+          ) {
+
+            socket.emit(
+              "message edit error",
+              {
+                message:
+                  "自分のコメントだけ編集できます。"
+              }
+            );
+
+            return;
+
+          }
+
+
+          messageOwners.set(
+            String(messageId),
+            socket.id
+          );
+
+        }
+
+
+        // ==================================================
+        // 24時間を過ぎていたら編集不可
+        // ==================================================
+
+        const createdTime =
+          new Date(
+            existing.created_at
+          ).getTime();
+
+
+        if (
+          !Number.isNaN(createdTime) &&
+          Date.now() - createdTime >=
+            24 * 60 * 60 * 1000
+        ) {
+
+          socket.emit(
+            "message edit error",
+            {
+              message:
+                "24時間を過ぎたコメントは編集できません。"
+            }
+          );
+
+          return;
+
+        }
+
+
+        // ==================================================
+        // 更新
+        // ==================================================
+
+        const result =
           await pool.query(
             `
             UPDATE messages
@@ -575,7 +636,7 @@ io.on("connection", (socket) => {
 
 
         const updated =
-          updateResult.rows[0];
+          result.rows[0];
 
 
         const messageData = {
@@ -593,23 +654,28 @@ io.on("connection", (socket) => {
             updated.text,
 
           createdAt:
-            updated.created_at
+            updated.created_at,
+
+          edited:
+            true
 
         };
 
 
-        console.log(
-          "コメント編集:",
+        // ==================================================
+        // 部屋全体へ通知
+        // ==================================================
+
+        io.to(
+          updated.room
+        ).emit(
+          "message edited",
           messageData
         );
 
 
-        // ==================================================
-        // 部屋全員へ編集通知
-        // ==================================================
-
-        io.to(message.room).emit(
-          "message edited",
+        console.log(
+          "コメント編集:",
           messageData
         );
 
@@ -621,15 +687,6 @@ io.on("connection", (socket) => {
           error
         );
 
-
-        socket.emit(
-          "message edit error",
-          {
-            message:
-              "コメントの編集に失敗しました。"
-          }
-        );
-
       }
 
     }
@@ -637,7 +694,7 @@ io.on("connection", (socket) => {
 
 
   // ==================================================
-  // コメント削除
+  // メッセージ削除
   // ==================================================
 
   socket.on(
@@ -656,8 +713,9 @@ io.on("connection", (socket) => {
 
 
         if (
-          !Number.isInteger(messageId) ||
-          messageId <= 0
+          !Number.isInteger(
+            messageId
+          )
         ) {
 
           return;
@@ -666,61 +724,18 @@ io.on("connection", (socket) => {
 
 
         // ==================================================
-        // 削除対象コメント取得
+        // 所有者確認
         // ==================================================
 
-        const result =
-          await pool.query(
-            `
-            SELECT
-              id,
-              room,
-              username,
-              text,
-              created_at
-            FROM messages
-            WHERE id = $1
-            AND created_at >=
-              NOW() - INTERVAL '24 hours'
-            `,
-            [messageId]
+        const owner =
+          messageOwners.get(
+            String(messageId)
           );
 
 
         if (
-          result.rows.length === 0
-        ) {
-
-          socket.emit(
-            "message delete error",
-            {
-              message:
-                "コメントが見つかりません。"
-            }
-          );
-
-          return;
-
-        }
-
-
-        const message =
-          result.rows[0];
-
-
-        // ==================================================
-        // 自分のコメントだけ削除可能
-        // ==================================================
-
-        const username =
-          String(
-            data.username || ""
-          ).trim();
-
-
-        if (
-          !username ||
-          username !== message.username
+          owner &&
+          owner !== socket.id
         ) {
 
           socket.emit(
@@ -737,7 +752,115 @@ io.on("connection", (socket) => {
 
 
         // ==================================================
-        // PostgreSQLから削除
+        // DBからコメント取得
+        // ==================================================
+
+        const existingResult =
+          await pool.query(
+            `
+            SELECT
+              id,
+              room,
+              username,
+              created_at
+            FROM messages
+            WHERE id = $1
+            `,
+            [messageId]
+          );
+
+
+        if (
+          existingResult.rows.length === 0
+        ) {
+
+          socket.emit(
+            "message delete error",
+            {
+              message:
+                "コメントが見つかりません。"
+            }
+          );
+
+          return;
+
+        }
+
+
+        const existing =
+          existingResult.rows[0];
+
+
+        // ==================================================
+        // 所有者情報がない場合
+        // ==================================================
+
+        if (!owner) {
+
+          const currentUsername =
+            String(
+              data.username || ""
+            ).trim();
+
+
+          if (
+            !currentUsername ||
+            currentUsername !==
+              existing.username
+          ) {
+
+            socket.emit(
+              "message delete error",
+              {
+                message:
+                  "自分のコメントだけ削除できます。"
+              }
+            );
+
+            return;
+
+          }
+
+
+          messageOwners.set(
+            String(messageId),
+            socket.id
+          );
+
+        }
+
+
+        // ==================================================
+        // 24時間を過ぎたコメント
+        // ==================================================
+
+        const createdTime =
+          new Date(
+            existing.created_at
+          ).getTime();
+
+
+        if (
+          !Number.isNaN(createdTime) &&
+          Date.now() - createdTime >=
+            24 * 60 * 60 * 1000
+        ) {
+
+          socket.emit(
+            "message delete error",
+            {
+              message:
+                "24時間を過ぎたコメントは削除済みです。"
+            }
+          );
+
+          return;
+
+        }
+
+
+        // ==================================================
+        // DBから削除
         // ==================================================
 
         await pool.query(
@@ -749,25 +872,36 @@ io.on("connection", (socket) => {
         );
 
 
-        console.log(
-          "コメント削除:",
-          messageId
+        // ==================================================
+        // 所有者情報も削除
+        // ==================================================
+
+        messageOwners.delete(
+          String(messageId)
         );
 
 
         // ==================================================
-        // 部屋全員へ削除通知
+        // 部屋全体へ通知
         // ==================================================
 
-        io.to(message.room).emit(
+        io.to(
+          existing.room
+        ).emit(
           "message deleted",
           {
             id:
-              message.id,
+              messageId,
 
             room:
-              message.room
+              existing.room
           }
+        );
+
+
+        console.log(
+          "コメント削除:",
+          messageId
         );
 
 
@@ -776,15 +910,6 @@ io.on("connection", (socket) => {
         console.error(
           "コメント削除エラー:",
           error
-        );
-
-
-        socket.emit(
-          "message delete error",
-          {
-            message:
-              "コメントの削除に失敗しました。"
-          }
         );
 
       }
@@ -803,10 +928,6 @@ io.on("connection", (socket) => {
 
       try {
 
-        // ==================================================
-        // 現在いる部屋から退出
-        // ==================================================
-
         for (
           const roomName of socket.rooms
         ) {
@@ -816,7 +937,9 @@ io.on("connection", (socket) => {
             roomName !== "casual"
           ) {
 
-            socket.leave(roomName);
+            socket.leave(
+              roomName
+            );
 
           }
 
@@ -856,10 +979,15 @@ io.on("connection", (socket) => {
 
   socket.on(
     "create room",
-    async (data) => {
+    (data) => {
 
-      if (!data || !data.name) {
+      if (
+        !data ||
+        !data.name
+      ) {
+
         return;
+
       }
 
 
@@ -894,7 +1022,10 @@ io.on("connection", (socket) => {
       const inviteCode =
         Math.random()
           .toString(36)
-          .substring(2, 10)
+          .substring(
+            2,
+            10
+          )
           .toUpperCase();
 
 
@@ -919,38 +1050,26 @@ io.on("connection", (socket) => {
       };
 
 
-      // ==================================================
-      // 保存
-      // ==================================================
-
       rooms[roomId] =
         room;
 
 
       // ==================================================
-      // 雑談など現在の部屋から退出
+      // 雑談から退出
       // ==================================================
 
-      for (
-        const joinedRoom of socket.rooms
-      ) {
-
-        if (
-          joinedRoom !== socket.id
-        ) {
-
-          socket.leave(joinedRoom);
-
-        }
-
-      }
+      socket.leave(
+        "casual"
+      );
 
 
       // ==================================================
       // 作成した部屋へ参加
       // ==================================================
 
-      socket.join(roomId);
+      socket.join(
+        roomId
+      );
 
 
       console.log(
@@ -970,10 +1089,10 @@ io.on("connection", (socket) => {
 
 
       // ==================================================
-      // 新しい部屋の過去コメント
+      // 作成した部屋の過去コメント
       // ==================================================
 
-      await sendRoomMessages(
+      sendRoomMessages(
         roomId
       );
 
@@ -997,10 +1116,6 @@ io.on("connection", (socket) => {
           .toUpperCase();
 
 
-      // ==================================================
-      // コードが空
-      // ==================================================
-
       if (!code) {
 
         socket.emit(
@@ -1016,20 +1131,15 @@ io.on("connection", (socket) => {
       }
 
 
-      // ==================================================
-      // 招待コードから部屋を探す
-      // ==================================================
-
       const room =
-        Object.values(rooms).find(
+        Object.values(
+          rooms
+        ).find(
           (room) =>
-            room.inviteCode === code
+            room.inviteCode ===
+            code
         );
 
-
-      // ==================================================
-      // 部屋が存在しない
-      // ==================================================
 
       if (!room) {
 
@@ -1058,7 +1168,9 @@ io.on("connection", (socket) => {
           roomName !== socket.id
         ) {
 
-          socket.leave(roomName);
+          socket.leave(
+            roomName
+          );
 
         }
 
@@ -1069,7 +1181,9 @@ io.on("connection", (socket) => {
       // 新しい部屋へ参加
       // ==================================================
 
-      socket.join(room.id);
+      socket.join(
+        room.id
+      );
 
 
       console.log(
@@ -1080,7 +1194,7 @@ io.on("connection", (socket) => {
 
 
       // ==================================================
-      // 参加した本人へ通知
+      // 本人へ通知
       // ==================================================
 
       socket.emit(
@@ -1113,6 +1227,34 @@ io.on("connection", (socket) => {
         "ユーザーが退出しました:",
         socket.id
       );
+
+
+      // ==================================================
+      // 切断したユーザーが所有する
+      // メッセージ所有情報を削除
+      //
+      // DBのコメント自体は残します。
+      // ==================================================
+
+      for (
+        const [
+          messageId,
+          ownerSocketId
+        ] of messageOwners
+      ) {
+
+        if (
+          ownerSocketId ===
+          socket.id
+        ) {
+
+          messageOwners.delete(
+            messageId
+          );
+
+        }
+
+      }
 
     }
   );
