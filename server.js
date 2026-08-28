@@ -66,7 +66,7 @@ async function prepareDatabase() {
   try {
 
     // ==================================================
-    // messagesテーブル作成
+    // messagesテーブル
     // ==================================================
 
     await pool.query(`
@@ -81,14 +81,15 @@ async function prepareDatabase() {
 
 
     // ==================================================
-    // 返信先IDを追加
+    // 返信先ID
     //
-    // 既に存在している場合は何もしません。
+    // 既存データベースにも追加できるように
+    // IF NOT EXISTS を使用
     // ==================================================
 
     await pool.query(`
       ALTER TABLE messages
-      ADD COLUMN IF NOT EXISTS reply_to INTEGER
+      ADD COLUMN IF NOT EXISTS reply_to_id INTEGER
     `);
 
 
@@ -176,16 +177,10 @@ const rooms = {};
 
 // ==================================================
 // メッセージ所有者
-//
-// messageOwners
-//
-// {
-//   "123": "socket-id"
-// }
-//
 // ==================================================
 
-const messageOwners = new Map();
+const messageOwners =
+  new Map();
 
 
 // ==================================================
@@ -236,7 +231,7 @@ io.on("connection", (socket) => {
             username,
             text,
             created_at,
-            reply_to
+            reply_to_id
           FROM messages
           WHERE room = $1
           AND created_at >=
@@ -266,8 +261,8 @@ io.on("connection", (socket) => {
             createdAt:
               row.created_at,
 
-            replyTo:
-              row.reply_to || null
+            replyToId:
+              row.reply_to_id
 
           })
         );
@@ -355,27 +350,29 @@ io.on("connection", (socket) => {
       // 返信先
       // ==================================================
 
-      let replyTo = null;
+      let replyToId = null;
 
 
       if (
-        msg.replyTo !== null &&
-        msg.replyTo !== undefined &&
-        msg.replyTo !== ""
+        msg.replyToId !== undefined &&
+        msg.replyToId !== null &&
+        msg.replyToId !== ""
       ) {
 
-        const parsedReplyTo =
-          Number(msg.replyTo);
+        const parsedReplyId =
+          Number(
+            msg.replyToId
+          );
 
 
         if (
           Number.isInteger(
-            parsedReplyTo
+            parsedReplyId
           )
         ) {
 
-          replyTo =
-            parsedReplyTo;
+          replyToId =
+            parsedReplyId;
 
         }
 
@@ -385,10 +382,10 @@ io.on("connection", (socket) => {
       try {
 
         // ==================================================
-        // 返信先コメントの存在確認
+        // 返信先コメントの確認
         // ==================================================
 
-        if (replyTo !== null) {
+        if (replyToId !== null) {
 
           const replyResult =
             await pool.query(
@@ -402,7 +399,7 @@ io.on("connection", (socket) => {
               FROM messages
               WHERE id = $1
               `,
-              [replyTo]
+              [replyToId]
             );
 
 
@@ -411,7 +408,7 @@ io.on("connection", (socket) => {
           ) {
 
             socket.emit(
-              "message error",
+              "message send error",
               {
                 message:
                   "返信先のコメントが見つかりません。"
@@ -428,7 +425,7 @@ io.on("connection", (socket) => {
 
 
           // ==================================================
-          // 別の部屋のコメントには返信できない
+          // 別の部屋への返信を防止
           // ==================================================
 
           if (
@@ -437,10 +434,10 @@ io.on("connection", (socket) => {
           ) {
 
             socket.emit(
-              "message error",
+              "message send error",
               {
                 message:
-                  "別の部屋のコメントには返信できません。"
+                  "返信先のコメントが正しくありません。"
               }
             );
 
@@ -450,7 +447,7 @@ io.on("connection", (socket) => {
 
 
           // ==================================================
-          // 返信先が24時間を過ぎていたら不可
+          // 返信先が24時間を超えている場合
           // ==================================================
 
           const replyCreatedTime =
@@ -469,7 +466,7 @@ io.on("connection", (socket) => {
           ) {
 
             socket.emit(
-              "message error",
+              "message send error",
               {
                 message:
                   "24時間を過ぎたコメントには返信できません。"
@@ -495,7 +492,7 @@ io.on("connection", (socket) => {
                 room,
                 username,
                 text,
-                reply_to
+                reply_to_id
               )
             VALUES
               (
@@ -510,13 +507,13 @@ io.on("connection", (socket) => {
               username,
               text,
               created_at,
-              reply_to
+              reply_to_id
             `,
             [
               msg.room,
               username,
               text,
-              replyTo
+              replyToId
             ]
           );
 
@@ -542,8 +539,8 @@ io.on("connection", (socket) => {
           createdAt:
             saved.created_at,
 
-          replyTo:
-            saved.reply_to || null
+          replyToId:
+            saved.reply_to_id
 
         };
 
@@ -553,7 +550,9 @@ io.on("connection", (socket) => {
         // ==================================================
 
         messageOwners.set(
-          String(saved.id),
+          String(
+            saved.id
+          ),
           socket.id
         );
 
@@ -605,7 +604,9 @@ io.on("connection", (socket) => {
 
 
         const messageId =
-          Number(data.id);
+          Number(
+            data.id
+          );
 
 
         const newText =
@@ -641,12 +642,14 @@ io.on("connection", (socket) => {
 
 
         // ==================================================
-        // メッセージ所有者確認
+        // 所有者確認
         // ==================================================
 
         const owner =
           messageOwners.get(
-            String(messageId)
+            String(
+              messageId
+            )
           );
 
 
@@ -681,7 +684,7 @@ io.on("connection", (socket) => {
               username,
               text,
               created_at,
-              reply_to
+              reply_to_id
             FROM messages
             WHERE id = $1
             `,
@@ -711,7 +714,7 @@ io.on("connection", (socket) => {
 
 
         // ==================================================
-        // 所有者情報がまだない場合
+        // 所有者情報がない場合
         // ==================================================
 
         if (!owner) {
@@ -742,7 +745,9 @@ io.on("connection", (socket) => {
 
 
           messageOwners.set(
-            String(messageId),
+            String(
+              messageId
+            ),
             socket.id
           );
 
@@ -750,7 +755,7 @@ io.on("connection", (socket) => {
 
 
         // ==================================================
-        // 24時間を過ぎていたら編集不可
+        // 24時間チェック
         // ==================================================
 
         const createdTime =
@@ -760,7 +765,9 @@ io.on("connection", (socket) => {
 
 
         if (
-          !Number.isNaN(createdTime) &&
+          !Number.isNaN(
+            createdTime
+          ) &&
           Date.now() -
             createdTime >=
             24 * 60 * 60 * 1000
@@ -795,7 +802,7 @@ io.on("connection", (socket) => {
               username,
               text,
               created_at,
-              reply_to
+              reply_to_id
             `,
             [
               newText,
@@ -825,18 +832,14 @@ io.on("connection", (socket) => {
           createdAt:
             updated.created_at,
 
-          replyTo:
-            updated.reply_to || null,
+          replyToId:
+            updated.reply_to_id,
 
           edited:
             true
 
         };
 
-
-        // ==================================================
-        // 部屋全体へ通知
-        // ==================================================
 
         io.to(
           updated.room
@@ -881,7 +884,9 @@ io.on("connection", (socket) => {
 
 
         const messageId =
-          Number(data.id);
+          Number(
+            data.id
+          );
 
 
         if (
@@ -901,7 +906,9 @@ io.on("connection", (socket) => {
 
         const owner =
           messageOwners.get(
-            String(messageId)
+            String(
+              messageId
+            )
           );
 
 
@@ -995,7 +1002,9 @@ io.on("connection", (socket) => {
 
 
           messageOwners.set(
-            String(messageId),
+            String(
+              messageId
+            ),
             socket.id
           );
 
@@ -1003,7 +1012,7 @@ io.on("connection", (socket) => {
 
 
         // ==================================================
-        // 24時間を過ぎたコメント
+        // 24時間チェック
         // ==================================================
 
         const createdTime =
@@ -1013,7 +1022,9 @@ io.on("connection", (socket) => {
 
 
         if (
-          !Number.isNaN(createdTime) &&
+          !Number.isNaN(
+            createdTime
+          ) &&
           Date.now() -
             createdTime >=
             24 * 60 * 60 * 1000
@@ -1046,11 +1057,13 @@ io.on("connection", (socket) => {
 
 
         // ==================================================
-        // 所有者情報も削除
+        // 所有者情報削除
         // ==================================================
 
         messageOwners.delete(
-          String(messageId)
+          String(
+            messageId
+          )
         );
 
 
@@ -1119,7 +1132,9 @@ io.on("connection", (socket) => {
         }
 
 
-        socket.join("casual");
+        socket.join(
+          "casual"
+        );
 
 
         console.log(
@@ -1175,10 +1190,6 @@ io.on("connection", (socket) => {
       }
 
 
-      // ==================================================
-      // 部屋ID
-      // ==================================================
-
       const roomId =
         "room-" +
         Date.now() +
@@ -1187,10 +1198,6 @@ io.on("connection", (socket) => {
           Math.random() * 100000
         );
 
-
-      // ==================================================
-      // 招待コード
-      // ==================================================
 
       const inviteCode =
         Math.random()
@@ -1201,10 +1208,6 @@ io.on("connection", (socket) => {
           )
           .toUpperCase();
 
-
-      // ==================================================
-      // 部屋情報
-      // ==================================================
 
       const room = {
 
@@ -1227,18 +1230,10 @@ io.on("connection", (socket) => {
         room;
 
 
-      // ==================================================
-      // 雑談から退出
-      // ==================================================
-
       socket.leave(
         "casual"
       );
 
-
-      // ==================================================
-      // 作成した部屋へ参加
-      // ==================================================
 
       socket.join(
         roomId
@@ -1251,19 +1246,11 @@ io.on("connection", (socket) => {
       );
 
 
-      // ==================================================
-      // 作成者へ通知
-      // ==================================================
-
       socket.emit(
         "room created",
         room
       );
 
-
-      // ==================================================
-      // 作成した部屋の過去コメント
-      // ==================================================
 
       sendRoomMessages(
         roomId
@@ -1329,10 +1316,6 @@ io.on("connection", (socket) => {
       }
 
 
-      // ==================================================
-      // 現在の部屋から退出
-      // ==================================================
-
       for (
         const roomName of socket.rooms
       ) {
@@ -1350,10 +1333,6 @@ io.on("connection", (socket) => {
       }
 
 
-      // ==================================================
-      // 新しい部屋へ参加
-      // ==================================================
-
       socket.join(
         room.id
       );
@@ -1366,19 +1345,11 @@ io.on("connection", (socket) => {
       );
 
 
-      // ==================================================
-      // 本人へ通知
-      // ==================================================
-
       socket.emit(
         "room joined",
         room
       );
 
-
-      // ==================================================
-      // 過去コメント取得
-      // ==================================================
 
       await sendRoomMessages(
         room.id
@@ -1401,13 +1372,6 @@ io.on("connection", (socket) => {
         socket.id
       );
 
-
-      // ==================================================
-      // 切断したユーザーが所有する
-      // メッセージ所有情報を削除
-      //
-      // DBのコメント自体は残します。
-      // ==================================================
 
       for (
         const [
