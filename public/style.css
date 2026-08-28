@@ -1,12 +1,12 @@
-/* ==================================================
+/* ==========================================
    Veylo style.css
-   Modern / Discord-inspired
-================================================== */
+   Discord風・返信対応版
+========================================== */
 
 
-/* ==================================================
+/* ==========================================
    基本設定
-================================================== */
+========================================== */
 
 * {
   box-sizing: border-box;
@@ -16,7 +16,6 @@ html,
 body {
   margin: 0;
   padding: 0;
-
   width: 100%;
   height: 100%;
 }
@@ -26,76 +25,27 @@ body {
     -apple-system,
     BlinkMacSystemFont,
     "Segoe UI",
-    Roboto,
-    Helvetica,
-    Arial,
     sans-serif;
 
   background:
-    radial-gradient(
-      circle at 20% 0%,
-      rgba(88, 101, 242, 0.08),
-      transparent 35%
-    ),
-    radial-gradient(
-      circle at 100% 100%,
-      rgba(124, 92, 255, 0.07),
-      transparent 35%
-    ),
-    #f5f7fb;
+    linear-gradient(
+      135deg,
+      #f5f7fb 0%,
+      #eef1ff 50%,
+      #f8f9fd 100%
+    );
 
   color: #172033;
 
   transition:
-    background 0.3s ease,
-    color 0.3s ease;
-
-  overflow: hidden;
-}
-
-button,
-input,
-select {
-  font-family: inherit;
+    background 0.25s ease,
+    color 0.25s ease;
 }
 
 
-/* ==================================================
-   スクロールバー
-================================================== */
-
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background:
-    linear-gradient(
-      180deg,
-      #5865f2,
-      #7c5cff
-    );
-
-  border-radius: 999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background:
-    linear-gradient(
-      180deg,
-      #4752c4,
-      #6948e8
-    );
-}
-
-
-/* ==================================================
+/* ==========================================
    ヘッダー
-================================================== */
+========================================== */
 
 .header {
   height: 64px;
@@ -103,12 +53,12 @@ select {
   background:
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.97),
-      rgba(248, 249, 255, 0.97)
+      #ffffff,
+      #f8f9ff
     );
 
   border-bottom:
-    1px solid rgba(224, 227, 238, 0.9);
+    1px solid #e5e8f0;
 
   display: flex;
 
@@ -123,20 +73,12 @@ select {
 
   top: 0;
 
-  z-index: 10;
+  z-index: 50;
 
   box-shadow:
-    0 4px 18px
-    rgba(40, 50, 90, 0.05);
-
-  backdrop-filter:
-    blur(14px);
+    0 4px 20px
+    rgba(50, 60, 100, 0.05);
 }
-
-
-/* ==================================================
-   ロゴ
-================================================== */
 
 .logo {
   font-size: 25px;
@@ -149,22 +91,14 @@ select {
     linear-gradient(
       135deg,
       #5865f2,
-      #7c5cff 55%,
-      #9c6cff
+      #8b5cf6
     );
 
   -webkit-background-clip: text;
   background-clip: text;
 
   color: transparent;
-
-  user-select: none;
 }
-
-
-/* ==================================================
-   ヘッダー操作
-================================================== */
 
 .header-actions {
   display: flex;
@@ -181,7 +115,7 @@ select {
     linear-gradient(
       135deg,
       #5865f2,
-      #705cf5
+      #6875ff
     );
 
   color: white;
@@ -197,85 +131,45 @@ select {
 
   cursor: pointer;
 
-  box-shadow:
-    0 5px 14px
-    rgba(88, 101, 242, 0.22);
-
   transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    filter 0.18s ease;
+    background 0.2s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
 }
 
 .header-button:hover {
-  transform:
-    translateY(-2px);
+  background:
+    linear-gradient(
+      135deg,
+      #4752c4,
+      #5865f2
+    );
 
-  filter:
-    brightness(1.05);
+  transform:
+    translateY(-1px);
 
   box-shadow:
-    0 8px 20px
-    rgba(88, 101, 242, 0.30);
-}
-
-.header-button:active {
-  transform:
-    translateY(0);
+    0 5px 14px
+    rgba(88, 101, 242, 0.22);
 }
 
 .header-button.secondary {
   background:
-    linear-gradient(
-      135deg,
-      #f0f1ff,
-      #e8eaff
-    );
+    #eef0ff;
 
-  color: #5865f2;
-
-  box-shadow:
-    0 3px 10px
-    rgba(88, 101, 242, 0.08);
+  color:
+    #5865f2;
 }
 
 .header-button.secondary:hover {
   background:
-    linear-gradient(
-      135deg,
-      #e5e7ff,
-      #dfe2ff
-    );
+    #e2e5ff;
 }
 
 
-/* ==================================================
-   設定ボタン
-================================================== */
-
-.settings-button {
-  width: 42px;
-
-  height: 38px;
-
-  padding: 0;
-
-  font-size: 18px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #eef0ff,
-      #e5e8ff
-    );
-
-  color: #5865f2;
-}
-
-
-/* ==================================================
+/* ==========================================
    メイン
-================================================== */
+========================================== */
 
 .main {
   width: 100%;
@@ -285,7 +179,7 @@ select {
   margin: 0 auto;
 
   padding:
-    22px 20px;
+    24px 20px;
 
   display: flex;
 
@@ -293,14 +187,12 @@ select {
 
   height:
     calc(100vh - 64px);
-
-  position: relative;
 }
 
 
-/* ==================================================
+/* ==========================================
    ルームヘッダー
-================================================== */
+========================================== */
 
 .room-header {
   display: flex;
@@ -321,50 +213,39 @@ select {
 
   font-weight: 800;
 
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
 }
 
 .room-header h1 {
   margin:
     3px 0 0;
 
-  font-size: 27px;
+  font-size: 26px;
 
   line-height: 1.2;
 
   font-weight: 800;
-
-  letter-spacing: -0.5px;
 }
-
-
-/* ==================================================
-   招待コード
-================================================== */
 
 .invite-area {
   background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,0.95),
-      rgba(245,246,255,0.95)
-    );
+    rgba(255, 255, 255, 0.85);
 
   border:
-    1px solid #e2e5f0;
+    1px solid #e4e7ee;
 
-  border-radius: 12px;
+  border-radius: 10px;
 
   padding:
-    9px 13px;
+    8px 12px;
 
   font-size: 12px;
 
   color: #737b8e;
 
   box-shadow:
-    0 5px 15px
-    rgba(40, 50, 90, 0.05);
+    0 3px 12px
+    rgba(30, 40, 70, 0.04);
 }
 
 .invite-area strong {
@@ -376,9 +257,9 @@ select {
 }
 
 
-/* ==================================================
-   チャットコンテナ
-================================================== */
+/* ==========================================
+   チャット
+========================================== */
 
 .chat-container {
   flex: 1;
@@ -386,35 +267,28 @@ select {
   min-height: 0;
 
   background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,0.98),
-      rgba(249,250,255,0.98)
-    );
+    rgba(255, 255, 255, 0.94);
 
   border:
-    1px solid #e2e5ee;
+    1px solid #e4e7ee;
 
-  border-radius: 18px;
+  border-radius: 16px;
 
   overflow: hidden;
 
   box-shadow:
-    0 10px 35px
-    rgba(30, 40, 70, 0.07),
-
-    0 2px 8px
-    rgba(30, 40, 70, 0.04);
-
-  min-height: 520px;
+    0 8px 30px
+    rgba(30, 40, 70, 0.07);
 
   position: relative;
+
+  min-height: 520px;
 }
 
 
-/* ==================================================
+/* ==========================================
    メッセージ一覧
-================================================== */
+========================================== */
 
 .messages {
   height: 100%;
@@ -424,46 +298,93 @@ select {
   padding:
     24px;
 
+  padding-bottom:
+    42px;
+
   scroll-behavior: smooth;
+
+  scrollbar-width: thin;
+
+  scrollbar-color:
+    #c7cbd8
+    transparent;
+}
+
+.messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background:
+    #c7cbd8;
+
+  border-radius: 20px;
+}
+
+.messages::-webkit-scrollbar-thumb:hover {
+  background:
+    #aeb4c4;
 }
 
 
 /* ==========================================
-   メッセージ一覧
-   → 一番下の編集・削除ボタンまで
-      しっかり表示できるようにする
+   メッセージ
 ========================================== */
 
-.messages {
-  height: 100%;
+.message {
+  position: relative;
 
-  overflow-y: auto;
-  overflow-x: hidden;
+  margin-bottom: 18px;
 
-  padding: 24px;
+  padding:
+    10px 12px;
 
-  /* 一番下に余裕を作る */
-  padding-bottom: 60px;
+  border-radius: 12px;
 
-  scroll-behavior: smooth;
-
-  /* スクロールバー分も含めて計算 */
-  scrollbar-gutter: stable;
+  transition:
+    background 0.15s ease;
 }
+
+.message:hover {
+  background:
+    rgba(88, 101, 242, 0.035);
+}
+
+.message:last-child {
+  margin-bottom: 12px;
+}
+
+@keyframes messageIn {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(5px);
+  }
+
   to {
     opacity: 1;
 
     transform:
-      translateY(0)
-      scale(1);
+      translateY(0);
   }
 
 }
 
+.message {
+  animation:
+    messageIn 0.15s ease;
+}
 
-/* ==================================================
+
+/* ==========================================
    ユーザー名
-================================================== */
+========================================== */
 
 .message-user {
   font-size: 13px;
@@ -472,15 +393,13 @@ select {
 
   color: #5865f2;
 
-  margin-bottom: 5px;
-
-  display: inline-block;
+  margin-bottom: 4px;
 }
 
 
-/* ==================================================
-   メッセージ本文
-================================================== */
+/* ==========================================
+   本文
+========================================== */
 
 .message-text {
   display: inline-block;
@@ -488,83 +407,81 @@ select {
   max-width: 90%;
 
   padding:
-    10px 14px;
+    10px 13px;
 
   background:
     linear-gradient(
       135deg,
-      #f0f2f8,
-      #f7f8fc
+      #f1f3f8,
+      #eceef5
     );
 
-  border:
-    1px solid rgba(224, 227, 237, 0.8);
-
   border-radius:
-    5px 14px 14px 14px;
+    5px 12px 12px 12px;
 
   font-size: 15px;
 
-  line-height: 1.6;
+  line-height: 1.55;
 
   word-break: break-word;
 
   box-shadow:
-    0 3px 9px
+    0 2px 6px
     rgba(30, 40, 70, 0.035);
 }
-
-
-/* ==================================================
-   時刻
-================================================== */
 
 .message-time {
   font-size: 10px;
 
-  color: #9ca4b4;
+  color: #a0a7b5;
 
   margin-left: 7px;
 }
 
 
-/* ==================================================
-   メッセージ操作
-   Discord風
-================================================== */
+/* ==========================================
+   編集済み
+========================================== */
+
+.message-edited {
+  font-size: 10px;
+
+  color: #969dad;
+
+  margin-left: 5px;
+}
+
+
+/* ==========================================
+   自分のメッセージ操作エリア
+========================================== */
 
 .message-actions {
   display: flex;
 
   align-items: center;
 
-  gap: 4px;
+  flex-wrap: wrap;
+
+  gap: 5px;
 
   margin-top: 7px;
 
-  opacity: 0.72;
-
-  transition:
-    opacity 0.15s ease;
-}
-
-.message:hover .message-actions {
-  opacity: 1;
+  max-width: 100%;
 }
 
 
-/* ==================================================
+/* ==========================================
    操作ボタン共通
-================================================== */
+========================================== */
 
 .message-action-button {
-  border:
-    1px solid transparent;
+  border: none;
 
   border-radius: 7px;
 
   padding:
-    4px 8px;
+    5px 9px;
 
   font-size: 11px;
 
@@ -572,11 +489,12 @@ select {
 
   cursor: pointer;
 
+  white-space: nowrap;
+
   transition:
     background 0.15s ease,
     color 0.15s ease,
-    transform 0.12s ease,
-    border-color 0.15s ease;
+    transform 0.12s ease;
 }
 
 .message-action-button:hover {
@@ -585,274 +503,284 @@ select {
 }
 
 
-/* ==================================================
+/* ==========================================
+   返信ボタン
+========================================== */
+
+.reply-button {
+  background:
+    #eef0ff;
+
+  color:
+    #5865f2;
+}
+
+.reply-button:hover {
+  background:
+    #dfe3ff;
+
+  color:
+    #4752c4;
+}
+
+
+/* ==========================================
    編集ボタン
-================================================== */
+========================================== */
 
-.message-edit-button {
-  color: #5865f2;
-
+.edit-button {
   background:
-    rgba(88, 101, 242, 0.08);
+    #edf7ff;
 
-  border-color:
-    rgba(88, 101, 242, 0.12);
+  color:
+    #2984c6;
 }
 
-.message-edit-button:hover {
-  color: white;
-
+.edit-button:hover {
   background:
-    linear-gradient(
-      135deg,
-      #5865f2,
-      #7560f6
-    );
+    #dcefff;
 
-  border-color:
-    transparent;
-
-  box-shadow:
-    0 4px 12px
-    rgba(88, 101, 242, 0.22);
+  color:
+    #176da8;
 }
 
 
-/* ==================================================
+/* ==========================================
    削除ボタン
-================================================== */
+========================================== */
 
-.message-delete-button {
-  color: #e5484d;
-
+.delete-button {
   background:
-    rgba(229, 72, 77, 0.07);
+    #fff0f1;
 
-  border-color:
-    rgba(229, 72, 77, 0.10);
+  color:
+    #e5484d;
 }
 
-.message-delete-button:hover {
-  color: white;
-
+.delete-button:hover {
   background:
-    linear-gradient(
-      135deg,
-      #e5484d,
-      #f06469
-    );
+    #ffe0e2;
 
-  border-color:
-    transparent;
-
-  box-shadow:
-    0 4px 12px
-    rgba(229, 72, 77, 0.20);
+  color:
+    #c93439;
 }
 
 
-/* ==================================================
+/* ==========================================
    編集中
-================================================== */
+========================================== */
+
+.message-edit-area {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+
+  margin-top: 8px;
+
+  width: 100%;
+}
 
 .message-edit-input {
-  display: block;
+  flex: 1;
 
-  width: min(90%, 600px);
-
-  padding:
-    10px 12px;
-
-  margin-top: 5px;
+  min-width: 180px;
 
   border:
     1px solid #5865f2;
 
-  border-radius: 10px;
+  border-radius: 8px;
+
+  padding:
+    9px 10px;
 
   outline: none;
 
-  font-family: inherit;
-
   font-size: 14px;
 
-  color: #172033;
+  background:
+    #ffffff;
 
-  background: white;
+  color:
+    #172033;
 
   box-shadow:
     0 0 0 3px
-    rgba(88, 101, 242, 0.10),
-
-    0 5px 15px
     rgba(88, 101, 242, 0.08);
 }
 
-.message-edit-actions {
-  display: flex;
-
-  gap: 6px;
-
-  margin-top: 7px;
-}
-
-
-/* ==================================================
-   編集保存
-================================================== */
-
-.message-save-button,
-.message-cancel-button {
+.message-edit-save,
+.message-edit-cancel {
   border: none;
 
-  border-radius: 7px;
+  border-radius: 8px;
 
   padding:
-    5px 10px;
+    8px 11px;
 
-  font-size: 11px;
+  font-size: 12px;
 
   font-weight: 700;
 
   cursor: pointer;
-
-  transition:
-    transform 0.12s ease,
-    background 0.15s ease;
 }
 
-.message-save-button {
+.message-edit-save {
   background:
-    linear-gradient(
-      135deg,
-      #5865f2,
-      #735cf5
-    );
+    #5865f2;
 
   color: white;
-
-  box-shadow:
-    0 3px 10px
-    rgba(88, 101, 242, 0.18);
 }
 
-.message-save-button:hover {
-  transform:
-    translateY(-1px);
+.message-edit-cancel {
+  background:
+    #eef0f4;
+
+  color:
+    #4c5362;
+}
+
+
+/* ==========================================
+   返信先表示
+========================================== */
+
+.reply-preview {
+  margin-bottom: 7px;
+
+  padding:
+    7px 10px;
+
+  border-left:
+    3px solid #5865f2;
+
+  border-radius:
+    6px;
+
+  background:
+    rgba(88, 101, 242, 0.07);
+
+  color:
+    #687184;
+
+  font-size: 11px;
+
+  max-width: 90%;
+
+  overflow: hidden;
+}
+
+.reply-preview strong {
+  color:
+    #5865f2;
+
+  font-weight: 800;
+}
+
+.reply-preview-text {
+  display: block;
+
+  margin-top: 2px;
+
+  white-space: nowrap;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+
+/* ==========================================
+   返信入力中
+========================================== */
+
+.replying-bar {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-bottom: 7px;
+
+  padding:
+    8px 11px;
+
+  border-radius: 9px;
 
   background:
     linear-gradient(
       135deg,
-      #4752c4,
-      #644be4
+      #eef0ff,
+      #f4f1ff
     );
+
+  border-left:
+    3px solid #5865f2;
+
+  color:
+    #5f6677;
+
+  font-size: 12px;
 }
 
-.message-cancel-button {
-  background: #eef0f4;
-
-  color: #555e70;
+.replying-bar strong {
+  color:
+    #5865f2;
 }
 
-.message-cancel-button:hover {
-  background: #e2e5eb;
+.cancel-reply-button {
+  border: none;
 
-  transform:
-    translateY(-1px);
+  background:
+    transparent;
+
+  color:
+    #777f91;
+
+  font-size: 12px;
+
+  cursor: pointer;
+
+  font-weight: 700;
+}
+
+.cancel-reply-button:hover {
+  color:
+    #e5484d;
 }
 
 
-/* ==================================================
-   上へ・下へ
-================================================== */
+/* ==========================================
+   入力フォーム
+========================================== */
 
-.message-scroll-buttons {
-  position: fixed;
-
-  right: 24px;
-
-  bottom: 90px;
-
+.message-form {
   display: flex;
 
   flex-direction: column;
 
   gap: 7px;
 
-  z-index: 20;
-}
+  margin-top: 12px;
 
-.scroll-button {
-  border:
-    1px solid rgba(224, 227, 240, 0.9);
-
-  min-width: 82px;
-
-  padding:
-    8px 11px;
-
-  border-radius: 11px;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,0.97),
-      rgba(246,247,255,0.97)
-    );
-
-  color: #5865f2;
-
-  box-shadow:
-    0 6px 20px
-    rgba(30, 40, 70, 0.12);
-
-  backdrop-filter:
-    blur(12px);
-
-  font-size: 12px;
-
-  font-weight: 800;
-
-  cursor: pointer;
-
-  transition:
-    transform 0.16s ease,
-    box-shadow 0.16s ease,
-    background 0.16s ease;
-}
-
-.scroll-button:hover {
-  transform:
-    translateY(-2px);
-
-  background:
-    linear-gradient(
-      135deg,
-      #eef0ff,
-      #e6e8ff
-    );
-
-  box-shadow:
-    0 9px 25px
-    rgba(88, 101, 242, 0.18);
-}
-
-.scroll-button:active {
-  transform:
-    translateY(0);
+  position: relative;
 }
 
 
-/* ==================================================
-   入力フォーム
-================================================== */
+/* ==========================================
+   入力欄の横並び部分
+========================================== */
 
-.message-form {
+.message-input-row {
   display: flex;
 
   gap: 8px;
 
-  margin-top: 12px;
+  width: 100%;
 }
 
 .message-form input {
@@ -860,9 +788,9 @@ select {
     1px solid #dfe3eb;
 
   background:
-    rgba(255,255,255,0.95);
+    rgba(255, 255, 255, 0.96);
 
-  border-radius: 11px;
+  border-radius: 10px;
 
   padding:
     12px;
@@ -873,27 +801,18 @@ select {
 
   color: #172033;
 
-  box-shadow:
-    0 3px 10px
-    rgba(30, 40, 70, 0.025);
-
   transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
+    border 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .message-form input:focus {
-  border-color: #5865f2;
-
-  background: white;
+  border-color:
+    #5865f2;
 
   box-shadow:
     0 0 0 3px
-    rgba(88, 101, 242, 0.10),
-
-    0 5px 15px
-    rgba(88, 101, 242, 0.06);
+    rgba(88, 101, 242, 0.10);
 }
 
 #usernameInput {
@@ -904,11 +823,6 @@ select {
   flex: 1;
 }
 
-
-/* ==================================================
-   送信ボタン
-================================================== */
-
 .send-button {
   border: none;
 
@@ -916,52 +830,110 @@ select {
     linear-gradient(
       135deg,
       #5865f2,
-      #735cf5 55%,
-      #875cf7
+      #6875ff
     );
 
   color: white;
 
-  border-radius: 11px;
+  border-radius: 10px;
 
   padding:
-    0 21px;
+    0 20px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.send-button:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #4752c4,
+      #5865f2
+    );
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 5px 15px
+    rgba(88, 101, 242, 0.2);
+}
+
+
+/* ==========================================
+   上へ・下へボタン
+========================================== */
+
+.scroll-buttons {
+  position: absolute;
+
+  right: 14px;
+
+  bottom: 14px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+  z-index: 5;
+}
+
+.scroll-button {
+  border: none;
+
+  width: 38px;
+
+  height: 34px;
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.95);
+
+  color:
+    #5865f2;
+
+  font-size: 14px;
 
   font-weight: 800;
 
   cursor: pointer;
 
   box-shadow:
-    0 5px 15px
-    rgba(88, 101, 242, 0.22);
+    0 5px 16px
+    rgba(30, 40, 70, 0.13);
+
+  border:
+    1px solid #e5e8f0;
+
+  backdrop-filter:
+    blur(8px);
 
   transition:
-    transform 0.16s ease,
-    box-shadow 0.16s ease,
-    filter 0.16s ease;
+    transform 0.15s ease,
+    background 0.15s ease;
 }
 
-.send-button:hover {
+.scroll-button:hover {
   transform:
     translateY(-2px);
 
-  filter:
-    brightness(1.05);
-
-  box-shadow:
-    0 8px 22px
-    rgba(88, 101, 242, 0.30);
-}
-
-.send-button:active {
-  transform:
-    translateY(0);
+  background:
+    #eef0ff;
 }
 
 
-/* ==================================================
+/* ==========================================
    モーダル
-================================================== */
+========================================== */
 
 .modal {
   position: fixed;
@@ -969,7 +941,7 @@ select {
   inset: 0;
 
   background:
-    rgba(17, 21, 35, 0.48);
+    rgba(20, 25, 40, 0.48);
 
   display: flex;
 
@@ -982,7 +954,7 @@ select {
   z-index: 100;
 
   backdrop-filter:
-    blur(5px);
+    blur(3px);
 }
 
 .modal-box {
@@ -997,44 +969,20 @@ select {
       #f8f9ff
     );
 
-  border:
-    1px solid rgba(255,255,255,0.8);
+  border-radius: 18px;
 
-  border-radius: 20px;
-
-  padding: 25px;
+  padding: 24px;
 
   box-shadow:
     0 25px 70px
-    rgba(0, 0, 0, 0.22),
+    rgba(0, 0, 0, 0.20);
 
-    0 5px 20px
-    rgba(50, 60, 100, 0.08);
+  color:
+    #172033;
 
-  color: #172033;
-
-  animation:
-    modalIn 0.18s ease;
-}
-
-@keyframes modalIn {
-
-  from {
-    opacity: 0;
-
-    transform:
-      translateY(8px)
-      scale(0.97);
-  }
-
-  to {
-    opacity: 1;
-
-    transform:
-      translateY(0)
-      scale(1);
-  }
-
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.8);
 }
 
 .modal-box h2 {
@@ -1042,16 +990,13 @@ select {
     0 0 20px;
 
   font-size: 20px;
-
-  font-weight: 800;
 }
 
 .modal-box input,
 .modal-box select {
   width: 100%;
 
-  padding:
-    12px;
+  padding: 12px;
 
   border:
     1px solid #dfe3eb;
@@ -1065,25 +1010,22 @@ select {
   background: white;
 
   color: #172033;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
 }
 
 .modal-box input:focus,
 .modal-box select:focus {
-  border-color: #5865f2;
+  border-color:
+    #5865f2;
 
   box-shadow:
     0 0 0 3px
-    rgba(88, 101, 242, 0.10);
+    rgba(88, 101, 242, 0.08);
 }
 
 
-/* ==================================================
+/* ==========================================
    設定
-================================================== */
+========================================== */
 
 .settings-box {
   max-width: 440px;
@@ -1098,7 +1040,7 @@ select {
 
   font-size: 13px;
 
-  font-weight: 800;
+  font-weight: 700;
 
   margin-bottom: 7px;
 
@@ -1135,11 +1077,6 @@ select {
   margin-top: 2px;
 }
 
-
-/* ==================================================
-   ON / OFF
-================================================== */
-
 .toggle-button {
   min-width: 58px;
 
@@ -1151,15 +1088,12 @@ select {
     7px 13px;
 
   background:
-    linear-gradient(
-      135deg,
-      #e7eaf0,
-      #dfe2e8
-    );
+    #e7eaf0;
 
-  color: #687184;
+  color:
+    #687184;
 
-  font-weight: 800;
+  font-weight: 700;
 
   cursor: pointer;
 
@@ -1172,20 +1106,16 @@ select {
     linear-gradient(
       135deg,
       #5865f2,
-      #765df6
+      #7b61ff
     );
 
   color: white;
-
-  box-shadow:
-    0 4px 12px
-    rgba(88, 101, 242, 0.22);
 }
 
 
-/* ==================================================
+/* ==========================================
    モーダルボタン
-================================================== */
+========================================== */
 
 .modal-buttons {
   display: flex;
@@ -1209,10 +1139,6 @@ select {
   font-weight: 700;
 
   cursor: pointer;
-
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
 }
 
 .primary-button {
@@ -1220,46 +1146,32 @@ select {
     linear-gradient(
       135deg,
       #5865f2,
-      #735cf5
+      #6875ff
     );
 
   color: white;
-
-  box-shadow:
-    0 5px 14px
-    rgba(88, 101, 242, 0.20);
 }
 
 .primary-button:hover {
-  transform:
-    translateY(-1px);
-
-  box-shadow:
-    0 7px 18px
-    rgba(88, 101, 242, 0.28);
+  background:
+    linear-gradient(
+      135deg,
+      #4752c4,
+      #5865f2
+    );
 }
 
 .cancel-button {
   background:
-    linear-gradient(
-      135deg,
-      #eef0f4,
-      #e7e9ee
-    );
+    #eef0f4;
 
-  color: #4c5362;
-}
-
-.cancel-button:hover {
-  transform:
-    translateY(-1px);
-
-  background:
-    #e1e4ea;
+  color:
+    #4c5362;
 }
 
 .error-message {
-  color: #e5484d;
+  color:
+    #e5484d;
 
   font-size: 13px;
 
@@ -1268,113 +1180,81 @@ select {
 }
 
 
-/* ==================================================
-   Hidden
-================================================== */
+/* ==========================================
+   hidden
+========================================== */
 
 .hidden {
   display: none !important;
 }
 
 
-/* ==================================================
+/* ==========================================
    ダークモード
-================================================== */
+========================================== */
 
 body.dark-mode {
   background:
-    radial-gradient(
-      circle at 15% 0%,
-      rgba(88, 101, 242, 0.16),
-      transparent 35%
-    ),
-    radial-gradient(
-      circle at 100% 100%,
-      rgba(124, 92, 255, 0.12),
-      transparent 35%
-    ),
-    #101218;
+    linear-gradient(
+      135deg,
+      #111318,
+      #171923,
+      #111318
+    );
 
-  color: #f1f3f7;
+  color:
+    #f1f3f7;
 }
-
-
-/* ==================================================
-   ダーク：ヘッダー
-================================================== */
 
 body.dark-mode .header {
   background:
     linear-gradient(
       135deg,
-      rgba(27, 30, 39, 0.98),
-      rgba(30, 32, 43, 0.98)
+      #1b1e26,
+      #20232d
     );
 
   border-color:
     #30343d;
-
-  box-shadow:
-    0 5px 20px
-    rgba(0, 0, 0, 0.18);
 }
 
-
-/* ==================================================
-   ダーク：ルーム
-================================================== */
-
 body.dark-mode .room-header h1 {
-  color: #f1f3f7;
+  color:
+    #f1f3f7;
 }
 
 body.dark-mode .room-label {
-  color: #8f97a7;
+  color:
+    #8f97a7;
 }
-
-
-/* ==================================================
-   ダーク：チャット
-================================================== */
 
 body.dark-mode .chat-container {
   background:
-    linear-gradient(
-      145deg,
-      #1a1d24,
-      #1d2028
-    );
+    rgba(29, 32, 39, 0.96);
 
   border-color:
     #30343d;
 
   box-shadow:
-    0 10px 35px
-    rgba(0, 0, 0, 0.24);
+    0 8px 30px
+    rgba(0, 0, 0, 0.25);
 }
 
-
-/* ==================================================
-   ダーク：メッセージ
-================================================== */
+body.dark-mode .message:hover {
+  background:
+    rgba(88, 101, 242, 0.06);
+}
 
 body.dark-mode .message-text {
   background:
     linear-gradient(
       135deg,
       #292d35,
-      #30343d
+      #252931
     );
-
-  border-color:
-    #383d47;
 
   color:
     #f1f3f7;
-
-  box-shadow:
-    0 3px 10px
-    rgba(0, 0, 0, 0.12);
 }
 
 body.dark-mode .message-time {
@@ -1382,83 +1262,10 @@ body.dark-mode .message-time {
     #81899a;
 }
 
-
-/* ==================================================
-   ダーク：操作ボタン
-================================================== */
-
-body.dark-mode .message-edit-button {
-  background:
-    rgba(88, 101, 242, 0.16);
-
+body.dark-mode .message-edited {
   color:
-    #aeb6ff;
-
-  border-color:
-    rgba(88, 101, 242, 0.20);
+    #858d9c;
 }
-
-body.dark-mode .message-edit-button:hover {
-  background:
-    linear-gradient(
-      135deg,
-      #5865f2,
-      #735cf5
-    );
-
-  color: white;
-}
-
-body.dark-mode .message-delete-button {
-  background:
-    rgba(229, 72, 77, 0.13);
-
-  color:
-    #ff9b9f;
-
-  border-color:
-    rgba(229, 72, 77, 0.18);
-}
-
-body.dark-mode .message-delete-button:hover {
-  background:
-    linear-gradient(
-      135deg,
-      #e5484d,
-      #f06469
-    );
-
-  color: white;
-}
-
-
-/* ==================================================
-   ダーク：編集
-================================================== */
-
-body.dark-mode .message-edit-input {
-  background:
-    #15171c;
-
-  border-color:
-    #5865f2;
-
-  color:
-    #f1f3f7;
-}
-
-body.dark-mode .message-cancel-button {
-  background:
-    #30343d;
-
-  color:
-    #e2e5eb;
-}
-
-
-/* ==================================================
-   ダーク：入力
-================================================== */
 
 body.dark-mode .message-form input {
   background:
@@ -1471,26 +1278,9 @@ body.dark-mode .message-form input {
     #f1f3f7;
 }
 
-body.dark-mode .message-form input:focus {
-  background:
-    #20232b;
-
-  border-color:
-    #5865f2;
-}
-
-
-/* ==================================================
-   ダーク：招待
-================================================== */
-
 body.dark-mode .invite-area {
   background:
-    linear-gradient(
-      135deg,
-      #1d2027,
-      #232631
-    );
+    #1d2027;
 
   border-color:
     #363b45;
@@ -1499,21 +1289,13 @@ body.dark-mode .invite-area {
     #a5adbc;
 }
 
-
-/* ==================================================
-   ダーク：モーダル
-================================================== */
-
 body.dark-mode .modal-box {
   background:
     linear-gradient(
       145deg,
       #1d2027,
-      #22252e
+      #191c23
     );
-
-  border-color:
-    #363b45;
 
   color:
     #f1f3f7;
@@ -1549,69 +1331,112 @@ body.dark-mode .cancel-button {
     #e2e5eb;
 }
 
-
-/* ==================================================
-   ダーク：ヘッダーボタン
-================================================== */
-
 body.dark-mode .header-button.secondary {
   background:
-    linear-gradient(
-      135deg,
-      #2b2f42,
-      #32364d
-    );
+    #2c3040;
 
   color:
     #aeb6ff;
 }
 
-body.dark-mode .header-button.secondary:hover {
+body.dark-mode .reply-button {
+  background:
+    #292d4a;
+
+  color:
+    #aeb6ff;
+}
+
+body.dark-mode .reply-button:hover {
+  background:
+    #34395d;
+}
+
+body.dark-mode .edit-button {
+  background:
+    #233443;
+
+  color:
+    #70b8ef;
+}
+
+body.dark-mode .edit-button:hover {
+  background:
+    #294356;
+}
+
+body.dark-mode .delete-button {
+  background:
+    #40272b;
+
+  color:
+    #ff8589;
+}
+
+body.dark-mode .delete-button:hover {
+  background:
+    #513035;
+}
+
+body.dark-mode .reply-preview {
+  background:
+    rgba(88, 101, 242, 0.13);
+
+  color:
+    #aeb5c3;
+}
+
+body.dark-mode .replying-bar {
   background:
     linear-gradient(
       135deg,
-      #343952,
-      #3a3f5b
+      #292d4a,
+      #302a48
     );
+
+  color:
+    #aeb5c3;
 }
 
+body.dark-mode .message-edit-input {
+  background:
+    #15171c;
 
-/* ==================================================
-   ダーク：上へ下へ
-================================================== */
+  border-color:
+    #5865f2;
+
+  color:
+    #f1f3f7;
+}
+
+body.dark-mode .message-edit-cancel {
+  background:
+    #30343d;
+
+  color:
+    #e2e5eb;
+}
 
 body.dark-mode .scroll-button {
   background:
-    linear-gradient(
-      135deg,
-      rgba(29,32,39,0.97),
-      rgba(37,40,50,0.97)
-    );
+    rgba(35, 38, 47, 0.95);
 
   border-color:
-    #3a3f4a;
+    #3a3f49;
 
   color:
     #aeb6ff;
-
-  box-shadow:
-    0 7px 22px
-    rgba(0, 0, 0, 0.32);
 }
 
 body.dark-mode .scroll-button:hover {
   background:
-    linear-gradient(
-      135deg,
-      #2c3040,
-      #353a4d
-    );
+    #30354a;
 }
 
 
-/* ==================================================
+/* ==========================================
    グレーモード
-================================================== */
+========================================== */
 
 body.gray-mode {
   filter:
@@ -1619,9 +1444,9 @@ body.gray-mode {
 }
 
 
-/* ==================================================
+/* ==========================================
    スマホ
-================================================== */
+========================================== */
 
 @media (max-width: 600px) {
 
@@ -1647,17 +1472,6 @@ body.gray-mode {
     font-size: 11px;
   }
 
-  .settings-button {
-    width: 36px;
-
-    height: 34px;
-
-    font-size: 16px;
-  }
-
-
-  /* メイン */
-
   .main {
     height:
       calc(100vh - 58px);
@@ -1665,9 +1479,6 @@ body.gray-mode {
     padding:
       12px 8px 10px;
   }
-
-
-  /* ルーム */
 
   .room-header {
     min-height: 48px;
@@ -1690,60 +1501,51 @@ body.gray-mode {
     font-size: 12px;
   }
 
-
-  /* チャット */
-
   .chat-container {
-    min-height:
-      420px;
+    min-height: 0;
 
     border-radius:
-      14px;
+      13px;
   }
 
   .messages {
-  padding: 16px;
+    padding:
+      16px;
 
-  /* 一番下の操作ボタンが切れないようにする */
-  padding-bottom: 55px;
+    padding-bottom:
+      50px;
+  }
 
-  overflow-y: auto;
-  overflow-x: hidden;
+  .message {
+    margin-bottom:
+      15px;
 
-  scrollbar-gutter: stable;
-}
-
-
-  /* メッセージ */
+    padding:
+      8px 6px;
+  }
 
   .message-text {
     max-width:
-      94%;
+      96%;
   }
-
-  .message-edit-input {
-    width:
-      94%;
-  }
-
-
-  /* 操作ボタン */
 
   .message-actions {
-    opacity:
-      1;
+    gap:
+      4px;
   }
 
   .message-action-button {
     padding:
-      4px 7px;
+      5px 7px;
 
     font-size:
       10px;
   }
 
-
-  /* 入力 */
+  .message-input-row {
+    gap:
+      5px;
+  }
 
   .message-form {
     gap:
@@ -1765,32 +1567,35 @@ body.gray-mode {
       0 12px;
   }
 
-
-  /* 上下ボタン */
-
-  .message-scroll-buttons {
+  .scroll-buttons {
     right:
-      10px;
+      9px;
 
     bottom:
-      82px;
-
-    gap:
-      5px;
+      9px;
   }
 
   .scroll-button {
-    min-width:
-      64px;
+    width:
+      35px;
 
-    padding:
-      7px 8px;
+    height:
+      32px;
+  }
 
+  .reply-preview {
+    max-width:
+      96%;
+  }
+
+  .replying-bar {
     font-size:
-      10px;
+      11px;
+  }
 
-    border-radius:
-      9px;
+  .message-edit-input {
+    min-width:
+      130px;
   }
 
 }
