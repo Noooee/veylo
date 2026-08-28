@@ -41,23 +41,72 @@ const inviteCode =
 
 
 // ==================================================
+// 雑談ルームへ戻る
+// ==================================================
+
+const casualRoomButton =
+  document.getElementById(
+    "casualRoomButton"
+  );
+
+if (casualRoomButton) {
+
+  casualRoomButton.addEventListener(
+    "click",
+    () => {
+
+      currentRoom =
+        "casual";
+
+      roomName.textContent =
+        "雑談";
+
+      inviteArea.classList.add(
+        "hidden"
+      );
+
+      messages.innerHTML = "";
+
+      updateBackToCasualButton();
+
+      socket.emit(
+        "join casual"
+      );
+
+    }
+  );
+
+}
+
+
+// ==================================================
 // 部屋作成
 // ==================================================
 
 const createRoomButton =
-  document.getElementById("createRoomButton");
+  document.getElementById(
+    "createRoomButton"
+  );
 
 const createModal =
-  document.getElementById("createModal");
+  document.getElementById(
+    "createModal"
+  );
 
 const roomNameInput =
-  document.getElementById("roomNameInput");
+  document.getElementById(
+    "roomNameInput"
+  );
 
 const confirmCreateButton =
-  document.getElementById("confirmCreateButton");
+  document.getElementById(
+    "confirmCreateButton"
+  );
 
 const cancelCreateButton =
-  document.getElementById("cancelCreateButton");
+  document.getElementById(
+    "cancelCreateButton"
+  );
 
 
 // ==================================================
@@ -65,33 +114,44 @@ const cancelCreateButton =
 // ==================================================
 
 const joinRoomButton =
-  document.getElementById("joinRoomButton");
+  document.getElementById(
+    "joinRoomButton"
+  );
 
 const joinModal =
-  document.getElementById("joinModal");
+  document.getElementById(
+    "joinModal"
+  );
 
 const inviteCodeInput =
-  document.getElementById("inviteCodeInput");
+  document.getElementById(
+    "inviteCodeInput"
+  );
 
 const confirmJoinButton =
-  document.getElementById("confirmJoinButton");
+  document.getElementById(
+    "confirmJoinButton"
+  );
 
 const cancelJoinButton =
-  document.getElementById("cancelJoinButton");
+  document.getElementById(
+    "cancelJoinButton"
+  );
 
 const joinError =
-  document.getElementById("joinError");
+  document.getElementById(
+    "joinError"
+  );
 
 
 // ==================================================
 // 雑談へ戻る
 // ==================================================
 
-const casualRoomButton =
-  document.getElementById("casualRoomButton");
-
 const backToCasualButton =
-  document.getElementById("backToCasualButton");
+  document.getElementById(
+    "backToCasualButton"
+  );
 
 
 // ==================================================
@@ -99,10 +159,14 @@ const backToCasualButton =
 // ==================================================
 
 const settingsButton =
-  document.getElementById("settingsButton");
+  document.getElementById(
+    "settingsButton"
+  );
 
 const settingsModal =
-  document.getElementById("settingsModal");
+  document.getElementById(
+    "settingsModal"
+  );
 
 const settingsUsernameInput =
   document.getElementById(
@@ -130,14 +194,28 @@ const grayToggleButton =
   );
 
 const languageSelect =
-  document.getElementById("languageSelect");
+  document.getElementById(
+    "languageSelect"
+  );
 
 
 // ==================================================
 // 現在の部屋
 // ==================================================
 
-let currentRoom = "casual";
+let currentRoom =
+  "casual";
+
+
+// ==================================================
+// 返信対象
+//
+// replyTarget に返信するコメントを
+// 一時的に保存します。
+// ==================================================
+
+let replyTarget =
+  null;
 
 
 // ==================================================
@@ -169,45 +247,24 @@ const MESSAGE_LIFETIME =
 
 
 // ==================================================
-// 編集中メッセージ
-// ==================================================
-
-let editingMessageId = null;
-
-
-// ==================================================
-// ユーザー名
-// ==================================================
-
-function getCurrentUsername() {
-
-  return (
-    usernameInput?.value.trim() ||
-    localStorage.getItem(
-      "veylo_username"
-    ) ||
-    "ゲスト"
-  );
-
-}
-
-
-// ==================================================
 // Socket.IO 接続
 // ==================================================
 
-socket.on("connect", () => {
+socket.on(
+  "connect",
+  () => {
 
-  console.log(
-    "Veylo Socket.IO connected:",
-    socket.id
-  );
+    console.log(
+      "Veylo Socket.IO connected:",
+      socket.id
+    );
 
-});
+  }
+);
 
 
 // ==================================================
-// 保存済みユーザー名
+// ユーザー名読み込み
 // ==================================================
 
 const savedUsername =
@@ -227,7 +284,7 @@ if (
 
 
 // ==================================================
-// メッセージ有効期限
+// メッセージが24時間以内か確認
 // ==================================================
 
 function isMessageValid(data) {
@@ -258,7 +315,8 @@ function isMessageValid(data) {
 
 
   return (
-    Date.now() - created <
+    Date.now() -
+    created <
     MESSAGE_LIFETIME
   );
 
@@ -266,7 +324,7 @@ function isMessageValid(data) {
 
 
 // ==================================================
-// LocalStorage古いコメント削除
+// LocalStorageの古いコメントを削除
 // ==================================================
 
 function cleanupLocalMessages() {
@@ -306,6 +364,254 @@ function cleanupLocalMessages() {
 
 
 // ==================================================
+// LocalStorage読み込み
+// ==================================================
+
+loadLocalMessages();
+
+
+// ==================================================
+// 返信UIを作成
+// ==================================================
+
+function createReplyArea() {
+
+  // 既に存在する場合
+  if (
+    document.getElementById(
+      "replyArea"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  const replyArea =
+    document.createElement("div");
+
+  replyArea.id =
+    "replyArea";
+
+  replyArea.className =
+    "reply-area hidden";
+
+
+  const replyInfo =
+    document.createElement("div");
+
+  replyInfo.className =
+    "reply-info";
+
+
+  const replyIcon =
+    document.createElement("span");
+
+  replyIcon.textContent =
+    "↩️";
+
+
+  const replyText =
+    document.createElement("span");
+
+  replyText.id =
+    "replyTargetText";
+
+
+  const cancelButton =
+    document.createElement("button");
+
+  cancelButton.type =
+    "button";
+
+  cancelButton.id =
+    "cancelReplyButton";
+
+  cancelButton.className =
+    "cancel-reply-button";
+
+  cancelButton.textContent =
+    "×";
+
+
+  cancelButton.title =
+    "返信をキャンセル";
+
+
+  cancelButton.addEventListener(
+    "click",
+    () => {
+
+      clearReplyTarget();
+
+    }
+  );
+
+
+  replyInfo.appendChild(
+    replyIcon
+  );
+
+  replyInfo.appendChild(
+    replyText
+  );
+
+
+  replyArea.appendChild(
+    replyInfo
+  );
+
+  replyArea.appendChild(
+    cancelButton
+  );
+
+
+  messageForm.parentNode.insertBefore(
+    replyArea,
+    messageForm
+  );
+
+}
+
+
+// ==================================================
+// 返信UI初期化
+// ==================================================
+
+createReplyArea();
+
+
+// ==================================================
+// 返信開始
+// ==================================================
+
+function setReplyTarget(data) {
+
+  if (!data) {
+    return;
+  }
+
+
+  replyTarget = {
+
+    id:
+      data.id,
+
+    username:
+      data.username || "ゲスト",
+
+    text:
+      data.text || ""
+
+  };
+
+
+  const replyArea =
+    document.getElementById(
+      "replyArea"
+    );
+
+  const replyTargetText =
+    document.getElementById(
+      "replyTargetText"
+    );
+
+
+  if (
+    !replyArea ||
+    !replyTargetText
+  ) {
+
+    return;
+
+  }
+
+
+  let preview =
+    replyTarget.text;
+
+
+  if (
+    preview.length > 80
+  ) {
+
+    preview =
+      preview.substring(
+        0,
+        80
+      ) + "...";
+
+  }
+
+
+  replyTargetText.textContent =
+    `${replyTarget.username}：「${preview}」へ返信`;
+
+
+  replyArea.classList.remove(
+    "hidden"
+  );
+
+
+  messageInput.focus();
+
+
+  console.log(
+    "返信対象:",
+    replyTarget
+  );
+
+}
+
+
+// ==================================================
+// 返信解除
+// ==================================================
+
+function clearReplyTarget() {
+
+  replyTarget =
+    null;
+
+
+  const replyArea =
+    document.getElementById(
+      "replyArea"
+    );
+
+
+  if (replyArea) {
+
+    replyArea.classList.add(
+      "hidden"
+    );
+
+  }
+
+
+  const replyTargetText =
+    document.getElementById(
+      "replyTargetText"
+    );
+
+
+  if (replyTargetText) {
+
+    replyTargetText.textContent =
+      "";
+
+  }
+
+
+  console.log(
+    "返信対象を解除しました"
+  );
+
+}
+
+
+// ==================================================
 // チャット送信
 // ==================================================
 
@@ -321,49 +627,14 @@ messageForm.addEventListener(
 
 
     const username =
-      getCurrentUsername();
+      usernameInput.value.trim() ||
+      "ゲスト";
 
 
     if (!text) {
       return;
     }
 
-
-    // ==================================================
-    // 編集中なら編集として送信
-    // ==================================================
-
-    if (
-      editingMessageId !== null
-    ) {
-
-      socket.emit(
-        "edit message",
-        {
-
-          id:
-            editingMessageId,
-
-          text:
-            text,
-
-          username:
-            username
-
-        }
-      );
-
-
-      cancelEditing();
-
-      return;
-
-    }
-
-
-    // ==================================================
-    // ユーザー名保存
-    // ==================================================
 
     localStorage.setItem(
       "veylo_username",
@@ -372,27 +643,44 @@ messageForm.addEventListener(
 
 
     // ==================================================
-    // 新規コメント送信
+    // 送信データ
     // ==================================================
+
+    const messageData = {
+
+      room:
+        currentRoom,
+
+      text:
+        text,
+
+      username:
+        username,
+
+      replyTo:
+        replyTarget
+          ? replyTarget.id
+          : null
+
+    };
+
 
     socket.emit(
       "chat message",
-      {
-
-        room:
-          currentRoom,
-
-        text:
-          text,
-
-        username:
-          username
-
-      }
+      messageData
     );
 
 
-    messageInput.value = "";
+    messageInput.value =
+      "";
+
+
+    // ==================================================
+    // 返信状態を解除
+    // ==================================================
+
+    clearReplyTarget();
+
 
     messageInput.focus();
 
@@ -441,7 +729,7 @@ socket.on(
 
 
 // ==================================================
-// 過去コメント受信
+// サーバーから過去コメント受信
 // ==================================================
 
 socket.on(
@@ -457,7 +745,8 @@ socket.on(
     }
 
 
-    messages.innerHTML = "";
+    messages.innerHTML =
+      "";
 
 
     data
@@ -489,6 +778,10 @@ socket.on(
     }
 
 
+    // ==================================================
+    // 初回読み込み時は一番下
+    // ==================================================
+
     scrollToBottom();
 
   }
@@ -501,7 +794,7 @@ socket.on(
 
 function addMessage(
   data,
-  scroll = true
+  autoScroll = true
 ) {
 
   if (
@@ -513,6 +806,21 @@ function addMessage(
   }
 
 
+  // ==================================================
+  // 既に存在している場合
+  // ==================================================
+
+  const existing =
+    document.querySelector(
+      `[data-message-id="${data.id}"]`
+    );
+
+
+  if (existing) {
+    return;
+  }
+
+
   const message =
     document.createElement("div");
 
@@ -521,538 +829,17 @@ function addMessage(
     "message";
 
 
+  if (data.replyTo) {
+
+    message.classList.add(
+      "has-reply"
+    );
+
+  }
+
+
   message.dataset.messageId =
     data.id;
-
-
-  // ==================================================
-  // ユーザー名
-  // ==================================================
-
-  const user =
-    document.createElement("div");
-
-
-  user.className =
-    "message-user";
-
-
-  user.textContent =
-    data.username ||
-    "ゲスト";
-
-
-  // ==================================================
-  // 本文
-  // ==================================================
-
-  const text =
-    document.createElement("span");
-
-
-  text.className =
-    "message-text";
-
-
-  text.textContent =
-    data.text;
-
-
-  // ==================================================
-  // 時刻
-  // ==================================================
-
-  const time =
-    document.createElement("span");
-
-
-  time.className =
-    "message-time";
-
-
-  time.textContent =
-    formatTime(
-      data.createdAt
-    );
-
-
-  // ==================================================
-  // 編集済み表示
-  // ==================================================
-
-  if (data.edited) {
-
-    const edited =
-      document.createElement("span");
-
-
-    edited.className =
-      "message-edited";
-
-
-    edited.textContent =
-      "編集済み";
-
-
-    message.appendChild(
-      edited
-    );
-
-  }
-
-
-  // ==================================================
-  // メッセージ内容
-  // ==================================================
-
-  message.appendChild(
-    user
-  );
-
-  message.appendChild(
-    text
-  );
-
-  message.appendChild(
-    time
-  );
-
-
-  // ==================================================
-  // 操作ボタン
-  // ==================================================
-
-  const actions =
-    createMessageActions(
-      data
-    );
-
-
-  if (actions) {
-
-    message.appendChild(
-      actions
-    );
-
-  }
-
-
-  // ==================================================
-  // 画面へ追加
-  // ==================================================
-
-  messages.appendChild(
-    message
-  );
-
-
-  if (scroll) {
-
-    scrollToBottom();
-
-  }
-
-}
-
-
-// ==================================================
-// 編集・削除ボタン作成
-// ==================================================
-
-function createMessageActions(
-  data
-) {
-
-  const username =
-    getCurrentUsername();
-
-
-  // ==================================================
-  // 自分のコメントか確認
-  // ==================================================
-
-  if (
-    !data.username ||
-    data.username !==
-    username
-  ) {
-
-    return null;
-
-  }
-
-
-  const actions =
-    document.createElement("div");
-
-
-  actions.className =
-    "message-actions";
-
-
-  // ==================================================
-  // 編集ボタン
-  // ==================================================
-
-  const editButton =
-    document.createElement("button");
-
-
-  editButton.type =
-    "button";
-
-
-  editButton.className =
-    "message-action edit";
-
-
-  editButton.textContent =
-    "✏️ 編集";
-
-
-  editButton.addEventListener(
-    "click",
-    () => {
-
-      startEditing(
-        data
-      );
-
-    }
-  );
-
-
-  // ==================================================
-  // 削除ボタン
-  // ==================================================
-
-  const deleteButton =
-    document.createElement("button");
-
-
-  deleteButton.type =
-    "button";
-
-
-  deleteButton.className =
-    "message-action delete";
-
-
-  deleteButton.textContent =
-    "🗑️ 削除";
-
-
-  deleteButton.addEventListener(
-    "click",
-    () => {
-
-      deleteMessage(
-        data
-      );
-
-    }
-  );
-
-
-  actions.appendChild(
-    editButton
-  );
-
-  actions.appendChild(
-    deleteButton
-  );
-
-
-  return actions;
-
-}
-
-
-// ==================================================
-// メッセージ編集開始
-// ==================================================
-
-function startEditing(
-  data
-) {
-
-  if (!data) {
-    return;
-  }
-
-
-  editingMessageId =
-    data.id;
-
-
-  messageInput.value =
-    data.text || "";
-
-
-  messageInput.focus();
-
-
-  messageInput.select();
-
-
-  // ==================================================
-  // 編集中表示
-  // ==================================================
-
-  messageForm.classList.add(
-    "editing"
-  );
-
-
-  console.log(
-    "コメント編集開始:",
-    data.id
-  );
-
-}
-
-
-// ==================================================
-// 編集キャンセル
-// ==================================================
-
-function cancelEditing() {
-
-  editingMessageId =
-    null;
-
-
-  messageInput.value =
-    "";
-
-
-  messageForm.classList.remove(
-    "editing"
-  );
-
-
-  messageInput.focus();
-
-}
-
-
-// ==================================================
-// コメント削除
-// ==================================================
-
-function deleteMessage(
-  data
-) {
-
-  if (!data) {
-    return;
-  }
-
-
-  const username =
-    getCurrentUsername();
-
-
-  if (
-    data.username !==
-    username
-  ) {
-
-    alert(
-      "自分のコメントだけ削除できます。"
-    );
-
-    return;
-
-  }
-
-
-  const confirmed =
-    window.confirm(
-      "このコメントを削除しますか？"
-    );
-
-
-  if (!confirmed) {
-    return;
-  }
-
-
-  socket.emit(
-    "delete message",
-    {
-
-      id:
-        data.id,
-
-      username:
-        username
-
-    }
-  );
-
-}
-
-
-// ==================================================
-// 編集成功
-// ==================================================
-
-socket.on(
-  "message edited",
-  (data) => {
-
-    if (!data) {
-      return;
-    }
-
-
-    updateMessageElement(
-      data
-    );
-
-
-    if (
-      currentRoom ===
-      "casual"
-    ) {
-
-      updateLocalMessage(
-        data
-      );
-
-    }
-
-
-    // 自分が編集した場合
-    // 入力欄をクリア
-
-    if (
-      editingMessageId ===
-      data.id
-    ) {
-
-      cancelEditing();
-
-    }
-
-  }
-);
-
-
-// ==================================================
-// 編集エラー
-// ==================================================
-
-socket.on(
-  "message edit error",
-  (data) => {
-
-    alert(
-      data?.message ||
-      "コメントを編集できませんでした。"
-    );
-
-  }
-);
-
-
-// ==================================================
-// 削除成功
-// ==================================================
-
-socket.on(
-  "message deleted",
-  (data) => {
-
-    if (!data) {
-      return;
-    }
-
-
-    removeMessageElement(
-      data.id
-    );
-
-
-    if (
-      currentRoom ===
-      "casual"
-    ) {
-
-      removeLocalMessage(
-        data.id
-      );
-
-    }
-
-
-    if (
-      editingMessageId ===
-      data.id
-    ) {
-
-      cancelEditing();
-
-    }
-
-  }
-);
-
-
-// ==================================================
-// 削除エラー
-// ==================================================
-
-socket.on(
-  "message delete error",
-  (data) => {
-
-    alert(
-      data?.message ||
-      "コメントを削除できませんでした。"
-    );
-
-  }
-);
-
-
-// ==================================================
-// メッセージ表示更新
-// ==================================================
-
-function updateMessageElement(
-  data
-) {
-
-  const element =
-    messages.querySelector(
-      `.message[data-message-id="${data.id}"]`
-    );
-
-
-  if (!element) {
-
-    // 現在画面にない場合は
-    // 追加
-
-    if (
-      data.room ===
-      currentRoom
-    ) {
-
-      addMessage(
-        data
-      );
-
-    }
-
-    return;
-
-  }
-
-
-  element.innerHTML = "";
 
 
   // ==================================================
@@ -1118,69 +905,979 @@ function updateMessageElement(
     "message-edited";
 
 
-  edited.textContent =
-    "編集済み";
+  if (data.edited) {
+
+    edited.textContent =
+      "編集済み";
+
+  }
 
 
   // ==================================================
-  // 再構築
+  // 返信情報
   // ==================================================
 
-  element.appendChild(
-    user
-  );
+  if (data.replyTo) {
 
-  element.appendChild(
+    createReplyPreview(
+      data,
+      message
+    );
+
+  }
+
+
+  // ==================================================
+  // 本文エリア
+  // ==================================================
+
+  const content =
+    document.createElement("div");
+
+
+  content.className =
+    "message-content";
+
+
+  content.appendChild(
     text
   );
 
-  element.appendChild(
+
+  content.appendChild(
     time
   );
 
-  element.appendChild(
-    edited
+
+  if (
+    data.edited
+  ) {
+
+    content.appendChild(
+      edited
+    );
+
+  }
+
+
+  // ==================================================
+  // 操作ボタン
+  // ==================================================
+
+  const actions =
+    document.createElement("div");
+
+
+  actions.className =
+    "message-actions";
+
+
+  // ==================================================
+  // 返信
+  // ==================================================
+
+  const replyButton =
+    document.createElement("button");
+
+
+  replyButton.type =
+    "button";
+
+
+  replyButton.className =
+    "message-action reply-action";
+
+
+  replyButton.textContent =
+    "↩️ 返信";
+
+
+  replyButton.addEventListener(
+    "click",
+    () => {
+
+      setReplyTarget(
+        data
+      );
+
+    }
   );
 
 
+  actions.appendChild(
+    replyButton
+  );
+
+
+  // ==================================================
+  // 自分のコメントか確認
+  // ==================================================
+
+  const currentUsername =
+    usernameInput.value.trim();
+
+
+  if (
+    currentUsername &&
+    currentUsername ===
+      data.username
+  ) {
+
+    // ==================================================
+    // 編集
+    // ==================================================
+
+    const editButton =
+      document.createElement(
+        "button"
+      );
+
+
+    editButton.type =
+      "button";
+
+
+    editButton.className =
+      "message-action edit-action";
+
+
+    editButton.textContent =
+      "✏️ 編集";
+
+
+    editButton.addEventListener(
+      "click",
+      () => {
+
+        editMessage(
+          data,
+          message
+        );
+
+      }
+    );
+
+
+    // ==================================================
+    // 削除
+    // ==================================================
+
+    const deleteButton =
+      document.createElement(
+        "button"
+      );
+
+
+    deleteButton.type =
+      "button";
+
+
+    deleteButton.className =
+      "message-action delete-action";
+
+
+    deleteButton.textContent =
+      "🗑️ 削除";
+
+
+    deleteButton.addEventListener(
+      "click",
+      () => {
+
+        deleteMessage(
+          data
+        );
+
+      }
+    );
+
+
+    actions.appendChild(
+      editButton
+    );
+
+
+    actions.appendChild(
+      deleteButton
+    );
+
+  }
+
+
+  // ==================================================
+  // メッセージ構築
+  // ==================================================
+
+  message.appendChild(
+    user
+  );
+
+
+  message.appendChild(
+    content
+  );
+
+
+  message.appendChild(
+    actions
+  );
+
+
+  messages.appendChild(
+    message
+  );
+
+
+  // ==================================================
+  // 自動スクロール
+  // ==================================================
+
+  if (autoScroll) {
+
+    scrollToBottom();
+
+  }
+
+}
+
+
+// ==================================================
+// 返信プレビュー
+// ==================================================
+
+function createReplyPreview(
+  data,
+  messageElement
+) {
+
+  const reply =
+    document.createElement(
+      "div"
+    );
+
+
+  reply.className =
+    "message-reply";
+
+
+  const replyIcon =
+    document.createElement(
+      "span"
+    );
+
+
+  replyIcon.className =
+    "message-reply-icon";
+
+
+  replyIcon.textContent =
+    "↩️";
+
+
+  const replyText =
+    document.createElement(
+      "span"
+    );
+
+
+  replyText.className =
+    "message-reply-text";
+
+
+  replyText.textContent =
+    `返信: コメント #${data.replyTo}`;
+
+
+  reply.appendChild(
+    replyIcon
+  );
+
+
+  reply.appendChild(
+    replyText
+  );
+
+
+  reply.addEventListener(
+    "click",
+    () => {
+
+      jumpToMessage(
+        data.replyTo
+      );
+
+    }
+  );
+
+
+  messageElement.appendChild(
+    reply
+  );
+
+}
+
+
+// ==================================================
+// 指定コメントへ移動
+// ==================================================
+
+function jumpToMessage(
+  messageId
+) {
+
+  const target =
+    document.querySelector(
+      `[data-message-id="${messageId}"]`
+    );
+
+
+  if (!target) {
+
+    console.log(
+      "返信先コメントが見つかりません:",
+      messageId
+    );
+
+    return;
+
+  }
+
+
+  target.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+
+
+  target.classList.add(
+    "message-highlight"
+  );
+
+
+  setTimeout(
+    () => {
+
+      target.classList.remove(
+        "message-highlight"
+      );
+
+    },
+    1200
+  );
+
+}
+
+
+// ==================================================
+// メッセージ編集
+// ==================================================
+
+function editMessage(
+  data,
+  messageElement
+) {
+
+  const textElement =
+    messageElement.querySelector(
+      ".message-text"
+    );
+
+
+  if (!textElement) {
+    return;
+  }
+
+
+  const oldText =
+    data.text;
+
+
+  const input =
+    document.createElement(
+      "input"
+    );
+
+
+  input.type =
+    "text";
+
+
+  input.className =
+    "message-edit-input";
+
+
+  input.maxLength =
+    500;
+
+
+  input.value =
+    oldText;
+
+
+  textElement.replaceWith(
+    input
+  );
+
+
+  input.focus();
+
+
+  input.select();
+
+
   const actions =
-    createMessageActions(
-      data
+    messageElement.querySelector(
+      ".message-actions"
     );
 
 
   if (actions) {
 
-    element.appendChild(
-      actions
+    actions.classList.add(
+      "editing"
     );
 
   }
+
+
+  const saveButton =
+    document.createElement(
+      "button"
+    );
+
+
+  saveButton.type =
+    "button";
+
+
+  saveButton.className =
+    "message-action save-edit-action";
+
+
+  saveButton.textContent =
+    "保存";
+
+
+  const cancelButton =
+    document.createElement(
+      "button"
+    );
+
+
+  cancelButton.type =
+    "button";
+
+
+  cancelButton.className =
+    "message-action cancel-edit-action";
+
+
+  cancelButton.textContent =
+    "キャンセル";
+
+
+  if (actions) {
+
+    actions.innerHTML =
+      "";
+
+
+    actions.appendChild(
+      saveButton
+    );
+
+
+    actions.appendChild(
+      cancelButton
+    );
+
+  }
+
+
+  function cancelEdit() {
+
+    const restored =
+      document.createElement(
+        "span"
+      );
+
+
+    restored.className =
+      "message-text";
+
+
+    restored.textContent =
+      oldText;
+
+
+    input.replaceWith(
+      restored
+    );
+
+
+    if (actions) {
+
+      actions.innerHTML =
+        "";
+
+
+      restoreMessageActions(
+        data,
+        messageElement,
+        actions
+      );
+
+    }
+
+  }
+
+
+  function saveEdit() {
+
+    const newText =
+      input.value.trim();
+
+
+    if (!newText) {
+
+      alert(
+        "メッセージを入力してください。"
+      );
+
+      return;
+
+    }
+
+
+    socket.emit(
+      "edit message",
+      {
+
+        id:
+          data.id,
+
+        text:
+          newText,
+
+        username:
+          usernameInput.value.trim()
+
+      }
+    );
+
+  }
+
+
+  saveButton.addEventListener(
+    "click",
+    saveEdit
+  );
+
+
+  cancelButton.addEventListener(
+    "click",
+    cancelEdit
+  );
+
+
+  input.addEventListener(
+    "keydown",
+    (event) => {
+
+      if (
+        event.key ===
+        "Enter"
+      ) {
+
+        event.preventDefault();
+
+        saveEdit();
+
+      }
+
+
+      if (
+        event.key ===
+        "Escape"
+      ) {
+
+        event.preventDefault();
+
+        cancelEdit();
+
+      }
+
+    }
+  );
 
 }
 
 
 // ==================================================
-// メッセージ画面から削除
+// メッセージ操作ボタンを復元
 // ==================================================
 
-function removeMessageElement(
-  id
+function restoreMessageActions(
+  data,
+  messageElement,
+  actions
 ) {
 
-  const element =
-    messages.querySelector(
-      `.message[data-message-id="${id}"]`
+  actions.innerHTML =
+    "";
+
+
+  const replyButton =
+    document.createElement(
+      "button"
     );
 
 
-  if (element) {
+  replyButton.type =
+    "button";
 
-    element.remove();
+
+  replyButton.className =
+    "message-action reply-action";
+
+
+  replyButton.textContent =
+    "↩️ 返信";
+
+
+  replyButton.addEventListener(
+    "click",
+    () => {
+
+      setReplyTarget(
+        data
+      );
+
+    }
+  );
+
+
+  actions.appendChild(
+    replyButton
+  );
+
+
+  const currentUsername =
+    usernameInput.value.trim();
+
+
+  if (
+    currentUsername ===
+    data.username
+  ) {
+
+    const editButton =
+      document.createElement(
+        "button"
+      );
+
+
+    editButton.type =
+      "button";
+
+
+    editButton.className =
+      "message-action edit-action";
+
+
+    editButton.textContent =
+      "✏️ 編集";
+
+
+    editButton.addEventListener(
+      "click",
+      () => {
+
+        editMessage(
+          data,
+          messageElement
+        );
+
+      }
+    );
+
+
+    const deleteButton =
+      document.createElement(
+        "button"
+      );
+
+
+    deleteButton.type =
+      "button";
+
+
+    deleteButton.className =
+      "message-action delete-action";
+
+
+    deleteButton.textContent =
+      "🗑️ 削除";
+
+
+    deleteButton.addEventListener(
+      "click",
+      () => {
+
+        deleteMessage(
+          data
+        );
+
+      }
+    );
+
+
+    actions.appendChild(
+      editButton
+    );
+
+
+    actions.appendChild(
+      deleteButton
+    );
 
   }
 
 }
+
+
+// ==================================================
+// 編集完了
+// ==================================================
+
+socket.on(
+  "message edited",
+  (data) => {
+
+    if (!data) {
+      return;
+    }
+
+
+    if (
+      data.room !==
+      currentRoom
+    ) {
+
+      return;
+
+    }
+
+
+    const messageElement =
+      document.querySelector(
+        `[data-message-id="${data.id}"]`
+      );
+
+
+    if (!messageElement) {
+      return;
+    }
+
+
+    const oldText =
+      messageElement.querySelector(
+        ".message-text"
+      );
+
+
+    const input =
+      messageElement.querySelector(
+        ".message-edit-input"
+      );
+
+
+    const newTextElement =
+      document.createElement(
+        "span"
+      );
+
+
+    newTextElement.className =
+      "message-text";
+
+
+    newTextElement.textContent =
+      data.text;
+
+
+    if (input) {
+
+      input.replaceWith(
+        newTextElement
+      );
+
+    } else if (oldText) {
+
+      oldText.replaceWith(
+        newTextElement
+      );
+
+    }
+
+
+    const actions =
+      messageElement.querySelector(
+        ".message-actions"
+      );
+
+
+    if (actions) {
+
+      restoreMessageActions(
+        data,
+        messageElement,
+        actions
+      );
+
+    }
+
+
+    // ==================================================
+    // LocalStorageも更新
+    // ==================================================
+
+    updateLocalMessage(
+      data
+    );
+
+  }
+);
+
+
+// ==================================================
+// 編集エラー
+// ==================================================
+
+socket.on(
+  "message edit error",
+  (data) => {
+
+    alert(
+      data?.message ||
+      "メッセージを編集できませんでした。"
+    );
+
+  }
+);
+
+
+// ==================================================
+// メッセージ削除
+// ==================================================
+
+function deleteMessage(
+  data
+) {
+
+  const confirmed =
+    confirm(
+      "このコメントを削除しますか？"
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  socket.emit(
+    "delete message",
+    {
+
+      id:
+        data.id,
+
+      username:
+        usernameInput.value.trim()
+
+    }
+  );
+
+}
+
+
+// ==================================================
+// 削除完了
+// ==================================================
+
+socket.on(
+  "message deleted",
+  (data) => {
+
+    if (!data) {
+      return;
+    }
+
+
+    if (
+      data.room !==
+      currentRoom
+    ) {
+
+      return;
+
+    }
+
+
+    const messageElement =
+      document.querySelector(
+        `[data-message-id="${data.id}"]`
+      );
+
+
+    if (messageElement) {
+
+      messageElement.remove();
+
+    }
+
+
+    removeLocalMessage(
+      data.id
+    );
+
+  }
+);
+
+
+// ==================================================
+// 削除エラー
+// ==================================================
+
+socket.on(
+  "message delete error",
+  (data) => {
+
+    alert(
+      data?.message ||
+      "メッセージを削除できませんでした。"
+    );
+
+  }
+);
+
+
+// ==================================================
+// 一般メッセージエラー
+// ==================================================
+
+socket.on(
+  "message error",
+  (data) => {
+
+    alert(
+      data?.message ||
+      "メッセージを送信できませんでした。"
+    );
+
+  }
+);
 
 
 // ==================================================
@@ -1214,13 +1911,8 @@ function formatTime(
   return date.toLocaleTimeString(
     "ja-JP",
     {
-
-      hour:
-        "2-digit",
-
-      minute:
-        "2-digit"
-
+      hour: "2-digit",
+      minute: "2-digit"
     }
   );
 
@@ -1238,7 +1930,7 @@ function saveLocalMessage(
   if (
     !data ||
     data.room !==
-    "casual"
+      "casual"
   ) {
 
     return;
@@ -1282,9 +1974,28 @@ function saveLocalMessage(
     stored.some(
       (item) => {
 
+        if (
+          data.id &&
+          item.id
+        ) {
+
+          return (
+            item.id ===
+            data.id
+          );
+
+        }
+
+
         return (
-          String(item.id) ===
-          String(data.id)
+          item.text ===
+            data.text &&
+
+          item.username ===
+            data.username &&
+
+          item.createdAt ===
+            data.createdAt
         );
 
       }
@@ -1292,32 +2003,13 @@ function saveLocalMessage(
 
 
   if (exists) {
-
-    // 編集などで更新された場合
-
-    stored =
-      stored.map(
-        (item) => {
-
-          if (
-            String(item.id) ===
-            String(data.id)
-          ) {
-
-            return data;
-
-          }
-
-          return item;
-
-        }
-      );
-
-  } else {
-
-    stored.push(data);
-
+    return;
   }
+
+
+  stored.push(
+    data
+  );
 
 
   stored =
@@ -1341,40 +2033,8 @@ function saveLocalMessage(
 
   localStorage.setItem(
     "veylo_casual_messages",
-    JSON.stringify(stored)
-  );
-
-}
-
-
-// ==================================================
-// LocalStorage一括保存
-// ==================================================
-
-function saveAllLocalMessages(
-  data
-) {
-
-  if (
-    !Array.isArray(data)
-  ) {
-
-    return;
-
-  }
-
-
-  const valid =
-    data.filter(
-      (item) =>
-        isMessageValid(item)
-    );
-
-
-  localStorage.setItem(
-    "veylo_casual_messages",
     JSON.stringify(
-      valid.slice(-1000)
+      stored
     )
   );
 
@@ -1382,7 +2042,7 @@ function saveAllLocalMessages(
 
 
 // ==================================================
-// LocalStorageコメント更新
+// LocalStorageのコメント更新
 // ==================================================
 
 function updateLocalMessage(
@@ -1392,7 +2052,7 @@ function updateLocalMessage(
   if (
     !data ||
     data.room !==
-    "casual"
+      "casual"
   ) {
 
     return;
@@ -1420,35 +2080,44 @@ function updateLocalMessage(
   }
 
 
-  stored =
-    stored.map(
-      (item) => {
-
-        if (
-          String(item.id) ===
-          String(data.id)
-        ) {
-
-          return data;
-
-        }
-
-        return item;
-
-      }
+  const index =
+    stored.findIndex(
+      (item) =>
+        String(item.id) ===
+        String(data.id)
     );
+
+
+  if (
+    index === -1
+  ) {
+
+    return;
+
+  }
+
+
+  stored[index] = {
+
+    ...stored[index],
+
+    ...data
+
+  };
 
 
   localStorage.setItem(
     "veylo_casual_messages",
-    JSON.stringify(stored)
+    JSON.stringify(
+      stored
+    )
   );
 
 }
 
 
 // ==================================================
-// LocalStorageコメント削除
+// LocalStorageからコメント削除
 // ==================================================
 
 function removeLocalMessage(
@@ -1485,7 +2154,43 @@ function removeLocalMessage(
 
   localStorage.setItem(
     "veylo_casual_messages",
-    JSON.stringify(stored)
+    JSON.stringify(
+      stored
+    )
+  );
+
+}
+
+
+// ==================================================
+// 過去コメントをまとめて保存
+// ==================================================
+
+function saveAllLocalMessages(
+  data
+) {
+
+  if (
+    !Array.isArray(data)
+  ) {
+
+    return;
+
+  }
+
+
+  const valid =
+    data.filter(
+      (item) =>
+        isMessageValid(item)
+    );
+
+
+  localStorage.setItem(
+    "veylo_casual_messages",
+    JSON.stringify(
+      valid.slice(-1000)
+    )
   );
 
 }
@@ -1555,11 +2260,8 @@ function loadLocalMessages() {
 function scrollToTop() {
 
   messages.scrollTo({
-
     top: 0,
-
     behavior: "smooth"
-
   });
 
 }
@@ -1572,30 +2274,143 @@ function scrollToTop() {
 function scrollToBottom() {
 
   messages.scrollTo({
-
     top:
       messages.scrollHeight,
-
     behavior: "smooth"
-
   });
 
 }
 
 
 // ==================================================
-// 部屋作成
+// 上下ボタン
+// ==================================================
+
+function createScrollButtons() {
+
+  if (
+    document.getElementById(
+      "chatScrollButtons"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  const container =
+    document.createElement(
+      "div"
+    );
+
+
+  container.id =
+    "chatScrollButtons";
+
+
+  container.className =
+    "chat-scroll-buttons";
+
+
+  const topButton =
+    document.createElement(
+      "button"
+    );
+
+
+  topButton.type =
+    "button";
+
+
+  topButton.textContent =
+    "↑ 上へ";
+
+
+  topButton.title =
+    "一番上へ";
+
+
+  topButton.addEventListener(
+    "click",
+    scrollToTop
+  );
+
+
+  const bottomButton =
+    document.createElement(
+      "button"
+    );
+
+
+  bottomButton.type =
+    "button";
+
+
+  bottomButton.textContent =
+    "↓ 下へ";
+
+
+  bottomButton.title =
+    "一番下へ";
+
+
+  bottomButton.addEventListener(
+    "click",
+    scrollToBottom
+  );
+
+
+  container.appendChild(
+    topButton
+  );
+
+
+  container.appendChild(
+    bottomButton
+  );
+
+
+  const chatContainer =
+    document.querySelector(
+      ".chat-container"
+    );
+
+
+  if (chatContainer) {
+
+    chatContainer.appendChild(
+      container
+    );
+
+  }
+
+}
+
+
+// ==================================================
+// 上下ボタン作成
+// ==================================================
+
+createScrollButtons();
+
+
+// ==================================================
+// 部屋作成ボタン
 // ==================================================
 
 createRoomButton.addEventListener(
   "click",
   () => {
 
-    roomNameInput.value = "";
+    roomNameInput.value =
+      "";
+
 
     createModal.classList.remove(
       "hidden"
     );
+
 
     roomNameInput.focus();
 
@@ -1690,7 +2505,11 @@ socket.on(
     );
 
 
-    messages.innerHTML = "";
+    messages.innerHTML =
+      "";
+
+
+    clearReplyTarget();
 
 
     updateBackToCasualButton();
@@ -1700,13 +2519,53 @@ socket.on(
       `部屋を作成しました。\n\n招待コード: ${room.inviteCode}`
     );
 
+  }
+);
+
+
+// ==================================================
+// 雑談へ戻る
+// ==================================================
+
+backToCasualButton.addEventListener(
+  "click",
+  () => {
+
+    if (
+      currentRoom ===
+      "casual"
+    ) {
+
+      return;
+
+    }
+
+
+    currentRoom =
+      "casual";
+
+
+    roomName.textContent =
+      "雑談";
+
+
+    inviteArea.classList.add(
+      "hidden"
+    );
+
+
+    messages.innerHTML =
+      "";
+
+
+    clearReplyTarget();
+
+
+    updateBackToCasualButton();
+
 
     socket.emit(
-      "join room",
-      {
-        code:
-          room.inviteCode
-      }
+      "join casual"
     );
 
   }
@@ -1714,92 +2573,15 @@ socket.on(
 
 
 // ==================================================
-// 雑談ボタン
-// ==================================================
-
-if (casualRoomButton) {
-
-  casualRoomButton.addEventListener(
-    "click",
-    () => {
-
-      goToCasual();
-
-    }
-  );
-
-}
-
-
-// ==================================================
-// 雑談へ戻る
-// ==================================================
-
-if (backToCasualButton) {
-
-  backToCasualButton.addEventListener(
-    "click",
-    () => {
-
-      goToCasual();
-
-    }
-  );
-
-}
-
-
-// ==================================================
-// 雑談へ移動
-// ==================================================
-
-function goToCasual() {
-
-  if (
-    currentRoom ===
-    "casual"
-  ) {
-
-    return;
-
-  }
-
-
-  currentRoom =
-    "casual";
-
-
-  roomName.textContent =
-    "雑談";
-
-
-  inviteArea.classList.add(
-    "hidden"
-  );
-
-
-  messages.innerHTML = "";
-
-
-  updateBackToCasualButton();
-
-
-  socket.emit(
-    "join casual"
-  );
-
-}
-
-
-// ==================================================
-// 雑談参加完了
+// 雑談へ戻ったとき
 // ==================================================
 
 socket.on(
   "casual joined",
   () => {
 
-    messages.innerHTML = "";
+    messages.innerHTML =
+      "";
 
     loadLocalMessages();
 
@@ -1808,7 +2590,7 @@ socket.on(
 
 
 // ==================================================
-// 雑談ボタン表示
+// 雑談ボタン表示更新
 // ==================================================
 
 function updateBackToCasualButton() {
@@ -1843,20 +2625,25 @@ function updateBackToCasualButton() {
 
 
 // ==================================================
-// 部屋参加
+// 部屋参加ボタン
 // ==================================================
 
 joinRoomButton.addEventListener(
   "click",
   () => {
 
-    inviteCodeInput.value = "";
+    inviteCodeInput.value =
+      "";
 
-    joinError.textContent = "";
+
+    joinError.textContent =
+      "";
+
 
     joinModal.classList.remove(
       "hidden"
     );
+
 
     inviteCodeInput.focus();
 
@@ -1952,7 +2739,11 @@ socket.on(
     );
 
 
-    messages.innerHTML = "";
+    messages.innerHTML =
+      "";
+
+
+    clearReplyTarget();
 
 
     updateBackToCasualButton();
@@ -2043,6 +2834,7 @@ if (themeToggleButton) {
       darkMode =
         !darkMode;
 
+
       updateTheme();
 
     }
@@ -2063,6 +2855,7 @@ if (grayToggleButton) {
 
       grayMode =
         !grayMode;
+
 
       updateTheme();
 
@@ -2090,14 +2883,12 @@ function updateTheme() {
   );
 
 
-  if (
-    themeToggleButton
-  ) {
+  if (themeToggleButton) {
 
     themeToggleButton.textContent =
-      darkMode ?
-      "ON" :
-      "OFF";
+      darkMode
+        ? "ON"
+        : "OFF";
 
 
     themeToggleButton.classList.toggle(
@@ -2108,14 +2899,12 @@ function updateTheme() {
   }
 
 
-  if (
-    grayToggleButton
-  ) {
+  if (grayToggleButton) {
 
     grayToggleButton.textContent =
-      grayMode ?
-      "ON" :
-      "OFF";
+      grayMode
+        ? "ON"
+        : "OFF";
 
 
     grayToggleButton.classList.toggle(
@@ -2178,6 +2967,18 @@ if (saveSettingsButton) {
       );
 
 
+      localStorage.setItem(
+        "veylo_dark_mode",
+        darkMode
+      );
+
+
+      localStorage.setItem(
+        "veylo_gray_mode",
+        grayMode
+      );
+
+
       updateTheme();
 
 
@@ -2192,7 +2993,7 @@ if (saveSettingsButton) {
 
 
 // ==================================================
-// Enter：部屋作成
+// Enterキー：部屋作成
 // ==================================================
 
 roomNameInput.addEventListener(
@@ -2215,7 +3016,7 @@ roomNameInput.addEventListener(
 
 
 // ==================================================
-// Enter：部屋参加
+// Enterキー：部屋参加
 // ==================================================
 
 inviteCodeInput.addEventListener(
@@ -2279,46 +3080,18 @@ joinModal.addEventListener(
 );
 
 
-if (settingsModal) {
-
-  settingsModal.addEventListener(
-    "click",
-    (event) => {
-
-      if (
-        event.target ===
-        settingsModal
-      ) {
-
-        settingsModal.classList.add(
-          "hidden"
-        );
-
-      }
-
-    }
-  );
-
-}
-
-
-// ==================================================
-// Escキー
-//
-// 編集中なら編集をキャンセル
-// ==================================================
-
-document.addEventListener(
-  "keydown",
+settingsModal.addEventListener(
+  "click",
   (event) => {
 
     if (
-      event.key ===
-      "Escape" &&
-      editingMessageId !== null
+      event.target ===
+      settingsModal
     ) {
 
-      cancelEditing();
+      settingsModal.classList.add(
+        "hidden"
+      );
 
     }
 
@@ -2327,20 +3100,18 @@ document.addEventListener(
 
 
 // ==================================================
-// 初期化
+// 初期設定
 // ==================================================
-
-cleanupLocalMessages();
-
-loadLocalMessages();
 
 updateTheme();
 
 updateBackToCasualButton();
 
+cleanupLocalMessages();
+
 
 // ==================================================
-// 10分ごとに古いコメントを掃除
+// 24時間ごとにブラウザ側も掃除
 // ==================================================
 
 setInterval(
@@ -2351,89 +3122,3 @@ setInterval(
   },
   10 * 60 * 1000
 );
-
-
-// ==================================================
-// 5秒ごとに表示中コメントの期限確認
-// ==================================================
-
-setInterval(
-  () => {
-
-    const elements =
-      messages.querySelectorAll(
-        ".message"
-      );
-
-
-    elements.forEach(
-      (element) => {
-
-        const id =
-          element.dataset.messageId;
-
-
-        if (!id) {
-          return;
-        }
-
-
-        // LocalStorage側で
-        // 期限切れを掃除
-
-        cleanupLocalMessages();
-
-      }
-    );
-
-  },
-  5 * 1000
-);
-
-
-// ==================================================
-// 上へ・下へボタン
-//
-// HTML側に以下のIDがあれば自動的に使用します:
-//
-// scrollTopButton
-// scrollBottomButton
-// ==================================================
-
-const scrollTopButton =
-  document.getElementById(
-    "scrollTopButton"
-  );
-
-const scrollBottomButton =
-  document.getElementById(
-    "scrollBottomButton"
-  );
-
-
-if (scrollTopButton) {
-
-  scrollTopButton.addEventListener(
-    "click",
-    () => {
-
-      scrollToTop();
-
-    }
-  );
-
-}
-
-
-if (scrollBottomButton) {
-
-  scrollBottomButton.addEventListener(
-    "click",
-    () => {
-
-      scrollToBottom();
-
-    }
-  );
-
-}
