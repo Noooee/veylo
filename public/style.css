@@ -1,4 +1,9 @@
 /* ==========================================
+   Veylo style.css
+========================================== */
+
+
+/* ==========================================
    基本設定
 ========================================== */
 
@@ -48,8 +53,7 @@ body {
 
   justify-content: space-between;
 
-  padding:
-    0 24px;
+  padding: 0 24px;
 
   position: sticky;
 
@@ -85,8 +89,7 @@ body {
 
   border-radius: 10px;
 
-  padding:
-    9px 14px;
+  padding: 9px 14px;
 
   font-size: 14px;
 
@@ -150,6 +153,7 @@ body {
   height: calc(100vh - 64px);
 }
 
+
 /* ==========================================
    ルームヘッダー
 ========================================== */
@@ -177,8 +181,7 @@ body {
 }
 
 .room-header h1 {
-  margin:
-    3px 0 0;
+  margin: 3px 0 0;
 
   font-size: 26px;
 
@@ -193,8 +196,7 @@ body {
 
   border-radius: 10px;
 
-  padding:
-    8px 12px;
+  padding: 8px 12px;
 
   font-size: 12px;
 
@@ -212,7 +214,6 @@ body {
 
 /* ==========================================
    チャット
-   → 以前より大きく
 ========================================== */
 
 .chat-container {
@@ -252,10 +253,12 @@ body {
 ========================================== */
 
 .message {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 
   animation:
     messageIn 0.15s ease;
+
+  position: relative;
 }
 
 @keyframes messageIn {
@@ -291,8 +294,7 @@ body {
 
   max-width: 90%;
 
-  padding:
-    10px 13px;
+  padding: 10px 13px;
 
   background: #f1f3f8;
 
@@ -316,6 +318,231 @@ body {
 
 
 /* ==========================================
+   編集・削除ボタン
+========================================== */
+
+.message-actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 5px;
+
+  margin-top: 6px;
+}
+
+.message-action-button {
+  border: none;
+
+  border-radius: 7px;
+
+  padding:
+    4px 8px;
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  background: #eef0f5;
+
+  color: #687184;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.message-action-button:hover {
+  background: #e1e4ec;
+
+  transform:
+    translateY(-1px);
+}
+
+
+/* 編集 */
+
+.message-edit-button {
+  color: #5865f2;
+
+  background: #eef0ff;
+}
+
+.message-edit-button:hover {
+  background: #dfe3ff;
+
+  color: #4752c4;
+}
+
+
+/* 削除 */
+
+.message-delete-button {
+  color: #e5484d;
+
+  background: #fff0f0;
+}
+
+.message-delete-button:hover {
+  background: #ffe0e0;
+
+  color: #c92f35;
+}
+
+
+/* ==========================================
+   編集中の入力欄
+========================================== */
+
+.message-edit-input {
+  display: block;
+
+  width: min(90%, 600px);
+
+  padding:
+    9px 11px;
+
+  margin-top: 5px;
+
+  border:
+    1px solid #5865f2;
+
+  border-radius: 9px;
+
+  outline: none;
+
+  font-family: inherit;
+
+  font-size: 14px;
+
+  color: #172033;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(88, 101, 242, 0.10);
+}
+
+.message-edit-actions {
+  display: flex;
+
+  gap: 6px;
+
+  margin-top: 6px;
+}
+
+.message-save-button,
+.message-cancel-button {
+  border: none;
+
+  border-radius: 7px;
+
+  padding:
+    5px 10px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.message-save-button {
+  background: #5865f2;
+
+  color: white;
+}
+
+.message-save-button:hover {
+  background: #4752c4;
+}
+
+.message-cancel-button {
+  background: #eef0f4;
+
+  color: #555e70;
+}
+
+.message-cancel-button:hover {
+  background: #e1e4ea;
+}
+
+
+/* ==========================================
+   上へ・下へボタン
+========================================== */
+
+.message-scroll-buttons {
+  position: fixed;
+
+  right: 24px;
+
+  bottom: 90px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+
+  z-index: 20;
+}
+
+.scroll-button {
+  border: none;
+
+  min-width: 78px;
+
+  padding:
+    8px 11px;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #5865f2;
+
+  border:
+    1px solid #e1e4eb;
+
+  box-shadow:
+    0 4px 14px
+    rgba(30, 40, 70, 0.10);
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.scroll-button:hover {
+  background: #eef0ff;
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 6px 18px
+    rgba(30, 40, 70, 0.14);
+}
+
+.scroll-button:active {
+  transform:
+    translateY(0);
+}
+
+
+/* ==========================================
    入力フォーム
 ========================================== */
 
@@ -335,8 +562,7 @@ body {
 
   border-radius: 10px;
 
-  padding:
-    12px;
+  padding: 12px;
 
   outline: none;
 
@@ -370,8 +596,7 @@ body {
 
   border-radius: 10px;
 
-  padding:
-    0 20px;
+  padding: 0 20px;
 
   font-weight: 700;
 
@@ -488,8 +713,7 @@ body {
 
   justify-content: space-between;
 
-  padding:
-    14px 0;
+  padding: 14px 0;
 
   border-top:
     1px solid #edf0f5;
@@ -701,6 +925,60 @@ body.dark-mode .header-button.secondary {
 
 
 /* ==========================================
+   ダークモード
+   編集・スクロールボタン
+========================================== */
+
+body.dark-mode .message-action-button {
+  background: #30343d;
+
+  color: #c8cdd7;
+}
+
+body.dark-mode .message-edit-button {
+  background: #30365c;
+
+  color: #aeb6ff;
+}
+
+body.dark-mode .message-delete-button {
+  background: #4a2d31;
+
+  color: #ff9b9f;
+}
+
+body.dark-mode .message-edit-input {
+  background: #15171c;
+
+  border-color: #5865f2;
+
+  color: #f1f3f7;
+}
+
+body.dark-mode .message-cancel-button {
+  background: #30343d;
+
+  color: #e2e5eb;
+}
+
+body.dark-mode .scroll-button {
+  background: #1d2027;
+
+  border-color: #363b45;
+
+  color: #aeb6ff;
+
+  box-shadow:
+    0 5px 18px
+    rgba(0, 0, 0, 0.30);
+}
+
+body.dark-mode .scroll-button:hover {
+  background: #2c3040;
+}
+
+
+/* ==========================================
    グレーモード
 ========================================== */
 
@@ -782,6 +1060,10 @@ body.gray-mode {
     max-width: 94%;
   }
 
+  .message-edit-input {
+    width: 94%;
+  }
+
   .message-form {
     gap: 5px;
   }
@@ -800,203 +1082,28 @@ body.gray-mode {
       0 12px;
   }
 
-}
+  .message-scroll-buttons {
+    right: 10px;
 
-/* ==========================================
-   チャット移動ボタン
-========================================== */
+    bottom: 82px;
 
-.chat-container {
-  position: relative;
-}
+    gap: 5px;
+  }
 
-.chat-scroll-buttons {
-  position: absolute;
+  .scroll-button {
+    min-width: 64px;
 
-  right: 14px;
-  bottom: 14px;
+    padding:
+      7px 8px;
 
-  display: flex;
-  flex-direction: column;
+    font-size: 10px;
+  }
 
-  gap: 6px;
+  .message-action-button {
+    padding:
+      4px 7px;
 
-  z-index: 5;
-}
+    font-size: 10px;
+  }
 
-.chat-scroll-button {
-  width: 38px;
-  height: 38px;
-
-  border: 1px solid #e1e4eb;
-
-  border-radius: 50%;
-
-  background: rgba(255, 255, 255, 0.95);
-
-  color: #5865f2;
-
-  font-size: 17px;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 3px 12px
-    rgba(30, 40, 70, 0.12);
-
-  transition:
-    transform 0.15s ease,
-    background 0.2s ease;
-}
-
-.chat-scroll-button:hover {
-  transform: translateY(-2px);
-
-  background: #eef0ff;
-}
-
-
-/* ==========================================
-   メッセージ操作
-========================================== */
-
-.message {
-  position: relative;
-}
-
-.message-actions {
-  display: flex;
-
-  gap: 5px;
-
-  margin-top: 5px;
-}
-
-.message-action-button {
-  border: none;
-
-  background: transparent;
-
-  color: #8b93a5;
-
-  font-size: 11px;
-
-  padding: 3px 6px;
-
-  border-radius: 5px;
-
-  cursor: pointer;
-}
-
-.message-action-button:hover {
-  background: #eef0ff;
-
-  color: #5865f2;
-}
-
-
-/* ==========================================
-   リプライ表示
-========================================== */
-
-.message-reply {
-  margin-bottom: 6px;
-
-  padding: 7px 10px;
-
-  border-left: 3px solid #5865f2;
-
-  background: #f5f6fa;
-
-  border-radius: 6px;
-
-  color: #747c8d;
-
-  font-size: 11px;
-
-  max-width: 90%;
-}
-
-.message-reply-name {
-  font-weight: 700;
-
-  color: #5865f2;
-}
-
-
-/* ==========================================
-   編集中
-========================================== */
-
-.message-edit-input {
-  width: min(90%, 500px);
-
-  padding: 9px 11px;
-
-  border:
-    1px solid #5865f2;
-
-  border-radius: 9px;
-
-  outline: none;
-
-  font-size: 14px;
-}
-
-.message-edit-buttons {
-  display: flex;
-
-  gap: 5px;
-
-  margin-top: 5px;
-}
-
-
-/* ==========================================
-   スレッド
-========================================== */
-
-.thread-button {
-  color: #5865f2;
-}
-
-
-/* ==========================================
-   ダークモード
-========================================== */
-
-body.dark-mode .chat-scroll-button {
-  background: #292d35;
-
-  border-color: #3a3f49;
-
-  color: #aeb6ff;
-}
-
-body.dark-mode .chat-scroll-button:hover {
-  background: #343947;
-}
-
-body.dark-mode .message-action-button {
-  color: #858d9d;
-}
-
-body.dark-mode .message-action-button:hover {
-  background: #343947;
-
-  color: #aeb6ff;
-}
-
-body.dark-mode .message-reply {
-  background: #292d35;
-
-  color: #aeb5c3;
-}
-
-body.dark-mode .message-edit-input {
-  background: #1d2027;
-
-  color: #f1f3f7;
-
-  border-color: #5865f2;
 }
