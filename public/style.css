@@ -801,3 +801,202 @@ body.gray-mode {
   }
 
 }
+
+/* ==========================================
+   チャット移動ボタン
+========================================== */
+
+.chat-container {
+  position: relative;
+}
+
+.chat-scroll-buttons {
+  position: absolute;
+
+  right: 14px;
+  bottom: 14px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 6px;
+
+  z-index: 5;
+}
+
+.chat-scroll-button {
+  width: 38px;
+  height: 38px;
+
+  border: 1px solid #e1e4eb;
+
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.95);
+
+  color: #5865f2;
+
+  font-size: 17px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 3px 12px
+    rgba(30, 40, 70, 0.12);
+
+  transition:
+    transform 0.15s ease,
+    background 0.2s ease;
+}
+
+.chat-scroll-button:hover {
+  transform: translateY(-2px);
+
+  background: #eef0ff;
+}
+
+
+/* ==========================================
+   メッセージ操作
+========================================== */
+
+.message {
+  position: relative;
+}
+
+.message-actions {
+  display: flex;
+
+  gap: 5px;
+
+  margin-top: 5px;
+}
+
+.message-action-button {
+  border: none;
+
+  background: transparent;
+
+  color: #8b93a5;
+
+  font-size: 11px;
+
+  padding: 3px 6px;
+
+  border-radius: 5px;
+
+  cursor: pointer;
+}
+
+.message-action-button:hover {
+  background: #eef0ff;
+
+  color: #5865f2;
+}
+
+
+/* ==========================================
+   リプライ表示
+========================================== */
+
+.message-reply {
+  margin-bottom: 6px;
+
+  padding: 7px 10px;
+
+  border-left: 3px solid #5865f2;
+
+  background: #f5f6fa;
+
+  border-radius: 6px;
+
+  color: #747c8d;
+
+  font-size: 11px;
+
+  max-width: 90%;
+}
+
+.message-reply-name {
+  font-weight: 700;
+
+  color: #5865f2;
+}
+
+
+/* ==========================================
+   編集中
+========================================== */
+
+.message-edit-input {
+  width: min(90%, 500px);
+
+  padding: 9px 11px;
+
+  border:
+    1px solid #5865f2;
+
+  border-radius: 9px;
+
+  outline: none;
+
+  font-size: 14px;
+}
+
+.message-edit-buttons {
+  display: flex;
+
+  gap: 5px;
+
+  margin-top: 5px;
+}
+
+
+/* ==========================================
+   スレッド
+========================================== */
+
+.thread-button {
+  color: #5865f2;
+}
+
+
+/* ==========================================
+   ダークモード
+========================================== */
+
+body.dark-mode .chat-scroll-button {
+  background: #292d35;
+
+  border-color: #3a3f49;
+
+  color: #aeb6ff;
+}
+
+body.dark-mode .chat-scroll-button:hover {
+  background: #343947;
+}
+
+body.dark-mode .message-action-button {
+  color: #858d9d;
+}
+
+body.dark-mode .message-action-button:hover {
+  background: #343947;
+
+  color: #aeb6ff;
+}
+
+body.dark-mode .message-reply {
+  background: #292d35;
+
+  color: #aeb5c3;
+}
+
+body.dark-mode .message-edit-input {
+  background: #1d2027;
+
+  color: #f1f3f7;
+
+  border-color: #5865f2;
+}
