@@ -1,6 +1,5 @@
 /* ==========================================
-   Veylo - Style.css
-   モダン / Discord風 / レスポンシブ
+   Veylo 全体CSS
 ========================================== */
 
 * {
@@ -26,8 +25,8 @@ body {
     linear-gradient(
       135deg,
       #f5f7ff 0%,
-      #eef1ff 50%,
-      #f8f9fc 100%
+      #eef1fb 50%,
+      #f8f9fd 100%
     );
 
   color: #172033;
@@ -43,17 +42,17 @@ body {
 ========================================== */
 
 .header {
-  height: 64px;
+  height: 58px;
 
   background:
     linear-gradient(
-      135deg,
-      #ffffff 0%,
-      #f8f9ff 100%
+      90deg,
+      #ffffff,
+      #f8f9ff
     );
 
   border-bottom:
-    1px solid #e3e6ef;
+    1px solid #e4e7f0;
 
   display: flex;
 
@@ -62,37 +61,27 @@ body {
   justify-content: space-between;
 
   padding:
-    0 24px;
+    0 20px;
 
   position: sticky;
 
   top: 0;
 
-  z-index: 20;
+  z-index: 10;
 
   box-shadow:
-    0 4px 18px
-    rgba(40, 50, 90, 0.06);
+    0 3px 15px
+    rgba(60, 70, 110, 0.06);
 }
 
 .logo {
-  font-size: 25px;
+  font-size: 23px;
 
   font-weight: 800;
 
   letter-spacing: -1px;
 
-  background:
-    linear-gradient(
-      135deg,
-      #5865f2,
-      #7c5cff
-    );
-
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-
-  background-clip: text;
+  color: #5865f2;
 }
 
 .header-actions {
@@ -100,9 +89,7 @@ body {
 
   align-items: center;
 
-  gap: 8px;
-
-  flex-wrap: nowrap;
+  gap: 7px;
 }
 
 .header-button {
@@ -111,92 +98,81 @@ body {
   background:
     linear-gradient(
       135deg,
-      #5865f2,
-      #6f5cf4
+      #6875ff,
+      #5865f2
     );
 
   color: white;
 
-  border-radius: 10px;
+  border-radius: 9px;
 
   padding:
-    9px 14px;
+    8px 13px;
 
-  font-size: 14px;
+  font-size: 13px;
 
-  font-weight: 600;
+  font-weight: 700;
 
   cursor: pointer;
-
-  white-space: nowrap;
 
   transition:
     transform 0.15s ease,
     box-shadow 0.2s ease,
-    filter 0.2s ease;
+    background 0.2s ease;
+
+  box-shadow:
+    0 3px 8px
+    rgba(88, 101, 242, 0.18);
 }
 
 .header-button:hover {
   transform:
     translateY(-1px);
 
-  filter:
-    brightness(1.04);
-
   box-shadow:
     0 5px 14px
     rgba(88, 101, 242, 0.25);
 }
 
-.header-button:active {
-  transform:
-    translateY(0);
-}
-
 .header-button.secondary {
   background:
-    linear-gradient(
-      135deg,
-      #eef0ff,
-      #e7eaff
-    );
+    #eef0ff;
 
-  color: #5865f2;
+  color:
+    #5865f2;
+
+  box-shadow:
+    none;
 }
 
 .header-button.secondary:hover {
   background:
-    linear-gradient(
-      135deg,
-      #e5e8ff,
-      #dde1ff
-    );
+    #e3e6ff;
 }
 
 
 /* ==========================================
    メイン
+   → 部屋名をコンパクトにして
+     チャット欄を最大化
 ========================================== */
 
 .main {
   width: 100%;
 
-  max-width: 980px;
+  max-width: 900px;
 
   margin: 0 auto;
 
   padding:
-    22px 20px 18px;
+    10px 18px 12px;
 
   display: flex;
 
   flex-direction: column;
 
-  /*
-    ヘッダーを除いた画面いっぱいを使用
-  */
   height:
-    calc(100vh - 64px);
+    calc(100vh - 58px);
 
   min-height: 0;
 }
@@ -204,106 +180,131 @@ body {
 
 /* ==========================================
    ルームヘッダー
+   → 小さく・コンパクト
 ========================================== */
 
 .room-header {
   display: flex;
 
-  justify-content: space-between;
-
   align-items: center;
 
-  margin-bottom: 12px;
+  justify-content: space-between;
 
-  min-height: 58px;
+  gap: 12px;
+
+  min-height: 38px;
+
+  margin-bottom: 7px;
 
   flex-shrink: 0;
 }
 
+.room-header > div:first-child {
+  min-width: 0;
+}
+
 .room-label {
-  font-size: 11px;
+  font-size: 9px;
 
-  color: #8c94a7;
+  line-height: 1;
 
-  font-weight: 700;
+  color: #949bad;
+
+  font-weight: 800;
 
   letter-spacing: 1px;
 }
 
 .room-header h1 {
   margin:
-    3px 0 0;
+    2px 0 0;
 
-  font-size: 26px;
+  font-size: 19px;
 
-  line-height: 1.2;
+  line-height: 1.1;
+
+  font-weight: 750;
+
+  color: #252c3d;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
 }
 
+
+/* ==========================================
+   招待コード
+========================================== */
+
 .invite-area {
+  flex-shrink: 0;
+
   background:
-    linear-gradient(
-      135deg,
-      #ffffff,
-      #f7f8ff
-    );
+    rgba(255, 255, 255, 0.9);
 
   border:
-    1px solid #e1e4ee;
+    1px solid #e1e4ed;
 
-  border-radius: 10px;
+  border-radius: 9px;
 
   padding:
-    8px 12px;
+    5px 9px;
 
-  font-size: 12px;
+  font-size: 10px;
 
-  color: #737b8e;
+  color: #7d8495;
 
   box-shadow:
-    0 3px 10px
-    rgba(40, 50, 90, 0.05);
+    0 2px 8px
+    rgba(40, 50, 80, 0.04);
 }
 
 .invite-area strong {
   color: #5865f2;
 
-  font-size: 14px;
+  font-size: 12px;
 
-  margin-left: 6px;
+  margin-left: 5px;
 }
 
 
 /* ==========================================
-   チャットコンテナ
-   ★ 縦長を優先
+   チャット欄
+   → ここを最大限縦長にする
 ========================================== */
 
 .chat-container {
-  flex: 1;
+  flex:
+    1 1 0;
 
-  min-height: 0;
-
-  height: auto;
+  min-height:
+    0;
 
   background:
     linear-gradient(
       145deg,
-      #ffffff 0%,
-      #fafbff 100%
+      #ffffff,
+      #fbfcff
     );
 
   border:
-    1px solid #e0e4ed;
+    1px solid #e0e4ee;
 
-  border-radius: 16px;
+  border-radius:
+    15px;
 
-  overflow: hidden;
+  overflow:
+    hidden;
 
   box-shadow:
-    0 8px 30px
-    rgba(35, 45, 80, 0.08);
+    0 5px 22px
+    rgba(35, 45, 80, 0.07);
 
-  position: relative;
+  position:
+    relative;
 }
 
 
@@ -312,32 +313,37 @@ body {
 ========================================== */
 
 .messages {
-  width: 100%;
+  width:
+    100%;
 
-  height: 100%;
+  height:
+    100%;
 
-  overflow-y: auto;
+  overflow-y:
+    auto;
 
-  overflow-x: hidden;
+  overflow-x:
+    hidden;
 
   padding:
-    24px 24px 40px;
+    18px 20px;
 
-  scroll-behavior: smooth;
+  scroll-behavior:
+    smooth;
 
-  /*
-    下端のコメントがボタンに
-    隠れないよう余白を確保
-  */
-  scrollbar-width: thin;
+  scrollbar-width:
+    thin;
 
   scrollbar-color:
-    #c8ccda
+    #c8cde0
     transparent;
 }
 
+
+/* Chrome / Edge / Safari */
+
 .messages::-webkit-scrollbar {
-  width: 8px;
+  width: 7px;
 }
 
 .messages::-webkit-scrollbar-track {
@@ -345,13 +351,16 @@ body {
 }
 
 .messages::-webkit-scrollbar-thumb {
-  background: #c8ccda;
+  background:
+    #c8cde0;
 
-  border-radius: 10px;
+  border-radius:
+    10px;
 }
 
 .messages::-webkit-scrollbar-thumb:hover {
-  background: #aeb4c6;
+  background:
+    #aeb5cf;
 }
 
 
@@ -360,15 +369,26 @@ body {
 ========================================== */
 
 .message {
-  position: relative;
+  position:
+    relative;
 
-  margin-bottom: 18px;
+  margin-bottom:
+    13px;
 
   padding:
-    2px 4px;
+    9px 11px;
 
-  animation:
-    messageIn 0.15s ease;
+  border-radius:
+    11px;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.message:hover {
+  background:
+    rgba(88, 101, 242, 0.035);
 }
 
 @keyframes messageIn {
@@ -389,33 +409,29 @@ body {
 
 }
 
-
-/* ==========================================
-   ユーザー名
-========================================== */
-
 .message-user {
-  font-size: 13px;
+  font-size:
+    12px;
 
-  font-weight: 700;
+  font-weight:
+    750;
 
-  color: #5865f2;
+  color:
+    #5865f2;
 
-  margin-bottom: 4px;
+  margin-bottom:
+    3px;
 }
 
-
-/* ==========================================
-   本文
-========================================== */
-
 .message-text {
-  display: inline-block;
+  display:
+    inline-block;
 
-  max-width: 90%;
+  max-width:
+    90%;
 
   padding:
-    10px 13px;
+    8px 11px;
 
   background:
     linear-gradient(
@@ -427,463 +443,269 @@ body {
   border-radius:
     5px 12px 12px 12px;
 
-  font-size: 15px;
+  font-size:
+    14px;
 
-  line-height: 1.55;
+  line-height:
+    1.5;
 
-  word-break: break-word;
+  word-break:
+    break-word;
 
-  color: #20283a;
-
-  box-shadow:
-    0 2px 5px
-    rgba(40, 50, 80, 0.04);
+  color:
+    #20283a;
 }
-
-
-/* ==========================================
-   時刻
-========================================== */
 
 .message-time {
-  font-size: 10px;
+  font-size:
+    9px;
 
-  color: #9aa2b2;
+  color:
+    #9ca3b3;
 
-  margin-left: 7px;
+  margin-left:
+    6px;
 }
 
 
 /* ==========================================
-   編集済み表示
+   編集・削除・返信ボタン
 ========================================== */
 
-.edited-label {
-  font-size: 10px;
+.message-actions {
+  display:
+    flex;
 
-  color: #9aa2b2;
+  align-items:
+    center;
 
-  margin-left: 5px;
+  gap:
+    5px;
+
+  margin-top:
+    6px;
+
+  flex-wrap:
+    wrap;
 }
 
+.message-actions button {
+  border:
+    1px solid #e0e3ec;
 
-/* ==========================================
-   返信元
-========================================== */
+  background:
+    rgba(255, 255, 255, 0.95);
 
-.reply-preview {
-  display: flex;
-
-  align-items: center;
-
-  gap: 8px;
-
-  max-width: 90%;
-
-  margin-bottom: 6px;
-
-  padding:
-    7px 10px;
-
-  border-left:
-    3px solid #5865f2;
+  color:
+    #626b7d;
 
   border-radius:
     7px;
 
+  padding:
+    4px 8px;
+
+  font-size:
+    11px;
+
+  font-weight:
+    650;
+
+  cursor:
+    pointer;
+
+  white-space:
+    nowrap;
+
+  transition:
+    all 0.15s ease;
+}
+
+.message-actions button:hover {
   background:
-    linear-gradient(
-      135deg,
-      #f1f2ff,
-      #f7f7ff
-    );
+    #eef0ff;
 
-  color: #687184;
+  border-color:
+    #cdd2ff;
 
-  font-size: 12px;
+  color:
+    #5865f2;
 
-  line-height: 1.4;
-
-  overflow: hidden;
+  transform:
+    translateY(-1px);
 }
 
-.reply-preview::before {
-  content: "↪";
+.message-actions .delete-button:hover {
+  background:
+    #fff0f1;
 
-  color: #5865f2;
+  border-color:
+    #ffc8cc;
 
-  font-size: 15px;
-
-  font-weight: 700;
-
-  flex-shrink: 0;
+  color:
+    #e5484d;
 }
 
-.reply-preview-user {
-  color: #5865f2;
 
-  font-weight: 700;
+/* ==========================================
+   返信元表示
+   → 誰への返信か分かるようにする
+========================================== */
 
-  flex-shrink: 0;
+.reply-preview {
+  margin:
+    0 0 6px;
+
+  padding:
+    6px 9px;
+
+  border-left:
+    3px solid #5865f2;
+
+  background:
+    #f1f2ff;
+
+  border-radius:
+    6px;
+
+  color:
+    #626a80;
+
+  font-size:
+    11px;
+
+  line-height:
+    1.4;
+
+  max-width:
+    90%;
+}
+
+.reply-preview strong {
+  color:
+    #5865f2;
 }
 
 .reply-preview-text {
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
+  color:
+    #555e72;
 }
 
 
 /* ==========================================
-   「○○さんの『○○』に返信」表示
-========================================== */
-
-.reply-target {
-  display: flex;
-
-  align-items: center;
-
-  gap: 7px;
-
-  width: fit-content;
-
-  max-width: 100%;
-
-  margin-bottom: 7px;
-
-  padding:
-    6px 10px;
-
-  background:
-    rgba(88, 101, 242, 0.08);
-
-  border:
-    1px solid
-    rgba(88, 101, 242, 0.13);
-
-  border-radius: 8px;
-
-  color: #687184;
-
-  font-size: 12px;
-
-  line-height: 1.4;
-}
-
-.reply-target strong {
-  color: #5865f2;
-}
-
-.reply-target .reply-quote {
-  max-width: 260px;
-
-  overflow: hidden;
-
-  white-space: nowrap;
-
-  text-overflow: ellipsis;
-
-  color: #525b6e;
-}
-
-
-/* ==========================================
-   メッセージ操作エリア
-========================================== */
-
-.message-actions {
-  display: flex;
-
-  align-items: center;
-
-  gap: 5px;
-
-  margin-top: 7px;
-
-  flex-wrap: wrap;
-}
-
-
-/* ==========================================
-   返信ボタン
-========================================== */
-
-.reply-button {
-  border:
-    1px solid #dfe3ee;
-
-  background:
-    linear-gradient(
-      135deg,
-      #ffffff,
-      #f5f6fb
-    );
-
-  color: #596276;
-
-  border-radius: 7px;
-
-  padding:
-    5px 9px;
-
-  font-size: 11px;
-
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition:
-    0.18s ease;
-}
-
-.reply-button:hover {
-  background: #eef0ff;
-
-  color: #5865f2;
-
-  border-color: #cdd2ff;
-
-  transform:
-    translateY(-1px);
-}
-
-
-/* ==========================================
-   編集・削除ボタン
-========================================== */
-
-.edit-button,
-.delete-button {
-  border: none;
-
-  border-radius: 7px;
-
-  padding:
-    5px 9px;
-
-  font-size: 11px;
-
-  font-weight: 600;
-
-  cursor: pointer;
-
-  transition:
-    0.18s ease;
-}
-
-.edit-button {
-  background:
-    linear-gradient(
-      135deg,
-      #eef0ff,
-      #e7eaff
-    );
-
-  color: #5865f2;
-}
-
-.edit-button:hover {
-  background:
-    linear-gradient(
-      135deg,
-      #dfe3ff,
-      #d7dbff
-    );
-
-  transform:
-    translateY(-1px);
-}
-
-.delete-button {
-  background:
-    linear-gradient(
-      135deg,
-      #fff0f0,
-      #ffe8e8
-    );
-
-  color: #e5484d;
-}
-
-.delete-button:hover {
-  background:
-    linear-gradient(
-      135deg,
-      #ffdcdc,
-      #ffd4d4
-    );
-
-  transform:
-    translateY(-1px);
-}
-
-
-/* ==========================================
-   編集中
-========================================== */
-
-.edit-input {
-  width: min(90%, 650px);
-
-  border:
-    1px solid #5865f2;
-
-  background: white;
-
-  color: #172033;
-
-  border-radius: 10px;
-
-  padding:
-    10px 12px;
-
-  outline: none;
-
-  font-size: 14px;
-
-  line-height: 1.5;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(88, 101, 242, 0.10);
-}
-
-.edit-actions {
-  display: flex;
-
-  gap: 6px;
-
-  margin-top: 7px;
-
-  flex-wrap: wrap;
-}
-
-.edit-save-button,
-.edit-cancel-button {
-  border: none;
-
-  border-radius: 7px;
-
-  padding:
-    6px 11px;
-
-  font-size: 11px;
-
-  font-weight: 700;
-
-  cursor: pointer;
-}
-
-.edit-save-button {
-  background: #5865f2;
-
-  color: white;
-}
-
-.edit-cancel-button {
-  background: #e9ebf1;
-
-  color: #555e70;
-}
-
-
-/* ==========================================
-   返信入力状態
+   返信入力エリア
 ========================================== */
 
 .replying-to {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  justify-content: space-between;
+  justify-content:
+    space-between;
 
-  gap: 10px;
-
-  margin-top: 10px;
+  gap:
+    10px;
 
   padding:
-    8px 11px;
+    7px 10px;
+
+  margin-top:
+    8px;
 
   background:
     linear-gradient(
       135deg,
-      #eef0ff,
-      #f5f6ff
+      #f0f1ff,
+      #f7f7ff
     );
 
   border:
     1px solid #dfe2ff;
 
-  border-radius: 9px;
+  border-radius:
+    9px;
 
-  font-size: 12px;
+  color:
+    #5d6580;
 
-  color: #60697b;
+  font-size:
+    11px;
 }
 
 .replying-to strong {
-  color: #5865f2;
+  color:
+    #5865f2;
 }
 
-.cancel-reply-button {
-  border: none;
+.replying-to button {
+  border:
+    none;
 
-  background: transparent;
+  background:
+    transparent;
 
-  color: #8a92a2;
+  color:
+    #7d8498;
 
-  cursor: pointer;
+  cursor:
+    pointer;
 
-  font-size: 12px;
+  font-size:
+    12px;
 
-  font-weight: 700;
+  font-weight:
+    700;
 }
 
-.cancel-reply-button:hover {
-  color: #e5484d;
+.replying-to button:hover {
+  color:
+    #e5484d;
 }
 
 
 /* ==========================================
    入力フォーム
+   → 今までの送信デザインを維持
 ========================================== */
 
 .message-form {
-  display: flex;
+  display:
+    flex;
 
-  align-items: stretch;
+  gap:
+    7px;
 
-  gap: 8px;
+  margin-top:
+    8px;
 
-  margin-top: 12px;
-
-  flex-shrink: 0;
+  flex-shrink:
+    0;
 }
 
 .message-form input {
   border:
-    1px solid #dfe3eb;
+    1px solid #dce0e9;
 
   background:
-    rgba(255, 255, 255, 0.96);
+    #ffffff;
 
-  border-radius: 10px;
+  border-radius:
+    9px;
 
   padding:
-    12px;
+    10px 11px;
 
-  outline: none;
+  outline:
+    none;
 
-  font-size: 14px;
+  font-size:
+    13px;
 
-  color: #172033;
-
-  box-shadow:
-    0 2px 8px
-    rgba(40, 50, 80, 0.04);
+  color:
+    #172033;
 
   transition:
     border 0.2s ease,
@@ -891,7 +713,8 @@ body {
 }
 
 .message-form input:focus {
-  border-color: #5865f2;
+  border-color:
+    #5865f2;
 
   box-shadow:
     0 0 0 3px
@@ -899,142 +722,65 @@ body {
 }
 
 #usernameInput {
-  width: 150px;
+  width:
+    125px;
 
-  flex-shrink: 0;
+  flex-shrink:
+    0;
 }
 
 #messageInput {
-  flex: 1;
+  flex:
+    1;
 
-  min-width: 0;
+  min-width:
+    0;
 }
 
 .send-button {
-  border: none;
+  border:
+    none;
 
   background:
     linear-gradient(
       135deg,
-      #5865f2,
-      #735cf4
+      #6875ff,
+      #5865f2
     );
 
-  color: white;
+  color:
+    white;
 
-  border-radius: 10px;
+  border-radius:
+    9px;
 
   padding:
-    0 20px;
+    0 17px;
 
-  font-weight: 700;
+  font-weight:
+    750;
 
-  cursor: pointer;
+  cursor:
+    pointer;
+
+  white-space:
+    nowrap;
 
   box-shadow:
-    0 4px 12px
-    rgba(88, 101, 242, 0.20);
+    0 3px 8px
+    rgba(88, 101, 242, 0.18);
 
   transition:
-    transform 0.15s ease,
-    filter 0.2s ease;
+    all 0.15s ease;
 }
 
 .send-button:hover {
-  filter:
-    brightness(1.05);
-
-  transform:
-    translateY(-1px);
-}
-
-.send-button:active {
-  transform:
-    translateY(0);
-}
-
-
-/* ==========================================
-   上へ / 下へ
-   ★ 横書き・横並び固定
-========================================== */
-
-.scroll-controls {
-  position: absolute;
-
-  right: 14px;
-
-  bottom: 14px;
-
-  z-index: 10;
-
-  display: flex;
-
-  flex-direction: row;
-
-  align-items: center;
-
-  gap: 6px;
-
-  writing-mode: horizontal-tb;
-
-  white-space: nowrap;
-}
-
-.scroll-button {
-  display: inline-flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  flex-direction: row;
-
-  writing-mode: horizontal-tb;
-
-  white-space: nowrap;
-
-  min-width: 74px;
-
-  height: 34px;
-
-  padding:
-    0 10px;
-
-  border:
-    1px solid
-    rgba(210, 214, 228, 0.95);
-
-  border-radius: 9px;
-
   background:
-    rgba(255, 255, 255, 0.94);
-
-  color: #596276;
-
-  font-size: 12px;
-
-  font-weight: 700;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 5px 16px
-    rgba(30, 40, 70, 0.10);
-
-  backdrop-filter:
-    blur(8px);
-
-  transition:
-    0.18s ease;
-}
-
-.scroll-button:hover {
-  background: #eef0ff;
-
-  color: #5865f2;
-
-  border-color: #cfd3ff;
+    linear-gradient(
+      135deg,
+      #7580ff,
+      #4f5ce8
+    );
 
   transform:
     translateY(-1px);
@@ -1046,88 +792,105 @@ body {
 ========================================== */
 
 .modal {
-  position: fixed;
+  position:
+    fixed;
 
-  inset: 0;
+  inset:
+    0;
 
   background:
     rgba(20, 25, 40, 0.48);
 
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  padding: 20px;
-
-  z-index: 100;
-
   backdrop-filter:
     blur(3px);
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  padding:
+    20px;
+
+  z-index:
+    100;
 }
 
 .modal-box {
-  width: 100%;
+  width:
+    100%;
 
-  max-width: 400px;
+  max-width:
+    400px;
 
   background:
     linear-gradient(
       145deg,
       #ffffff,
-      #f8f9ff
+      #f7f8fd
     );
 
-  border-radius: 18px;
+  border-radius:
+    17px;
 
-  padding: 24px;
+  padding:
+    23px;
 
   box-shadow:
-    0 25px 70px
-    rgba(0, 0, 0, 0.20);
+    0 20px 60px
+    rgba(0, 0, 0, 0.18);
 
-  color: #172033;
-
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.8);
+  color:
+    #172033;
 }
 
 .modal-box h2 {
   margin:
-    0 0 20px;
+    0 0 18px;
 
-  font-size: 20px;
+  font-size:
+    19px;
 }
 
 .modal-box input,
 .modal-box select {
-  width: 100%;
+  width:
+    100%;
 
-  padding: 12px;
+  padding:
+    11px;
 
   border:
-    1px solid #dfe3eb;
+    1px solid #dce0e9;
 
-  border-radius: 10px;
+  border-radius:
+    9px;
 
-  outline: none;
+  outline:
+    none;
 
-  font-size: 15px;
+  font-size:
+    14px;
 
-  background: white;
+  background:
+    white;
 
-  color: #172033;
+  color:
+    #172033;
 }
 
 .modal-box input:focus,
 .modal-box select:focus {
-  border-color: #5865f2;
+  border-color:
+    #5865f2;
 
   box-shadow:
     0 0 0 3px
-    rgba(88, 101, 242, 0.10);
+    rgba(88, 101, 242, 0.08);
 }
 
 
@@ -1136,72 +899,95 @@ body {
 ========================================== */
 
 .settings-box {
-  max-width: 440px;
+  max-width:
+    440px;
 }
 
 .setting-item {
-  margin-bottom: 18px;
+  margin-bottom:
+    17px;
 }
 
 .setting-item label {
-  display: block;
+  display:
+    block;
 
-  font-size: 13px;
+  font-size:
+    12px;
 
-  font-weight: 700;
+  font-weight:
+    750;
 
-  margin-bottom: 7px;
+  margin-bottom:
+    6px;
 
-  color: #555e70;
+  color:
+    #555e70;
 }
 
 .setting-row {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  justify-content: space-between;
+  justify-content:
+    space-between;
 
   padding:
-    14px 0;
+    13px 0;
 
   border-top:
     1px solid #edf0f5;
 }
 
 .setting-row strong {
-  display: block;
+  display:
+    block;
 
-  font-size: 14px;
+  font-size:
+    14px;
 }
 
 .setting-row small {
-  display: block;
+  display:
+    block;
 
-  color: #9098a8;
+  color:
+    #9098a8;
 
-  font-size: 11px;
+  font-size:
+    10px;
 
-  margin-top: 2px;
+  margin-top:
+    2px;
 }
 
 .toggle-button {
-  min-width: 58px;
+  min-width:
+    56px;
 
-  border: none;
+  border:
+    none;
 
-  border-radius: 20px;
+  border-radius:
+    20px;
 
   padding:
-    7px 13px;
+    7px 12px;
 
-  background: #e7eaf0;
+  background:
+    #e7eaf0;
 
-  color: #687184;
+  color:
+    #687184;
 
-  font-weight: 700;
+  font-weight:
+    700;
 
-  cursor: pointer;
+  cursor:
+    pointer;
 
   transition:
     0.2s ease;
@@ -1209,17 +995,10 @@ body {
 
 .toggle-button.active {
   background:
-    linear-gradient(
-      135deg,
-      #5865f2,
-      #735cf4
-    );
+    #5865f2;
 
-  color: white;
-
-  box-shadow:
-    0 4px 10px
-    rgba(88, 101, 242, 0.22);
+  color:
+    white;
 }
 
 
@@ -1228,75 +1007,71 @@ body {
 ========================================== */
 
 .modal-buttons {
-  display: flex;
+  display:
+    flex;
 
-  justify-content: flex-end;
+  justify-content:
+    flex-end;
 
-  gap: 8px;
+  gap:
+    8px;
 
-  margin-top: 20px;
-
-  flex-wrap: wrap;
+  margin-top:
+    19px;
 }
 
 .primary-button,
 .cancel-button {
-  border: none;
+  border:
+    none;
 
-  border-radius: 9px;
+  border-radius:
+    9px;
 
   padding:
-    10px 16px;
+    9px 15px;
 
-  font-weight: 600;
+  font-weight:
+    650;
 
-  cursor: pointer;
-
-  transition:
-    0.18s ease;
+  cursor:
+    pointer;
 }
 
 .primary-button {
   background:
     linear-gradient(
       135deg,
-      #5865f2,
-      #735cf4
+      #6875ff,
+      #5865f2
     );
 
-  color: white;
+  color:
+    white;
 }
 
 .primary-button:hover {
-  transform:
-    translateY(-1px);
-
-  filter:
-    brightness(1.05);
+  background:
+    #4752c4;
 }
 
 .cancel-button {
-  background: #eef0f4;
+  background:
+    #eef0f4;
 
-  color: #4c5362;
+  color:
+    #4c5362;
 }
-
-.cancel-button:hover {
-  background: #e3e6ed;
-}
-
-
-/* ==========================================
-   エラー
-========================================== */
 
 .error-message {
-  color: #e5484d;
+  color:
+    #e5484d;
 
-  font-size: 13px;
+  font-size:
+    12px;
 
   margin:
-    12px 0 0;
+    10px 0 0;
 }
 
 
@@ -1305,7 +1080,105 @@ body {
 ========================================== */
 
 .hidden {
-  display: none !important;
+  display:
+    none !important;
+}
+
+
+/* ==========================================
+   上へ・下へ
+   → 縦書きにならないように固定
+========================================== */
+
+.scroll-buttons {
+  display:
+    flex;
+
+  flex-direction:
+    row;
+
+  align-items:
+    center;
+
+  gap:
+    6px;
+
+  position:
+    absolute;
+
+  right:
+    14px;
+
+  bottom:
+    14px;
+
+  z-index:
+    5;
+}
+
+.scroll-buttons button {
+  writing-mode:
+    horizontal-tb;
+
+  text-orientation:
+    mixed;
+
+  white-space:
+    nowrap;
+
+  min-width:
+    62px;
+
+  height:
+    32px;
+
+  padding:
+    0 10px;
+
+  border:
+    1px solid #dfe2ed;
+
+  border-radius:
+    9px;
+
+  background:
+    rgba(255, 255, 255, 0.94);
+
+  backdrop-filter:
+    blur(6px);
+
+  color:
+    #596176;
+
+  font-size:
+    12px;
+
+  font-weight:
+    700;
+
+  cursor:
+    pointer;
+
+  box-shadow:
+    0 3px 10px
+    rgba(30, 40, 70, 0.10);
+
+  transition:
+    all 0.15s ease;
+}
+
+.scroll-buttons button:hover {
+  background:
+    #eef0ff;
+
+  color:
+    #5865f2;
+
+  border-color:
+    #cfd3ff;
+
+  transform:
+    translateY(-1px);
 }
 
 
@@ -1317,220 +1190,202 @@ body.dark-mode {
   background:
     linear-gradient(
       135deg,
-      #111318 0%,
-      #171923 50%,
-      #12141a 100%
+      #12141a,
+      #181b23,
+      #12141a
     );
 
-  color: #f1f3f7;
+  color:
+    #f1f3f7;
 }
 
 body.dark-mode .header {
   background:
     linear-gradient(
-      135deg,
-      #1a1d25,
-      #20232d
+      90deg,
+      #1b1e25,
+      #20232c
     );
 
-  border-color: #30343d;
-
-  box-shadow:
-    0 5px 20px
-    rgba(0, 0, 0, 0.22);
+  border-color:
+    #30343d;
 }
 
 body.dark-mode .room-header h1 {
-  color: #f1f3f7;
+  color:
+    #f1f3f7;
 }
 
 body.dark-mode .room-label {
-  color: #8f97a7;
+  color:
+    #858d9e;
 }
 
 body.dark-mode .chat-container {
   background:
     linear-gradient(
       145deg,
-      #1a1d24,
-      #1e2129
+      #1b1e25,
+      #20232b
     );
 
-  border-color: #30343d;
+  border-color:
+    #30343d;
 
   box-shadow:
-    0 8px 30px
+    0 5px 22px
     rgba(0, 0, 0, 0.25);
+}
+
+body.dark-mode .message:hover {
+  background:
+    rgba(120, 130, 255, 0.05);
 }
 
 body.dark-mode .message-text {
   background:
     linear-gradient(
       135deg,
-      #292d35,
-      #30343d
+      #292d36,
+      #252931
     );
 
-  color: #f1f3f7;
+  color:
+    #f1f3f7;
 }
 
 body.dark-mode .message-time {
-  color: #81899a;
+  color:
+    #81899a;
 }
 
 body.dark-mode .message-form input {
-  background: #1d2027;
+  background:
+    #1d2027;
 
-  border-color: #363b45;
+  border-color:
+    #363b45;
 
-  color: #f1f3f7;
+  color:
+    #f1f3f7;
 }
 
 body.dark-mode .invite-area {
   background:
-    linear-gradient(
-      135deg,
-      #1d2027,
-      #242832
-    );
+    #20232b;
 
-  border-color: #363b45;
+  border-color:
+    #363b45;
 
-  color: #a5adbc;
+  color:
+    #a5adbc;
 }
 
 body.dark-mode .modal-box {
   background:
     linear-gradient(
       145deg,
-      #1d2027,
-      #242832
+      #1e2128,
+      #181b21
     );
 
-  color: #f1f3f7;
+  color:
+    #f1f3f7;
 }
 
 body.dark-mode .modal-box input,
 body.dark-mode .modal-box select {
-  background: #15171c;
+  background:
+    #15171c;
 
-  border-color: #363b45;
+  border-color:
+    #363b45;
 
-  color: #f1f3f7;
+  color:
+    #f1f3f7;
 }
 
 body.dark-mode .setting-item label {
-  color: #aeb5c3;
+  color:
+    #aeb5c3;
 }
 
 body.dark-mode .setting-row {
-  border-color: #30343d;
+  border-color:
+    #30343d;
 }
 
 body.dark-mode .cancel-button {
-  background: #30343d;
+  background:
+    #30343d;
 
-  color: #e2e5eb;
+  color:
+    #e2e5eb;
 }
 
 body.dark-mode .header-button.secondary {
   background:
-    linear-gradient(
-      135deg,
-      #2c3040,
-      #35394b
-    );
+    #2c3040;
 
-  color: #aeb6ff;
+  color:
+    #aeb6ff;
 }
 
-body.dark-mode .scroll-button {
+body.dark-mode .message-actions button {
   background:
-    rgba(35, 39, 48, 0.94);
+    #252931;
 
-  border-color: #414653;
+  border-color:
+    #3a3f4b;
 
-  color: #c1c6d2;
+  color:
+    #aeb5c3;
 }
 
-body.dark-mode .scroll-button:hover {
-  background: #303546;
+body.dark-mode .message-actions button:hover {
+  background:
+    #303551;
 
-  color: #aeb6ff;
+  color:
+    #aeb6ff;
 }
 
 body.dark-mode .reply-preview {
   background:
-    linear-gradient(
-      135deg,
-      #252938,
-      #292d3c
-    );
-
-  border-color: #5865f2;
-
-  color: #aeb5c3;
-}
-
-body.dark-mode .reply-target {
-  background:
-    rgba(88, 101, 242, 0.13);
+    #252941;
 
   border-color:
-    rgba(130, 140, 255, 0.20);
+    #6875ff;
 
-  color: #aeb5c3;
+  color:
+    #aeb5c3;
 }
 
-body.dark-mode .reply-target .reply-quote {
-  color: #c0c5d0;
-}
-
-body.dark-mode .reply-button {
-  background: #292d35;
-
-  border-color: #3a3f4a;
-
-  color: #b9bfcb;
-}
-
-body.dark-mode .edit-button {
-  background: #2d3142;
-
-  color: #aeb6ff;
-}
-
-body.dark-mode .delete-button {
-  background: #3b292d;
-
-  color: #ff9a9e;
-}
-
-body.dark-mode .edit-input {
-  background: #15171c;
-
-  border-color: #5865f2;
-
-  color: #f1f3f7;
-}
-
-body.dark-mode .edit-cancel-button {
-  background: #30343d;
-
-  color: #dce0e7;
+body.dark-mode .reply-preview-text {
+  color:
+    #c0c5d0;
 }
 
 body.dark-mode .replying-to {
   background:
-    linear-gradient(
-      135deg,
-      #252938,
-      #292d3b
-    );
+    #252941;
 
-  border-color: #3d4260;
+  border-color:
+    #3c4260;
 
-  color: #b5bbc8;
+  color:
+    #aeb5c3;
+}
+
+body.dark-mode .scroll-buttons button {
+  background:
+    rgba(35, 39, 48, 0.94);
+
+  border-color:
+    #414754;
+
+  color:
+    #b9bfcc;
 }
 
 
@@ -1539,7 +1394,8 @@ body.dark-mode .replying-to {
 ========================================== */
 
 body.gray-mode {
-  filter: grayscale(1);
+  filter:
+    grayscale(1);
 }
 
 
@@ -1550,187 +1406,167 @@ body.gray-mode {
 @media (max-width: 600px) {
 
   .header {
-    height: 58px;
+    height:
+      54px;
 
     padding:
-      0 10px;
+      0 8px;
   }
 
   .logo {
-    font-size: 21px;
+    font-size:
+      20px;
   }
 
   .header-actions {
-    gap: 5px;
-
-    overflow-x: auto;
-
-    max-width: 80%;
+    gap:
+      4px;
   }
 
   .header-button {
     padding:
-      8px 9px;
+      7px 8px;
 
-    font-size: 11px;
+    font-size:
+      10px;
+
+    border-radius:
+      8px;
   }
 
   .main {
     height:
-      calc(100vh - 58px);
+      calc(100vh - 54px);
 
     padding:
-      10px 8px 10px;
+      7px 7px 8px;
   }
 
   .room-header {
-    min-height: 48px;
+    min-height:
+      34px;
 
-    margin-bottom: 9px;
+    margin-bottom:
+      6px;
+
+    gap:
+      7px;
+  }
+
+  .room-label {
+    font-size:
+      8px;
   }
 
   .room-header h1 {
-    font-size: 20px;
+    font-size:
+      17px;
   }
 
   .invite-area {
     padding:
-      7px 9px;
+      5px 7px;
 
-    font-size: 10px;
+    font-size:
+      9px;
   }
 
   .invite-area strong {
-    font-size: 12px;
-  }
-
-  /*
-    スマホでもチャット欄を大きく確保
-  */
-  .chat-container {
-    min-height: 0;
-
-    border-radius: 13px;
+    font-size:
+      10px;
   }
 
   .messages {
     padding:
-      16px 12px 72px;
+      14px 13px;
+  }
+
+  .message {
+    margin-bottom:
+      11px;
+
+    padding:
+      8px 7px;
   }
 
   .message-text {
-    max-width: 94%;
+    max-width:
+      94%;
+
+    font-size:
+      14px;
   }
 
   .message-actions {
-    gap: 4px;
+    gap:
+      4px;
   }
 
-  .reply-button,
-  .edit-button,
-  .delete-button {
+  .message-actions button {
     padding:
-      5px 8px;
+      4px 7px;
 
-    font-size: 10px;
+    font-size:
+      10px;
   }
 
   .reply-preview {
-    max-width: 94%;
-  }
-
-  .reply-target {
-    max-width: 94%;
-  }
-
-  .reply-target .reply-quote {
-    max-width: 150px;
-  }
-
-  /*
-    上へ・下へを横並び維持
-  */
-  .scroll-controls {
-    right: 8px;
-
-    bottom: 8px;
-
-    gap: 5px;
-
-    flex-direction: row;
-
-    writing-mode: horizontal-tb;
-  }
-
-  .scroll-button {
-    min-width: 64px;
-
-    height: 32px;
-
-    padding:
-      0 7px;
-
-    font-size: 10px;
-
-    writing-mode: horizontal-tb;
+    max-width:
+      94%;
   }
 
   .message-form {
-    gap: 5px;
+    gap:
+      5px;
+
+    margin-top:
+      6px;
   }
 
   .message-form input {
     padding:
-      10px 8px;
+      9px 7px;
 
-    min-width: 0;
+    font-size:
+      12px;
   }
 
   #usernameInput {
-    width: 85px;
+    width:
+      76px;
   }
 
   .send-button {
     padding:
-      0 12px;
+      0 11px;
+
+    font-size:
+      12px;
   }
 
-}
+  .scroll-buttons {
+    right:
+      8px;
 
+    bottom:
+      8px;
 
-/* ==========================================
-   小さいスマホ
-========================================== */
+    gap:
+      4px;
+  }
 
-@media (max-width: 420px) {
+  .scroll-buttons button {
+    min-width:
+      55px;
 
-  .header-button {
+    height:
+      30px;
+
     padding:
-      7px 7px;
+      0 7px;
 
-    font-size: 10px;
-  }
-
-  .messages {
-    padding:
-      14px 10px 70px;
-  }
-
-  #usernameInput {
-    width: 72px;
-  }
-
-  .send-button {
-    padding:
-      0 10px;
-
-    font-size: 12px;
-  }
-
-  .scroll-button {
-    min-width: 58px;
-
-    font-size: 9px;
+    font-size:
+      10px;
   }
 
 }
