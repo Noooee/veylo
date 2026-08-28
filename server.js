@@ -65,45 +65,15 @@ async function prepareDatabase() {
 
   try {
 
-    // ==================================================
-    // メッセージテーブル
-    // ==================================================
-
     await pool.query(`
       CREATE TABLE IF NOT EXISTS messages (
         id SERIAL PRIMARY KEY,
         room TEXT NOT NULL,
         username TEXT NOT NULL,
-        user_id TEXT,
         text TEXT NOT NULL,
-        reply_to INTEGER,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-
-
-    // ==================================================
-    // 既存DBへの追加カラム
-    // ==================================================
-
-    await pool.query(`
-      ALTER TABLE messages
-      ADD COLUMN IF NOT EXISTS user_id TEXT
-    `);
-
-
-    await pool.query(`
-      ALTER TABLE messages
-      ADD COLUMN IF NOT EXISTS reply_to INTEGER
-    `);
-
-
-    await pool.query(`
-      ALTER TABLE messages
-      ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP
-    `);
-
 
     console.log(
       "PostgreSQL: テーブル準備完了"
@@ -158,14 +128,23 @@ async function deleteOldMessages() {
 
 
 // ==================================================
-// DB準備後に古いコメントを削除
+// データベース準備完了後の処理
 // ==================================================
 
-prepareDatabase().then(() => {
+prepareDatabase()
+  .then(() => {
 
-  deleteOldMessages();
+    return deleteOldMessages();
 
-});
+  })
+  .catch((error) => {
+
+    console.error(
+      "初期データベース処理エラー:",
+      error
+    );
+
+  });
 
 
 // ==================================================
@@ -203,11 +182,31 @@ io.on("connection", (socket) => {
 
   socket.join("casual");
 
-
   console.log(
     "casualルームへ参加:",
     socket.id
   );
+
+
+  // ==================================================
+  // 現在の部屋を取得
+  // ==================================================
+
+  function getCurrentRoom() {
+
+    for (const roomName of socket.rooms) {
+
+      if (roomName !== socket.id) {
+
+        return roomName;
+
+      }
+
+    }
+
+    return "casual";
+
+  }
 
 
   // ==================================================
@@ -231,11 +230,8 @@ io.on("connection", (socket) => {
             id,
             room,
             username,
-            user_id,
             text,
-            reply_to,
-            created_at,
-            updated_at
+            created_at
           FROM messages
           WHERE room = $1
           AND created_at >=
@@ -259,20 +255,11 @@ io.on("connection", (socket) => {
             username:
               row.username,
 
-            userId:
-              row.user_id,
-
             text:
               row.text,
 
-            replyTo:
-              row.reply_to,
-
             createdAt:
-              row.created_at,
-
-            updatedAt:
-              row.updated_at
+              row.created_at
 
           })
         );
@@ -290,6 +277,7 @@ io.on("connection", (socket) => {
         "件"
       );
 
+
     } catch (error) {
 
       console.error(
@@ -303,7 +291,7 @@ io.on("connection", (socket) => {
 
 
   // ==================================================
-  // 接続直後に雑談のコメントを取得
+  // 最初に雑談の過去コメントを取得
   // ==================================================
 
   sendRoomMessages("casual");
@@ -341,21 +329,13 @@ io.on("connection", (socket) => {
       const username =
         String(
           msg.username || "ゲスト"
-        ).trim()
-        .slice(0, 30);
-
-
-      const userId =
-        String(
-          msg.userId || ""
-        ).trim();
+        ).trim() || "ゲスト";
 
 
       const text =
         String(
           msg.text
-        ).trim()
-        .slice(0, 500);
+        ).trim();
 
 
       if (!text) {
@@ -363,87 +343,7 @@ io.on("connection", (socket) => {
       }
 
 
-      if (!userId) {
-
-        socket.emit(
-          "message error",
-          {
-            message:
-              "ユーザーIDが確認できませんでした。ページを再読み込みしてください。"
-          }
-        );
-
-        return;
-
-      }
-
-
-      // ==================================================
-      // リプライ先
-      // ==================================================
-
-      let replyTo = null;
-
-
-      if (
-        msg.replyTo !== null &&
-        msg.replyTo !== undefined &&
-        msg.replyTo !== ""
-      ) {
-
-        const parsedReplyTo =
-          Number(msg.replyTo);
-
-
-        if (
-          Number.isInteger(
-            parsedReplyTo
-          )
-        ) {
-
-          replyTo =
-            parsedReplyTo;
-
-        }
-
-      }
-
-
       try {
-
-        // ==================================================
-        // リプライ先が本当に存在するか確認
-        // ==================================================
-
-        if (replyTo !== null) {
-
-          const replyResult =
-            await pool.query(
-              `
-              SELECT id
-              FROM messages
-              WHERE id = $1
-              AND room = $2
-              AND created_at >=
-                NOW() - INTERVAL '24 hours'
-              `,
-              [
-                replyTo,
-                msg.room
-              ]
-            );
-
-
-          if (
-            replyResult.rowCount === 0
-          ) {
-
-            replyTo = null;
-
-          }
-
-        }
-
 
         // ==================================================
         // PostgreSQLへ保存
@@ -453,31 +353,20 @@ io.on("connection", (socket) => {
           await pool.query(
             `
             INSERT INTO messages
-              (
-                room,
-                username,
-                user_id,
-                text,
-                reply_to
-              )
+              (room, username, text)
             VALUES
-              ($1, $2, $3, $4, $5)
+              ($1, $2, $3)
             RETURNING
               id,
               room,
               username,
-              user_id,
               text,
-              reply_to,
-              created_at,
-              updated_at
+              created_at
             `,
             [
               msg.room,
-              username || "ゲスト",
-              userId,
-              text,
-              replyTo
+              username,
+              text
             ]
           );
 
@@ -497,20 +386,11 @@ io.on("connection", (socket) => {
           username:
             saved.username,
 
-          userId:
-            saved.user_id,
-
           text:
             saved.text,
 
-          replyTo:
-            saved.reply_to,
-
           createdAt:
-            saved.created_at,
-
-          updatedAt:
-            saved.updated_at
+            saved.created_at
 
         };
 
@@ -530,10 +410,11 @@ io.on("connection", (socket) => {
           messageData
         );
 
+
       } catch (error) {
 
         console.error(
-          "❌ メッセージ保存エラー:",
+          "メッセージ保存エラー:",
           error
         );
 
@@ -551,109 +432,40 @@ io.on("connection", (socket) => {
     "edit message",
     async (data) => {
 
-      if (!data) {
-        return;
-      }
-
-
-      const messageId =
-        Number(data.messageId);
-
-
-      const userId =
-        String(
-          data.userId || ""
-        ).trim();
-
-
-      const newText =
-        String(
-          data.text || ""
-        ).trim()
-        .slice(0, 500);
-
-
-      if (
-        !Number.isInteger(messageId) ||
-        messageId <= 0
-      ) {
-
-        return;
-
-      }
-
-
-      if (!userId) {
-        return;
-      }
-
-
-      if (!newText) {
-
-        socket.emit(
-          "message edit error",
-          {
-            messageId:
-              messageId,
-
-            message:
-              "メッセージを空にはできません。"
-          }
-        );
-
-        return;
-
-      }
-
-
       try {
 
-        // ==================================================
-        // 自分のコメントだけ編集可能
-        // ==================================================
+        if (!data) {
+          return;
+        }
 
-        const result =
-          await pool.query(
-            `
-            UPDATE messages
-            SET
-              text = $1,
-              updated_at = NOW()
-            WHERE
-              id = $2
-              AND user_id = $3
-              AND created_at >=
-                NOW() - INTERVAL '24 hours'
-            RETURNING
-              id,
-              room,
-              username,
-              user_id,
-              text,
-              reply_to,
-              created_at,
-              updated_at
-            `,
-            [
-              newText,
-              messageId,
-              userId
-            ]
-          );
+
+        const messageId =
+          Number(data.id);
+
+
+        const newText =
+          String(
+            data.text || ""
+          ).trim();
 
 
         if (
-          result.rowCount === 0
+          !Number.isInteger(messageId) ||
+          messageId <= 0
         ) {
+
+          return;
+
+        }
+
+
+        if (!newText) {
 
           socket.emit(
             "message edit error",
             {
-              messageId:
-                messageId,
-
               message:
-                "このコメントは編集できません。"
+                "メッセージを入力してください。"
             }
           );
 
@@ -662,8 +474,108 @@ io.on("connection", (socket) => {
         }
 
 
-        const updated =
+        // ==================================================
+        // 編集対象コメントを取得
+        // ==================================================
+
+        const result =
+          await pool.query(
+            `
+            SELECT
+              id,
+              room,
+              username,
+              text,
+              created_at
+            FROM messages
+            WHERE id = $1
+            AND created_at >=
+              NOW() - INTERVAL '24 hours'
+            `,
+            [messageId]
+          );
+
+
+        if (
+          result.rows.length === 0
+        ) {
+
+          socket.emit(
+            "message edit error",
+            {
+              message:
+                "コメントが見つかりません。"
+            }
+          );
+
+          return;
+
+        }
+
+
+        const message =
           result.rows[0];
+
+
+        // ==================================================
+        // 編集できるのは自分のコメントだけ
+        //
+        // サーバー側では
+        // socketに保存したユーザー名を使わず、
+        // クライアントから送られた username と
+        // コメントの username を比較する。
+        // ==================================================
+
+        const username =
+          String(
+            data.username || ""
+          ).trim();
+
+
+        if (
+          !username ||
+          username !== message.username
+        ) {
+
+          socket.emit(
+            "message edit error",
+            {
+              message:
+                "自分のコメントだけ編集できます。"
+            }
+          );
+
+          return;
+
+        }
+
+
+        // ==================================================
+        // PostgreSQL更新
+        // ==================================================
+
+        const updateResult =
+          await pool.query(
+            `
+            UPDATE messages
+            SET text = $1
+            WHERE id = $2
+            RETURNING
+              id,
+              room,
+              username,
+              text,
+              created_at
+            `,
+            [
+              newText,
+              messageId
+            ]
+          );
+
+
+        const updated =
+          updateResult.rows[0];
 
 
         const messageData = {
@@ -677,46 +589,45 @@ io.on("connection", (socket) => {
           username:
             updated.username,
 
-          userId:
-            updated.user_id,
-
           text:
             updated.text,
 
-          replyTo:
-            updated.reply_to,
-
           createdAt:
-            updated.created_at,
-
-          updatedAt:
-            updated.updated_at
+            updated.created_at
 
         };
 
 
-        // ==================================================
-        // 部屋全員へ編集結果を送信
-        // ==================================================
-
-        io.to(
-          updated.room
-        ).emit(
-          "message edited",
+        console.log(
+          "コメント編集:",
           messageData
         );
 
 
-        console.log(
-          "コメント編集:",
-          messageData.id
+        // ==================================================
+        // 部屋全員へ編集通知
+        // ==================================================
+
+        io.to(message.room).emit(
+          "message edited",
+          messageData
         );
+
 
       } catch (error) {
 
         console.error(
           "コメント編集エラー:",
           error
+        );
+
+
+        socket.emit(
+          "message edit error",
+          {
+            message:
+              "コメントの編集に失敗しました。"
+          }
         );
 
       }
@@ -733,74 +644,58 @@ io.on("connection", (socket) => {
     "delete message",
     async (data) => {
 
-      if (!data) {
-        return;
-      }
-
-
-      const messageId =
-        Number(data.messageId);
-
-
-      const userId =
-        String(
-          data.userId || ""
-        ).trim();
-
-
-      if (
-        !Number.isInteger(messageId) ||
-        messageId <= 0
-      ) {
-
-        return;
-
-      }
-
-
-      if (!userId) {
-        return;
-      }
-
-
       try {
 
+        if (!data) {
+          return;
+        }
+
+
+        const messageId =
+          Number(data.id);
+
+
+        if (
+          !Number.isInteger(messageId) ||
+          messageId <= 0
+        ) {
+
+          return;
+
+        }
+
+
         // ==================================================
-        // 削除対象を取得
+        // 削除対象コメント取得
         // ==================================================
 
-        const findResult =
+        const result =
           await pool.query(
             `
             SELECT
               id,
-              room
+              room,
+              username,
+              text,
+              created_at
             FROM messages
-            WHERE
-              id = $1
-              AND user_id = $2
-              AND created_at >=
-                NOW() - INTERVAL '24 hours'
+            WHERE id = $1
+            AND created_at >=
+              NOW() - INTERVAL '24 hours'
             `,
-            [
-              messageId,
-              userId
-            ]
+            [messageId]
           );
 
 
         if (
-          findResult.rowCount === 0
+          result.rows.length === 0
         ) {
 
           socket.emit(
             "message delete error",
             {
-              messageId:
-                messageId,
-
               message:
-                "このコメントは削除できません。"
+                "コメントが見つかりません。"
             }
           );
 
@@ -810,34 +705,61 @@ io.on("connection", (socket) => {
 
 
         const message =
-          findResult.rows[0];
+          result.rows[0];
 
 
         // ==================================================
-        // 削除
+        // 自分のコメントだけ削除可能
+        // ==================================================
+
+        const username =
+          String(
+            data.username || ""
+          ).trim();
+
+
+        if (
+          !username ||
+          username !== message.username
+        ) {
+
+          socket.emit(
+            "message delete error",
+            {
+              message:
+                "自分のコメントだけ削除できます。"
+            }
+          );
+
+          return;
+
+        }
+
+
+        // ==================================================
+        // PostgreSQLから削除
         // ==================================================
 
         await pool.query(
           `
           DELETE FROM messages
-          WHERE
-            id = $1
-            AND user_id = $2
+          WHERE id = $1
           `,
-          [
-            messageId,
-            userId
-          ]
+          [messageId]
+        );
+
+
+        console.log(
+          "コメント削除:",
+          messageId
         );
 
 
         // ==================================================
-        // 部屋全員へ通知
+        // 部屋全員へ削除通知
         // ==================================================
 
-        io.to(
-          message.room
-        ).emit(
+        io.to(message.room).emit(
           "message deleted",
           {
             id:
@@ -849,16 +771,20 @@ io.on("connection", (socket) => {
         );
 
 
-        console.log(
-          "コメント削除:",
-          message.id
-        );
-
       } catch (error) {
 
         console.error(
           "コメント削除エラー:",
           error
+        );
+
+
+        socket.emit(
+          "message delete error",
+          {
+            message:
+              "コメントの削除に失敗しました。"
+          }
         );
 
       }
@@ -878,7 +804,7 @@ io.on("connection", (socket) => {
       try {
 
         // ==================================================
-        // 現在いるルームから退出
+        // 現在いる部屋から退出
         // ==================================================
 
         for (
@@ -890,9 +816,7 @@ io.on("connection", (socket) => {
             roomName !== "casual"
           ) {
 
-            socket.leave(
-              roomName
-            );
+            socket.leave(roomName);
 
           }
 
@@ -911,6 +835,7 @@ io.on("connection", (socket) => {
         await sendRoomMessages(
           "casual"
         );
+
 
       } catch (error) {
 
@@ -931,24 +856,17 @@ io.on("connection", (socket) => {
 
   socket.on(
     "create room",
-    (data) => {
+    async (data) => {
 
-      if (
-        !data ||
-        !data.name
-      ) {
-
+      if (!data || !data.name) {
         return;
-
       }
 
 
       const roomName =
         String(
           data.name
-        )
-          .trim()
-          .slice(0, 50);
+        ).trim();
 
 
       if (!roomName) {
@@ -1010,21 +928,29 @@ io.on("connection", (socket) => {
 
 
       // ==================================================
-      // 雑談から退出
+      // 雑談など現在の部屋から退出
       // ==================================================
 
-      socket.leave(
-        "casual"
-      );
+      for (
+        const joinedRoom of socket.rooms
+      ) {
+
+        if (
+          joinedRoom !== socket.id
+        ) {
+
+          socket.leave(joinedRoom);
+
+        }
+
+      }
 
 
       // ==================================================
       // 作成した部屋へ参加
       // ==================================================
 
-      socket.join(
-        roomId
-      );
+      socket.join(roomId);
 
 
       console.log(
@@ -1044,10 +970,10 @@ io.on("connection", (socket) => {
 
 
       // ==================================================
-      // 作成した部屋の過去コメント取得
+      // 新しい部屋の過去コメント
       // ==================================================
 
-      sendRoomMessages(
+      await sendRoomMessages(
         roomId
       );
 
@@ -1095,9 +1021,7 @@ io.on("connection", (socket) => {
       // ==================================================
 
       const room =
-        Object.values(
-          rooms
-        ).find(
+        Object.values(rooms).find(
           (room) =>
             room.inviteCode === code
         );
@@ -1134,9 +1058,7 @@ io.on("connection", (socket) => {
           roomName !== socket.id
         ) {
 
-          socket.leave(
-            roomName
-          );
+          socket.leave(roomName);
 
         }
 
@@ -1147,9 +1069,7 @@ io.on("connection", (socket) => {
       // 新しい部屋へ参加
       // ==================================================
 
-      socket.join(
-        room.id
-      );
+      socket.join(room.id);
 
 
       console.log(
