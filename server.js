@@ -4,6 +4,7 @@ require("dotenv").config();
 
 const path = require("path");
 const crypto = require("crypto");
+const fs = require("fs");
 
 const express = require("express");
 const http = require("http");
@@ -54,14 +55,11 @@ const server =
 
 
 // ==================================================
-// DB
+// データディレクトリ
 // ==================================================
 
 const dataDir =
   path.join(__dirname, "data");
-
-const fs =
-  require("fs");
 
 fs.mkdirSync(
   dataDir,
@@ -69,6 +67,11 @@ fs.mkdirSync(
     recursive: true
   }
 );
+
+
+// ==================================================
+// SQLite
+// ==================================================
 
 const db =
   new Database(
@@ -88,7 +91,7 @@ db.pragma(
 
 
 // ==================================================
-// テーブル
+// テーブル作成
 // ==================================================
 
 db.exec(`
@@ -186,48 +189,108 @@ db.exec(`
 
 
 // ==================================================
-// 雑談ルーム
+// 定数
 // ==================================================
 
 const CASUAL_ROOM_ID =
   "casual";
 
-const casualExists =
-  db.prepare(`
-    SELECT id
-    FROM rooms
-    WHERE id = ?
-  `).get(
-    CASUAL_ROOM_ID
-  );
+const MESSAGE_LIFETIME =
+  24 * 60 * 60 * 1000;
 
-if (!casualExists) {
+const PASSWORD_RESET_LIFETIME =
+  60 * 60 * 1000;
 
-  const now =
-    Date.now();
 
-  db.prepare(`
-    INSERT INTO rooms (
-      id,
-      name,
-      invite_code,
-      owner_id,
-      created_at
-    )
-    VALUES (
-      ?,
-      ?,
-      ?,
-      ?,
-      ?
-    )
-  `).run(
-    CASUAL_ROOM_ID,
-    "雑談",
-    "CASUAL",
-    1,
-    now
-  );
+// ==================================================
+// 雑談ルーム確保
+//
+// 重要:
+// 初回起動時にユーザーが1人もいない状態で
+// owner_id = 1 を入れると外部キーエラーになるため、
+// 最初のユーザー登録後に作成する。
+// ==================================================
+
+function ensureCasualRoom(
+  ownerId
+) {
+
+  const existing =
+    db.prepare(`
+      SELECT id
+      FROM rooms
+      WHERE id = ?
+    `).get(
+      CASUAL_ROOM_ID
+    );
+
+
+  if (existing) {
+    return;
+  }
+
+
+  if (!ownerId) {
+    return;
+  }
+
+
+  const user =
+    db.prepare(`
+      SELECT id
+      FROM users
+      WHERE id = ?
+    `).get(
+      ownerId
+    );
+
+
+  if (!user) {
+    return;
+  }
+
+
+  try {
+
+    db.prepare(`
+      INSERT INTO rooms (
+        id,
+        name,
+        invite_code,
+        owner_id,
+        created_at
+      )
+      VALUES (
+        ?,
+        ?,
+        ?,
+        ?,
+        ?
+      )
+    `).run(
+      CASUAL_ROOM_ID,
+      "雑談",
+      "CASUAL",
+      ownerId,
+      Date.now()
+    );
+
+  } catch (error) {
+
+    // 別リクエストが先に作成した場合は無視
+    if (
+      !String(
+        error.message
+      ).includes(
+        "UNIQUE"
+      )
+    ) {
+
+      throw error;
+
+    }
+
+  }
 
 }
 
@@ -266,6 +329,7 @@ const SQLiteStore =
 
 const sessionMiddleware =
   session({
+
     store:
       new SQLiteStore({
         db:
@@ -305,7 +369,9 @@ const sessionMiddleware =
         60 *
         24 *
         365
+
     }
+
   });
 
 app.use(
@@ -314,7 +380,7 @@ app.use(
 
 
 // ==================================================
-// メール
+// メール設定
 // ==================================================
 
 let transporter = null;
@@ -348,6 +414,7 @@ if (
 
         pass:
           process.env.SMTP_PASS
+
       }
 
     });
@@ -375,8 +442,10 @@ const authLimiter =
       false,
 
     message: {
+
       message:
         "試行回数が多すぎます。しばらく待ってから再試行してください。"
+
     }
 
   });
@@ -485,7 +554,7 @@ function requireLogin(
 
 
 // ==================================================
-// 認証情報
+// 入力値
 // ==================================================
 
 function normalizeName(
@@ -530,16 +599,10 @@ function validateName(
   name
 ) {
 
-  if (
-    name.length < 1 ||
-    name.length > 30
-  ) {
-
-    return false;
-
-  }
-
-  return true;
+  return (
+    name.length >= 1 &&
+    name.length <= 30
+  );
 
 }
 
@@ -564,7 +627,7 @@ function validateEmail(
 
 
 // ==================================================
-// 認証API
+// 登録
 // ==================================================
 
 app.post(
@@ -580,7 +643,10 @@ app.post(
         );
 
       const password =
-        req.body.password || "";
+        String(
+          req.body.password ||
+          ""
+        );
 
       const name =
         normalizeName(
@@ -631,7 +697,10 @@ app.post(
           SELECT id
           FROM users
           WHERE email = ?
-        `).get(email);
+        `).get(
+          email
+        );
+
 
       if (duplicateEmail) {
 
@@ -648,7 +717,10 @@ app.post(
           SELECT id
           FROM users
           WHERE name = ? COLLATE NOCASE
-        `).get(name);
+        `).get(
+          name
+        );
+
 
       if (duplicateName) {
 
@@ -693,29 +765,77 @@ app.post(
         );
 
 
-      req.session.userId =
+      const userId =
         Number(
           result.lastInsertRowid
         );
 
 
-      req.session.save(
-        () => {
+      // 雑談ルームを確保
+      ensureCasualRoom(
+        userId
+      );
 
-          return res.json({
-            success:
-              true,
 
-            user: {
-              id:
-                Number(
-                  result.lastInsertRowid
-                ),
+      req.session.regenerate(
+        (error) => {
 
-              name:
-                name
+          if (error) {
+
+            console.error(
+              "session regenerate error:",
+              error
+            );
+
+            return res.status(500).json({
+              message:
+                "登録に成功しましたが、ログイン状態を作成できませんでした。"
+            });
+
+          }
+
+
+          req.session.userId =
+            userId;
+
+
+          req.session.save(
+            (saveError) => {
+
+              if (saveError) {
+
+                console.error(
+                  "session save error:",
+                  saveError
+                );
+
+                return res.status(500).json({
+                  message:
+                    "登録に成功しましたが、ログイン状態を作成できませんでした。"
+                });
+
+              }
+
+
+              return res.json({
+
+                success:
+                  true,
+
+                user: {
+
+                  id:
+                    userId,
+
+                  name:
+                    name
+
+                }
+
+              });
+
             }
-          });
+          );
 
         }
       );
@@ -727,6 +847,23 @@ app.post(
         "register error:",
         error
       );
+
+
+      if (
+        String(
+          error.message
+        ).includes(
+          "UNIQUE"
+        )
+      ) {
+
+        return res.status(409).json({
+          message:
+            "メールアドレスまたは名前がすでに使用されています。"
+        });
+
+      }
+
 
       return res.status(500).json({
         message:
@@ -756,7 +893,10 @@ app.post(
         );
 
       const password =
-        req.body.password || "";
+        String(
+          req.body.password ||
+          ""
+        );
 
 
       if (
@@ -777,7 +917,9 @@ app.post(
           SELECT *
           FROM users
           WHERE name = ? COLLATE NOCASE
-        `).get(name);
+        `).get(
+          name
+        );
 
 
       if (!user) {
@@ -807,12 +949,19 @@ app.post(
       }
 
 
+      // 雑談ルームを確保
+      ensureCasualRoom(
+        user.id
+      );
+
+
       req.session.regenerate(
         (error) => {
 
           if (error) {
 
             console.error(
+              "login session regenerate error:",
               error
             );
 
@@ -834,6 +983,7 @@ app.post(
               if (saveError) {
 
                 console.error(
+                  "login session save error:",
                   saveError
                 );
 
@@ -857,6 +1007,7 @@ app.post(
 
                   name:
                     user.name
+
                 }
 
               });
@@ -874,6 +1025,7 @@ app.post(
         "login error:",
         error
       );
+
 
       return res.status(500).json({
         message:
@@ -922,6 +1074,7 @@ app.get(
 
         name:
           user.name
+
       }
 
     });
@@ -945,6 +1098,7 @@ app.post(
         if (error) {
 
           console.error(
+            "logout error:",
             error
           );
 
@@ -974,7 +1128,7 @@ app.post(
 
 
 // ==================================================
-// パスワード再設定メール
+// パスワードを忘れた
 // ==================================================
 
 app.post(
@@ -988,13 +1142,15 @@ app.post(
       );
 
 
-    // 存在するかどうかを外部に漏らさない
+    // アカウントの存在を外部に漏らさない
     const genericResponse = {
+
       success:
         true,
 
       message:
         "登録されているメールアドレスであれば、パスワード再設定メールを送信しました。"
+
     };
 
 
@@ -1014,7 +1170,9 @@ app.post(
         SELECT *
         FROM users
         WHERE email = ?
-      `).get(email);
+      `).get(
+        email
+      );
 
 
     if (!user) {
@@ -1029,8 +1187,9 @@ app.post(
     if (!transporter) {
 
       console.error(
-        "SMTPが設定されていません。"
+        "SMTP設定がありません。"
       );
+
 
       return res.status(500).json({
         message:
@@ -1040,56 +1199,60 @@ app.post(
     }
 
 
-    // 古い未使用トークンを無効化
-    db.prepare(`
-      UPDATE password_resets
-      SET used = 1
-      WHERE user_id = ?
-        AND used = 0
-    `).run(
-      user.id
-    );
-
-
-    const token =
-      randomId(32);
-
-    const tokenHash =
-      hashToken(token);
-
-    const expiresAt =
-      Date.now() +
-      60 * 60 * 1000;
-
-
-    db.prepare(`
-      INSERT INTO password_resets (
-        user_id,
-        token_hash,
-        expires_at,
-        used,
-        created_at
-      )
-      VALUES (
-        ?,
-        ?,
-        ?,
-        0,
-        ?
-      )
-    `).run(
-      user.id,
-      tokenHash,
-      expiresAt,
-      Date.now()
-    );
-
-
-    const resetUrl =
-      `${APP_URL}/reset-password.html?token=${encodeURIComponent(token)}`;
-
-
     try {
+
+      // 古いトークンを無効化
+      db.prepare(`
+        UPDATE password_resets
+        SET used = 1
+        WHERE user_id = ?
+          AND used = 0
+      `).run(
+        user.id
+      );
+
+
+      const token =
+        randomId(32);
+
+
+      const tokenHash =
+        hashToken(
+          token
+        );
+
+
+      const expiresAt =
+        Date.now() +
+        PASSWORD_RESET_LIFETIME;
+
+
+      db.prepare(`
+        INSERT INTO password_resets (
+          user_id,
+          token_hash,
+          expires_at,
+          used,
+          created_at
+        )
+        VALUES (
+          ?,
+          ?,
+          ?,
+          0,
+          ?
+        )
+      `).run(
+        user.id,
+        tokenHash,
+        expiresAt,
+        Date.now()
+      );
+
+
+      const resetUrl =
+        `${APP_URL}/reset-password.html?token=${encodeURIComponent(token)}`;
+
 
       await transporter.sendMail({
 
@@ -1116,8 +1279,26 @@ ${resetUrl}
 
         html:
 `
-<div style="font-family: sans-serif; line-height: 1.7;">
-  <h2>Veylo パスワード再設定</h2>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Veylo パスワード再設定</title>
+</head>
+
+<body
+  style="
+    font-family:
+      Arial,
+      sans-serif;
+    line-height:1.7;
+    color:#222;
+  "
+>
+
+  <h2>
+    Veylo パスワード再設定
+  </h2>
 
   <p>
     パスワード再設定のリクエストを受け付けました。
@@ -1128,6 +1309,7 @@ ${resetUrl}
   </p>
 
   <p>
+
     <a
       href="${resetUrl}"
       style="
@@ -1141,6 +1323,7 @@ ${resetUrl}
     >
       パスワードを再設定する
     </a>
+
   </p>
 
   <p>
@@ -1148,9 +1331,12 @@ ${resetUrl}
   </p>
 
   <p>
-    心当たりがない場合は、このメールを無視してください。
+    心当たりがない場合は、
+    このメールを無視してください。
   </p>
-</div>
+
+</body>
+</html>
 `
 
       });
@@ -1164,9 +1350,10 @@ ${resetUrl}
     } catch (error) {
 
       console.error(
-        "mail error:",
+        "forgot password error:",
         error
       );
+
 
       return res.status(500).json({
         message:
@@ -1196,9 +1383,12 @@ app.post(
           ""
         );
 
+
       const password =
-        req.body.password ||
-        "";
+        String(
+          req.body.password ||
+          ""
+        );
 
 
       if (
@@ -1210,14 +1400,16 @@ app.post(
 
         return res.status(400).json({
           message:
-            "有効なトークンと8文字以上のパスワードが必要です。"
+            "有効な再設定リンクと8文字以上のパスワードが必要です。"
         });
 
       }
 
 
       const tokenHash =
-        hashToken(token);
+        hashToken(
+          token
+        );
 
 
       const reset =
@@ -1280,8 +1472,13 @@ app.post(
 
 
       return res.json({
+
         success:
-          true
+          true,
+
+        message:
+          "パスワードを変更しました。新しいパスワードでログインしてください。"
+
       });
 
 
@@ -1291,6 +1488,7 @@ app.post(
         "reset password error:",
         error
       );
+
 
       return res.status(500).json({
         message:
@@ -1304,8 +1502,23 @@ app.post(
 
 
 // ==================================================
-// ルーム権限
+// ルーム
 // ==================================================
+
+function getRoom(
+  roomId
+) {
+
+  return db.prepare(`
+    SELECT *
+    FROM rooms
+    WHERE id = ?
+  `).get(
+    roomId
+  );
+
+}
+
 
 function isRoomMember(
   roomId,
@@ -1317,7 +1530,11 @@ function isRoomMember(
     CASUAL_ROOM_ID
   ) {
 
-    return true;
+    return Boolean(
+      getRoom(
+        CASUAL_ROOM_ID
+      )
+    );
 
   }
 
@@ -1337,23 +1554,8 @@ function isRoomMember(
 }
 
 
-function getRoom(
-  roomId
-) {
-
-  return db.prepare(`
-    SELECT *
-    FROM rooms
-    WHERE id = ?
-  `).get(
-    roomId
-  );
-
-}
-
-
 // ==================================================
-// ルーム作成
+// 部屋作成
 // ==================================================
 
 function createRoom(
@@ -1364,10 +1566,12 @@ function createRoom(
   let inviteCode;
   let exists;
 
+
   do {
 
     inviteCode =
       createInviteCode();
+
 
     exists =
       db.prepare(`
@@ -1383,6 +1587,7 @@ function createRoom(
 
   const roomId =
     randomId(12);
+
 
   const now =
     Date.now();
@@ -1456,17 +1661,22 @@ const io =
     server,
     {
       cors: {
+
         origin:
           true,
 
         credentials:
           true
+
       }
     }
   );
 
 
-// Express sessionをSocket.IOでも使用
+// ==================================================
+// Express SessionをSocket.IOでも使用
+// ==================================================
+
 io.engine.use(
   sessionMiddleware
 );
@@ -1514,6 +1724,11 @@ io.use(
     }
 
 
+    ensureCasualRoom(
+      user.id
+    );
+
+
     socket.user =
       user;
 
@@ -1525,14 +1740,14 @@ io.use(
 
 
 // ==================================================
-// 24時間以上のメッセージ削除
+// 古いメッセージ削除
 // ==================================================
 
 function cleanupOldMessages() {
 
   const cutoff =
     Date.now() -
-    24 * 60 * 60 * 1000;
+    MESSAGE_LIFETIME;
 
 
   db.prepare(`
@@ -1564,7 +1779,7 @@ function getMessages(
 
   const cutoff =
     Date.now() -
-    24 * 60 * 60 * 1000;
+    MESSAGE_LIFETIME;
 
 
   return db.prepare(`
@@ -1593,7 +1808,7 @@ function getMessages(
 
 
 // ==================================================
-// Socket共通：部屋参加
+// Socket 部屋参加
 // ==================================================
 
 function joinRoomSocket(
@@ -1609,7 +1824,7 @@ function joinRoomSocket(
 
 
 // ==================================================
-// Socket.IO 接続
+// Socket接続
 // ==================================================
 
 io.on(
@@ -1627,9 +1842,9 @@ io.on(
     );
 
 
-    // ==============================================
-    // 初期雑談
-    // ==============================================
+    // ==================================================
+    // 最初は雑談
+    // ==================================================
 
     joinRoomSocket(
       socket,
@@ -1650,9 +1865,9 @@ io.on(
     );
 
 
-    // ==============================================
-    // 雑談
-    // ==============================================
+    // ==================================================
+    // 雑談へ移動
+    // ==================================================
 
     socket.on(
       "join casual",
@@ -1678,6 +1893,11 @@ io.on(
         }
 
 
+        ensureCasualRoom(
+          user.id
+        );
+
+
         joinRoomSocket(
           socket,
           CASUAL_ROOM_ID
@@ -1700,9 +1920,9 @@ io.on(
     );
 
 
-    // ==============================================
+    // ==================================================
     // 部屋作成
-    // ==============================================
+    // ==================================================
 
     socket.on(
       "create room",
@@ -1769,6 +1989,7 @@ io.on(
           socket.emit(
             "room created",
             {
+
               id:
                 room.id,
 
@@ -1777,6 +1998,7 @@ io.on(
 
               inviteCode:
                 room.invite_code
+
             }
           );
 
@@ -1792,7 +2014,17 @@ io.on(
         } catch (error) {
 
           console.error(
+            "create room error:",
             error
+          );
+
+
+          socket.emit(
+            "message send error",
+            {
+              message:
+                "部屋を作成できませんでした。"
+            }
           );
 
         }
@@ -1801,9 +2033,9 @@ io.on(
     );
 
 
-    // ==============================================
+    // ==================================================
     // 部屋参加
-    // ==============================================
+    // ==================================================
 
     socket.on(
       "join room",
@@ -1854,79 +2086,102 @@ io.on(
         }
 
 
-        db.prepare(`
-          INSERT OR IGNORE INTO room_members (
-            room_id,
-            user_id,
-            joined_at
-          )
-          VALUES (
-            ?,
-            ?,
-            ?
-          )
-        `).run(
-          room.id,
-          user.id,
-          Date.now()
-        );
+        try {
 
-
-        for (
-          const currentRoom of
-          socket.rooms
-        ) {
-
-          if (
-            currentRoom.startsWith(
-              "room:"
+          db.prepare(`
+            INSERT OR IGNORE INTO room_members (
+              room_id,
+              user_id,
+              joined_at
             )
+            VALUES (
+              ?,
+              ?,
+              ?
+            )
+          `).run(
+            room.id,
+            user.id,
+            Date.now()
+          );
+
+
+          for (
+            const currentRoom of
+            socket.rooms
           ) {
 
-            socket.leave(
-              currentRoom
-            );
+            if (
+              currentRoom.startsWith(
+                "room:"
+              )
+            ) {
+
+              socket.leave(
+                currentRoom
+              );
+
+            }
 
           }
+
+
+          joinRoomSocket(
+            socket,
+            room.id
+          );
+
+
+          socket.emit(
+            "room joined",
+            {
+
+              id:
+                room.id,
+
+              name:
+                room.name,
+
+              inviteCode:
+                room.invite_code
+
+            }
+          );
+
+
+          socket.emit(
+            "previous messages",
+            getMessages(
+              room.id
+            )
+          );
+
+
+        } catch (error) {
+
+          console.error(
+            "join room error:",
+            error
+          );
+
+
+          socket.emit(
+            "join room error",
+            {
+              message:
+                "部屋に参加できませんでした。"
+            }
+          );
 
         }
-
-
-        joinRoomSocket(
-          socket,
-          room.id
-        );
-
-
-        socket.emit(
-          "room joined",
-          {
-            id:
-              room.id,
-
-            name:
-              room.name,
-
-            inviteCode:
-              room.invite_code
-          }
-        );
-
-
-        socket.emit(
-          "previous messages",
-          getMessages(
-            room.id
-          )
-        );
 
       }
     );
 
 
-    // ==============================================
+    // ==================================================
     // メッセージ送信
-    // ==============================================
+    // ==================================================
 
     socket.on(
       "chat message",
@@ -2109,6 +2364,7 @@ io.on(
 
             edited:
               0
+
           };
 
 
@@ -2127,15 +2383,24 @@ io.on(
             error
           );
 
+
+          socket.emit(
+            "message send error",
+            {
+              message:
+                "メッセージを送信できませんでした。"
+            }
+          );
+
         }
 
       }
     );
 
 
-    // ==============================================
+    // ==================================================
     // 編集
-    // ==============================================
+    // ==================================================
 
     socket.on(
       "edit message",
@@ -2148,6 +2413,7 @@ io.on(
               data?.id ||
               ""
             );
+
 
           const text =
             String(
@@ -2196,7 +2462,6 @@ io.on(
           }
 
 
-          // 名前ではなくIDで本人確認
           if (
             message.user_id !==
             user.id
@@ -2207,6 +2472,24 @@ io.on(
               {
                 message:
                   "自分のメッセージだけ編集できます。"
+              }
+            );
+
+          }
+
+
+          if (
+            !isRoomMember(
+              message.room_id,
+              user.id
+            )
+          ) {
+
+            return socket.emit(
+              "message edit error",
+              {
+                message:
+                  "この部屋には参加していません。"
               }
             );
 
@@ -2260,15 +2543,24 @@ io.on(
             error
           );
 
+
+          socket.emit(
+            "message edit error",
+            {
+              message:
+                "コメントを編集できませんでした。"
+            }
+          );
+
         }
 
       }
     );
 
 
-    // ==============================================
+    // ==================================================
     // 削除
-    // ==============================================
+    // ==================================================
 
     socket.on(
       "delete message",
@@ -2281,6 +2573,19 @@ io.on(
               data?.id ||
               ""
             );
+
+
+          if (!id) {
+
+            return socket.emit(
+              "message delete error",
+              {
+                message:
+                  "メッセージが指定されていません。"
+              }
+            );
+
+          }
 
 
           const message =
@@ -2335,11 +2640,13 @@ io.on(
           ).emit(
             "message deleted",
             {
+
               id:
                 id,
 
               room:
                 message.room_id
+
             }
           );
 
@@ -2351,15 +2658,24 @@ io.on(
             error
           );
 
+
+          socket.emit(
+            "message delete error",
+            {
+              message:
+                "コメントを削除できませんでした。"
+            }
+          );
+
         }
 
       }
     );
 
 
-    // ==============================================
+    // ==================================================
     // 切断
-    // ==============================================
+    // ==================================================
 
     socket.on(
       "disconnect",
@@ -2388,11 +2704,13 @@ app.get(
   (req, res) => {
 
     res.json({
+
       id:
         req.user.id,
 
       name:
         req.user.name
+
     });
 
   }
@@ -2410,6 +2728,35 @@ app.use(
       "public"
     )
   )
+);
+
+
+// ==================================================
+// 404
+// ==================================================
+
+app.use(
+  (req, res) => {
+
+    if (
+      req.path.startsWith(
+        "/api/"
+      )
+    ) {
+
+      return res.status(404).json({
+        message:
+          "APIが見つかりません。"
+      });
+
+    }
+
+
+    return res.status(404).send(
+      "ページが見つかりません。"
+    );
+
+  }
 );
 
 
