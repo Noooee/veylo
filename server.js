@@ -128,8 +128,13 @@ app.use(
 // ==================================================
 // Session
 // ==================================================
+//
+// ★重要
+// sessionMiddleware として変数に保存します。
+// Socket.IOでもこのSessionを共有します。
+// ==================================================
 
-app.use(
+const sessionMiddleware =
   session({
 
     store:
@@ -175,7 +180,21 @@ app.use(
 
     }
 
-  })
+  });
+
+
+// 通常のHTTPリクエスト
+app.use(
+  sessionMiddleware
+);
+
+
+// ==================================================
+// ★ Socket.IOにもSessionを共有
+// ==================================================
+
+io.engine.use(
+  sessionMiddleware
 );
 
 
@@ -607,14 +626,44 @@ app.post(
         user.id;
 
 
-      return res.json({
+      /*
+       * Sessionを確実にDBへ保存してから
+       * レスポンスを返します。
+       *
+       * これが重要です。
+       */
 
-        user:
-          sanitizeUser(
-            user
-          )
+      req.session.save(
+        (error) => {
 
-      });
+          if (error) {
+
+            console.error(
+              "register session save error:",
+              error
+            );
+
+            return res
+              .status(500)
+              .json({
+                message:
+                  "ログインセッションの保存に失敗しました。"
+              });
+
+          }
+
+
+          return res.json({
+
+            user:
+              sanitizeUser(
+                user
+              )
+
+          });
+
+        }
+      );
 
     } catch (error) {
 
@@ -724,18 +773,82 @@ app.post(
       }
 
 
-      req.session.userId =
-        user.id;
+      /*
+       * セッション固定攻撃対策として
+       * ログイン時にセッションIDを再生成します。
+       */
+
+      req.session.regenerate(
+        (error) => {
+
+          if (error) {
+
+            console.error(
+              "session regenerate error:",
+              error
+            );
+
+            return res
+              .status(500)
+              .json({
+                message:
+                  "ログインセッションの作成に失敗しました。"
+              });
+
+          }
 
 
-      return res.json({
+          req.session.userId =
+            user.id;
 
-        user:
-          sanitizeUser(
-            user
-          )
 
-      });
+          /*
+           * PostgreSQL Session Storeへ
+           * 確実に保存してからレスポンス。
+           */
+
+          req.session.save(
+            (saveError) => {
+
+              if (saveError) {
+
+                console.error(
+                  "session save error:",
+                  saveError
+                );
+
+                return res
+                  .status(500)
+                  .json({
+                    message:
+                      "ログインセッションの保存に失敗しました。"
+                  });
+
+              }
+
+
+              console.log(
+                "Login successful:",
+                user.name,
+                "userId:",
+                user.id
+              );
+
+
+              return res.json({
+
+                user:
+                  sanitizeUser(
+                    user
+                  )
+
+              });
+
+            }
+          );
+
+        }
+      );
 
     } catch (error) {
 
@@ -847,12 +960,6 @@ app.post(
         );
 
 
-      /*
-       * セキュリティ上、
-       * 登録されていないメールでも
-       * 同じメッセージを返します。
-       */
-
       if (
         result.rows.length === 0
       ) {
@@ -868,10 +975,6 @@ app.post(
       const user =
         result.rows[0];
 
-
-      /*
-       * 古いトークンを無効化
-       */
 
       await pool.query(
         `
@@ -915,13 +1018,6 @@ app.post(
       );
 
 
-      /*
-       * reset-password.html は次の段階で作ります。
-       *
-       * 今は環境変数 BASE_URL があれば
-       * そのURLを使用します。
-       */
-
       const baseUrl =
         process.env.BASE_URL ||
         `http://localhost:${PORT}`;
@@ -947,10 +1043,6 @@ app.post(
         "=========================================="
       );
 
-
-      /*
-       * SMTP設定がある場合のみメール送信
-       */
 
       if (
         process.env.SMTP_HOST &&
@@ -1003,21 +1095,14 @@ app.post(
           text:
             [
               `${user.name}さん`,
-
               "",
-
               "Veyloのパスワード再設定を受け付けました。",
-
               "",
-
               "以下のリンクから新しいパスワードを設定してください。",
-
-              resetUrl,
-
               "",
-
+              resetUrl,
+              "",
               "このリンクは30分間有効です。"
-
             ].join("\n")
 
         });
@@ -1171,12 +1256,6 @@ app.post(
       );
 
 
-      /*
-       * パスワード変更後は
-       * そのユーザーの既存セッションを
-       * 強制的に全部消す処理も後から追加可能です。
-       */
-
       return res.json({
 
         success:
@@ -1208,23 +1287,48 @@ app.post(
 
 
 // ==================================================
-// Socket.IO 認証
+// ★ Socket.IO 認証
 // ==================================================
 
 io.use(
   (socket, next) => {
 
+    /*
+     * io.engine.use(sessionMiddleware)
+     * によってここで
+     * socket.request.session が使えるようになります。
+     */
+
     const req =
       socket.request;
 
-    const session =
+    const currentSession =
       req.session;
 
 
+    console.log(
+      "Socket authentication:",
+      {
+        socketId:
+          socket.id,
+
+        hasSession:
+          !!currentSession,
+
+        userId:
+          currentSession?.userId || null
+      }
+    );
+
+
     if (
-      !session ||
-      !session.userId
+      !currentSession ||
+      !currentSession.userId
     ) {
+
+      console.log(
+        "Socket authentication failed."
+      );
 
       return next(
         new Error(
@@ -1236,7 +1340,7 @@ io.use(
 
 
     socket.userId =
-      session.userId;
+      currentSession.userId;
 
 
     next();
@@ -1261,10 +1365,6 @@ io.on(
     );
 
 
-    /*
-     * ユーザー情報
-     */
-
     let userResult;
 
 
@@ -1288,6 +1388,7 @@ io.on(
     } catch (error) {
 
       console.error(
+        "Socket user query error:",
         error
       );
 
@@ -1313,9 +1414,15 @@ io.on(
       userResult.rows[0];
 
 
-    /*
-     * 雑談へ参加
-     */
+    console.log(
+      "Socket user authenticated:",
+      user.name
+    );
+
+
+    // ==================================================
+    // 雑談へ参加
+    // ==================================================
 
     await joinCasual(
       socket
@@ -1382,10 +1489,6 @@ io.on(
 
           }
 
-
-          /*
-           * 実際に参加している部屋か確認
-           */
 
           const socketRooms =
             Array.from(
@@ -1563,18 +1666,12 @@ io.on(
 
 
           if (!name) {
-
             return;
-
           }
 
 
-          if (
-            name.length > 100
-          ) {
-
+          if (name.length > 100) {
             return;
-
           }
 
 
@@ -1584,10 +1681,6 @@ io.on(
           let inviteCode =
             generateInviteCode();
 
-
-          /*
-           * 万一コードが重複した場合
-           */
 
           while (true) {
 
@@ -1653,10 +1746,6 @@ io.on(
             result.rows[0];
 
 
-          /*
-           * 現在の部屋から退出
-           */
-
           leaveCurrentRooms(
             socket
           );
@@ -1681,10 +1770,6 @@ io.on(
             }
           );
 
-
-          /*
-           * 過去メッセージ
-           */
 
           await sendPreviousMessages(
             socket,
@@ -2312,12 +2397,6 @@ app.get(
 app.get(
   "*",
   (req, res) => {
-
-    /*
-     * APIはここに来ない。
-     * reset-password.html などの
-     * 実ファイルも express.static が先に処理する。
-     */
 
     res.sendFile(
       path.join(
