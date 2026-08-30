@@ -8,19 +8,11 @@ const express = require("express");
 const http = require("http");
 const path = require("path");
 const crypto = require("crypto");
-
 const bcrypt = require("bcryptjs");
-
 const session = require("express-session");
-
-const pgSession = require("connect-pg-simple")(
-  session
-);
-
+const pgSession = require("connect-pg-simple")(session);
 const { Pool } = require("pg");
-
 const { Server } = require("socket.io");
-
 const nodemailer = require("nodemailer");
 
 
@@ -29,7 +21,7 @@ const nodemailer = require("nodemailer");
 // ==================================================
 
 const PORT =
-  Number(process.env.PORT) || 10000;
+  process.env.PORT || 10000;
 
 const DATABASE_URL =
   process.env.DATABASE_URL;
@@ -76,35 +68,12 @@ const pool =
     ssl:
       process.env.NODE_ENV === "production"
         ? {
-            rejectUnauthorized: false
+            rejectUnauthorized:
+              false
           }
         : false
 
   });
-
-
-// ==================================================
-// Express 基本設定
-// ==================================================
-
-app.set(
-  "trust proxy",
-  1
-);
-
-
-app.use(
-  express.json({
-    limit: "1mb"
-  })
-);
-
-
-app.use(
-  express.urlencoded({
-    extended: true
-  })
-);
 
 
 // ==================================================
@@ -143,9 +112,7 @@ const sessionMiddleware =
         true,
 
       secure:
-        process.env.NODE_ENV === "production"
-          ? "auto"
-          : false,
+        process.env.NODE_ENV === "production",
 
       sameSite:
         "lax",
@@ -163,9 +130,25 @@ const sessionMiddleware =
 
 
 // ==================================================
-// Express Session
+// Express Middleware
 // ==================================================
 
+app.use(
+  express.json({
+    limit:
+      "1mb"
+  })
+);
+
+app.use(
+  express.urlencoded({
+    extended:
+      true
+  })
+);
+
+
+// Sessionは1回だけ
 app.use(
   sessionMiddleware
 );
@@ -193,7 +176,7 @@ const io =
 
 
 // ==================================================
-// Socket.IO と Express Session を共有
+// Socket.IOにもSessionを共有
 // ==================================================
 
 io.engine.use(
@@ -724,7 +707,10 @@ app.post(
         );
 
 
-      if (!name || !password) {
+      if (
+        !name ||
+        !password
+      ) {
 
         return res
           .status(400)
@@ -849,9 +835,7 @@ app.post(
                 "Login successful:",
                 user.name,
                 "userId:",
-                user.id,
-                "session:",
-                req.session.id
+                user.id
               );
 
 
@@ -1021,7 +1005,6 @@ app.post(
 
       const token =
         generateResetToken();
-
 
       const tokenHash =
         hashToken(
@@ -1341,19 +1324,13 @@ io.use(
 
 
     console.log(
-      "Socket authentication:",
-      {
-        socketId:
-          socket.id,
-
-        hasSession:
-          Boolean(
-            socketSession
-          ),
-
-        userId:
-          socketSession?.userId || null
-      }
+      "Socket session:",
+      socketSession
+        ? {
+            userId:
+              socketSession.userId
+          }
+        : null
     );
 
 
@@ -1365,7 +1342,6 @@ io.use(
       console.log(
         "Socket.IO authentication failed."
       );
-
 
       return next(
         new Error(
@@ -1380,6 +1356,12 @@ io.use(
       Number(
         socketSession.userId
       );
+
+
+    console.log(
+      "Socket.IO authentication successful:",
+      socket.userId
+    );
 
 
     next();
@@ -1458,6 +1440,10 @@ io.on(
       user.name
     );
 
+
+    // ==================================================
+    // 雑談へ参加
+    // ==================================================
 
     await joinCasual(
       socket
@@ -1576,7 +1562,6 @@ io.on(
                 `
                 SELECT
                   id,
-                  room,
                   username,
                   text
                 FROM messages
@@ -1597,22 +1582,14 @@ io.on(
                 replyResult.rows[0];
 
 
-              // 別ルームのメッセージを
-              // 返信元にできないようにする
-              if (
-                reply.room === room
-              ) {
+              replyToId =
+                reply.id;
 
-                replyToId =
-                  reply.id;
+              replyToUsername =
+                reply.username;
 
-                replyToUsername =
-                  reply.username;
-
-                replyToText =
-                  reply.text;
-
-              }
+              replyToText =
+                reply.text;
 
             }
 
@@ -1726,15 +1703,12 @@ io.on(
           if (
             name.length > 100
           ) {
-
             return;
-
           }
 
 
           const id =
             generateRoomId();
-
 
           let inviteCode =
             generateInviteCode();
@@ -2408,8 +2382,7 @@ async function cleanupOldMessages() {
       await pool.query(
         `
         DELETE FROM messages
-        WHERE created_at <
-          NOW() - INTERVAL '24 hours'
+        WHERE created_at < NOW() - INTERVAL '24 hours'
         `
       );
 
