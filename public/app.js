@@ -214,6 +214,213 @@ const MESSAGE_LIFETIME =
 
 
 // ==================================================
+// 新着メッセージ関連
+// ==================================================
+
+let newMessageButton = null;
+
+
+// ==================================================
+// 最下部にいるか確認
+//
+// 少しだけ余裕を持たせることで
+// 「ほぼ最下部」でも自動スクロールします。
+// ==================================================
+
+function isAtBottom() {
+
+  if (!messages) {
+    return true;
+  }
+
+
+  const threshold = 80;
+
+
+  return (
+    messages.scrollHeight -
+      messages.scrollTop -
+      messages.clientHeight <=
+    threshold
+  );
+
+}
+
+
+// ==================================================
+// 一番下まで移動
+// ==================================================
+
+function scrollToBottom(
+  behavior = "smooth"
+) {
+
+  if (!messages) {
+    return;
+  }
+
+
+  messages.scrollTo({
+
+    top:
+      messages.scrollHeight,
+
+    behavior:
+      behavior
+
+  });
+
+}
+
+
+// ==================================================
+// 新着メッセージボタン作成
+// ==================================================
+
+function createNewMessageButton() {
+
+  if (
+    document.getElementById(
+      "newMessageButton"
+    )
+  ) {
+
+    newMessageButton =
+      document.getElementById(
+        "newMessageButton"
+      );
+
+    return newMessageButton;
+
+  }
+
+
+  newMessageButton =
+    document.createElement(
+      "button"
+    );
+
+
+  newMessageButton.id =
+    "newMessageButton";
+
+
+  newMessageButton.type =
+    "button";
+
+
+  newMessageButton.className =
+    "new-message-button hidden";
+
+
+  newMessageButton.textContent =
+    "新着メッセージあり ↓";
+
+
+  newMessageButton.setAttribute(
+    "aria-label",
+    "新着メッセージがあります。下へ移動"
+  );
+
+
+  newMessageButton.addEventListener(
+    "click",
+    () => {
+
+      scrollToBottom();
+
+      hideNewMessageButton();
+
+    }
+  );
+
+
+  const chatContainer =
+    document.querySelector(
+      ".chat-container"
+    );
+
+
+  if (chatContainer) {
+
+    chatContainer.appendChild(
+      newMessageButton
+    );
+
+  }
+
+
+  return newMessageButton;
+
+}
+
+
+// ==================================================
+// 新着メッセージボタン表示
+// ==================================================
+
+function showNewMessageButton() {
+
+  const button =
+    createNewMessageButton();
+
+
+  if (!button) {
+    return;
+  }
+
+
+  button.classList.remove(
+    "hidden"
+  );
+
+}
+
+
+// ==================================================
+// 新着メッセージボタン非表示
+// ==================================================
+
+function hideNewMessageButton() {
+
+  if (!newMessageButton) {
+    return;
+  }
+
+
+  newMessageButton.classList.add(
+    "hidden"
+  );
+
+}
+
+
+// ==================================================
+// スクロール位置監視
+//
+// 下まで戻ってきたら
+// 「新着メッセージあり」を自動で消します。
+// ==================================================
+
+if (messages) {
+
+  messages.addEventListener(
+    "scroll",
+    () => {
+
+      if (isAtBottom()) {
+
+        hideNewMessageButton();
+
+      }
+
+    }
+  );
+
+}
+
+
+// ==================================================
 // ユーザー名読み込み
 // ==================================================
 
@@ -407,8 +614,10 @@ function createReplyPreview() {
   preview =
     document.createElement("div");
 
+
   preview.id =
     "replyPreview";
+
 
   preview.className =
     "reply-preview hidden";
@@ -417,6 +626,7 @@ function createReplyPreview() {
   const text =
     document.createElement("div");
 
+
   text.className =
     "reply-preview-text";
 
@@ -424,11 +634,14 @@ function createReplyPreview() {
   const cancel =
     document.createElement("button");
 
+
   cancel.type =
     "button";
 
+
   cancel.className =
     "reply-cancel-button";
+
 
   cancel.textContent =
     "✕";
@@ -448,15 +661,27 @@ function createReplyPreview() {
   );
 
 
-  preview.appendChild(text);
-
-  preview.appendChild(cancel);
-
-
-  messageForm.parentNode.insertBefore(
-    preview,
-    messageForm
+  preview.appendChild(
+    text
   );
+
+
+  preview.appendChild(
+    cancel
+  );
+
+
+  if (
+    messageForm &&
+    messageForm.parentNode
+  ) {
+
+    messageForm.parentNode.insertBefore(
+      preview,
+      messageForm
+    );
+
+  }
 
 
   return preview;
@@ -499,8 +724,12 @@ function setReplyTarget(data) {
     );
 
 
-  previewText.textContent =
-    `↩ ${replyTarget.username}さんの「${replyTarget.text}」に返信`;
+  if (previewText) {
+
+    previewText.textContent =
+      `↩ ${replyTarget.username}さんの「${replyTarget.text}」に返信`;
+
+  }
 
 
   preview.classList.remove(
@@ -508,7 +737,11 @@ function setReplyTarget(data) {
   );
 
 
-  messageInput.focus();
+  if (messageInput) {
+
+    messageInput.focus();
+
+  }
 
 }
 
@@ -543,79 +776,79 @@ function clearReplyTarget() {
 // チャット送信
 // ==================================================
 
-messageForm.addEventListener(
-  "submit",
-  (event) => {
+if (messageForm) {
 
-    event.preventDefault();
+  messageForm.addEventListener(
+    "submit",
+    (event) => {
 
-
-    const text =
-      messageInput.value.trim();
+      event.preventDefault();
 
 
-    const username =
-      usernameInput.value.trim() ||
-      "ゲスト";
+      const text =
+        messageInput.value.trim();
 
 
-    if (!text) {
-      return;
-    }
+      const username =
+        usernameInput.value.trim() ||
+        "ゲスト";
 
 
-    localStorage.setItem(
-      "veylo_username",
-      username
-    );
+      if (!text) {
+        return;
+      }
 
 
-    const messageData = {
-
-      room:
-        currentRoom,
-
-      text:
-        text,
-
-      username:
+      localStorage.setItem(
+        "veylo_username",
         username
+      );
 
-    };
+
+      const messageData = {
+
+        room:
+          currentRoom,
+
+        text:
+          text,
+
+        username:
+          username
+
+      };
 
 
-    // ==================================================
-    // 返信先がある場合
-    // ==================================================
+      if (
+        replyTarget &&
+        replyTarget.id
+      ) {
 
-    if (
-      replyTarget &&
-      replyTarget.id
-    ) {
+        messageData.replyToId =
+          replyTarget.id;
 
-      messageData.replyToId =
-        replyTarget.id;
+      }
+
+
+      socket.emit(
+        "chat message",
+        messageData
+      );
+
+
+      messageInput.value =
+        "";
+
+
+      clearReplyTarget();
+
+
+      messageInput.focus();
 
     }
+  );
 
-
-    socket.emit(
-      "chat message",
-      messageData
-    );
-
-
-    messageInput.value =
-      "";
-
-
-    clearReplyTarget();
-
-
-    messageInput.focus();
-
-  }
-);
+}
 
 
 // ==================================================
@@ -650,10 +883,45 @@ socket.on(
     }
 
 
+    // ==================================================
+    // メッセージ追加前のスクロール位置を記録
+    //
+    // ここが今回の重要部分です。
+    // ==================================================
+
+    const wasAtBottom =
+      isAtBottom();
+
+
     addMessage(data);
 
 
     saveLocalMessage(data);
+
+
+    // ==================================================
+    // 追加後
+    // ==================================================
+
+    if (wasAtBottom) {
+
+      // 最下部にいた
+      // ↓
+      // 新着メッセージを自動表示
+
+      scrollToBottom();
+
+      hideNewMessageButton();
+
+    } else {
+
+      // 過去ログを読んでいる
+      // ↓
+      // 勝手に下へ行かない
+
+      showNewMessageButton();
+
+    }
 
   }
 );
@@ -723,7 +991,16 @@ socket.on(
     }
 
 
-    scrollToBottom();
+    // ==================================================
+    // 過去ログ読み込み時は最下部へ
+    // ==================================================
+
+    scrollToBottom(
+      "auto"
+    );
+
+
+    hideNewMessageButton();
 
   }
 );
@@ -807,6 +1084,7 @@ function addMessage(data) {
     user
   );
 
+
   header.appendChild(
     time
   );
@@ -881,10 +1159,6 @@ function addMessage(data) {
       replyText
     );
 
-
-    // ==================================================
-    // 返信先クリック
-    // ==================================================
 
     replyInfo.addEventListener(
       "click",
@@ -1241,10 +1515,21 @@ socket.on(
     }
 
 
+    const wasAtBottom =
+      isAtBottom();
+
+
     element.remove();
 
 
     addMessage(data);
+
+
+    if (wasAtBottom) {
+
+      scrollToBottom();
+
+    }
 
   }
 );
@@ -1313,6 +1598,7 @@ socket.on(
 
     if (!data) {
       return;
+
     }
 
 
@@ -1338,10 +1624,6 @@ socket.on(
 
     }
 
-
-    // ==================================================
-    // LocalStorageからも削除
-    // ==================================================
 
     removeLocalMessage(
       data.id
@@ -1438,8 +1720,13 @@ function scrollToMessage(
 
 
   target.scrollIntoView({
-    behavior: "smooth",
-    block: "center"
+
+    behavior:
+      "smooth",
+
+    block:
+      "center"
+
   });
 
 
@@ -1468,6 +1755,11 @@ function scrollToMessage(
 
 function scrollToTop() {
 
+  if (!messages) {
+    return;
+  }
+
+
   messages.scrollTo({
 
     top:
@@ -1485,17 +1777,11 @@ function scrollToTop() {
 // 一番下へ
 // ==================================================
 
-function scrollToBottom() {
+function scrollToBottomButton() {
 
-  messages.scrollTo({
+  scrollToBottom();
 
-    top:
-      messages.scrollHeight,
-
-    behavior:
-      "smooth"
-
-  });
+  hideNewMessageButton();
 
 }
 
@@ -1583,7 +1869,7 @@ function createScrollButtons() {
 
   downButton.addEventListener(
     "click",
-    scrollToBottom
+    scrollToBottomButton
   );
 
 
@@ -1839,6 +2125,8 @@ function returnToCasual() {
 
   clearReplyTarget();
 
+  hideNewMessageButton();
+
 
   updateBackToCasualButton();
 
@@ -1895,7 +2183,16 @@ socket.on(
     messages.innerHTML =
       "";
 
+
     loadLocalMessages();
+
+
+    scrollToBottom(
+      "auto"
+    );
+
+
+    hideNewMessageButton();
 
   }
 );
@@ -1940,74 +2237,86 @@ function updateBackToCasualButton() {
 // 部屋作成ボタン
 // ==================================================
 
-createRoomButton.addEventListener(
-  "click",
-  () => {
+if (createRoomButton) {
 
-    roomNameInput.value =
-      "";
+  createRoomButton.addEventListener(
+    "click",
+    () => {
 
-
-    createModal.classList.remove(
-      "hidden"
-    );
+      roomNameInput.value =
+        "";
 
 
-    roomNameInput.focus();
+      createModal.classList.remove(
+        "hidden"
+      );
 
-  }
-);
+
+      roomNameInput.focus();
+
+    }
+  );
+
+}
 
 
 // ==================================================
 // 部屋作成キャンセル
 // ==================================================
 
-cancelCreateButton.addEventListener(
-  "click",
-  () => {
+if (cancelCreateButton) {
 
-    createModal.classList.add(
-      "hidden"
-    );
+  cancelCreateButton.addEventListener(
+    "click",
+    () => {
 
-  }
-);
+      createModal.classList.add(
+        "hidden"
+      );
+
+    }
+  );
+
+}
 
 
 // ==================================================
 // 部屋作成
 // ==================================================
 
-confirmCreateButton.addEventListener(
-  "click",
-  () => {
+if (confirmCreateButton) {
 
-    const name =
-      roomNameInput.value.trim();
+  confirmCreateButton.addEventListener(
+    "click",
+    () => {
+
+      const name =
+        roomNameInput.value.trim();
 
 
-    if (!name) {
+      if (!name) {
 
-      alert(
-        "部屋の名前を入力してください。"
+        alert(
+          "部屋の名前を入力してください。"
+        );
+
+        return;
+
+      }
+
+
+      socket.emit(
+        "create room",
+        {
+          name:
+            name
+        }
       );
 
-      return;
-
     }
+  );
 
-
-    socket.emit(
-      "create room",
-      {
-        name:
-          name
-      }
-    );
-
-  }
-);
+}
 
 
 // ==================================================
@@ -2052,6 +2361,8 @@ socket.on(
 
     clearReplyTarget();
 
+    hideNewMessageButton();
+
 
     updateBackToCasualButton();
 
@@ -2068,79 +2379,91 @@ socket.on(
 // 部屋参加ボタン
 // ==================================================
 
-joinRoomButton.addEventListener(
-  "click",
-  () => {
+if (joinRoomButton) {
 
-    inviteCodeInput.value =
-      "";
+  joinRoomButton.addEventListener(
+    "click",
+    () => {
 
-
-    joinError.textContent =
-      "";
+      inviteCodeInput.value =
+        "";
 
 
-    joinModal.classList.remove(
-      "hidden"
-    );
+      joinError.textContent =
+        "";
 
 
-    inviteCodeInput.focus();
+      joinModal.classList.remove(
+        "hidden"
+      );
 
-  }
-);
+
+      inviteCodeInput.focus();
+
+    }
+  );
+
+}
 
 
 // ==================================================
 // 部屋参加キャンセル
 // ==================================================
 
-cancelJoinButton.addEventListener(
-  "click",
-  () => {
+if (cancelJoinButton) {
 
-    joinModal.classList.add(
-      "hidden"
-    );
+  cancelJoinButton.addEventListener(
+    "click",
+    () => {
 
-  }
-);
+      joinModal.classList.add(
+        "hidden"
+      );
+
+    }
+  );
+
+}
 
 
 // ==================================================
 // 部屋参加
 // ==================================================
 
-confirmJoinButton.addEventListener(
-  "click",
-  () => {
+if (confirmJoinButton) {
 
-    const code =
-      inviteCodeInput.value
-        .trim()
-        .toUpperCase();
+  confirmJoinButton.addEventListener(
+    "click",
+    () => {
+
+      const code =
+        inviteCodeInput.value
+          .trim()
+          .toUpperCase();
 
 
-    if (!code) {
+      if (!code) {
 
-      joinError.textContent =
-        "招待コードを入力してください。";
+        joinError.textContent =
+          "招待コードを入力してください。";
 
-      return;
+        return;
+
+      }
+
+
+      socket.emit(
+        "join room",
+        {
+          code:
+            code
+        }
+      );
 
     }
+  );
 
-
-    socket.emit(
-      "join room",
-      {
-        code:
-          code
-      }
-    );
-
-  }
-);
+}
 
 
 // ==================================================
@@ -2185,6 +2508,8 @@ socket.on(
 
     clearReplyTarget();
 
+    hideNewMessageButton();
+
 
     updateBackToCasualButton();
 
@@ -2212,81 +2537,97 @@ socket.on(
 // 設定を開く
 // ==================================================
 
-settingsButton.addEventListener(
-  "click",
-  () => {
+if (settingsButton) {
 
-    settingsUsernameInput.value =
-      localStorage.getItem(
-        "veylo_username"
-      ) || "";
+  settingsButton.addEventListener(
+    "click",
+    () => {
 
-
-    languageSelect.value =
-      language;
+      settingsUsernameInput.value =
+        localStorage.getItem(
+          "veylo_username"
+        ) || "";
 
 
-    settingsModal.classList.remove(
-      "hidden"
-    );
+      languageSelect.value =
+        language;
 
 
-    settingsUsernameInput.focus();
+      settingsModal.classList.remove(
+        "hidden"
+      );
 
-  }
-);
+
+      settingsUsernameInput.focus();
+
+    }
+  );
+
+}
 
 
 // ==================================================
 // 設定を閉じる
 // ==================================================
 
-closeSettingsButton.addEventListener(
-  "click",
-  () => {
+if (closeSettingsButton) {
 
-    settingsModal.classList.add(
-      "hidden"
-    );
+  closeSettingsButton.addEventListener(
+    "click",
+    () => {
 
-  }
-);
+      settingsModal.classList.add(
+        "hidden"
+      );
+
+    }
+  );
+
+}
 
 
 // ==================================================
 // ダークモード
 // ==================================================
 
-themeToggleButton.addEventListener(
-  "click",
-  () => {
+if (themeToggleButton) {
 
-    darkMode =
-      !darkMode;
+  themeToggleButton.addEventListener(
+    "click",
+    () => {
+
+      darkMode =
+        !darkMode;
 
 
-    updateTheme();
+      updateTheme();
 
-  }
-);
+    }
+  );
+
+}
 
 
 // ==================================================
 // グレーモード
 // ==================================================
 
-grayToggleButton.addEventListener(
-  "click",
-  () => {
+if (grayToggleButton) {
 
-    grayMode =
-      !grayMode;
+  grayToggleButton.addEventListener(
+    "click",
+    () => {
+
+      grayMode =
+        !grayMode;
 
 
-    updateTheme();
+      updateTheme();
 
-  }
-);
+    }
+  );
+
+}
 
 
 // ==================================================
@@ -2307,28 +2648,36 @@ function updateTheme() {
   );
 
 
-  themeToggleButton.textContent =
-    darkMode
-      ? "ON"
-      : "OFF";
+  if (themeToggleButton) {
+
+    themeToggleButton.textContent =
+      darkMode
+        ? "ON"
+        : "OFF";
 
 
-  grayToggleButton.textContent =
-    grayMode
-      ? "ON"
-      : "OFF";
+    themeToggleButton.classList.toggle(
+      "active",
+      darkMode
+    );
+
+  }
 
 
-  themeToggleButton.classList.toggle(
-    "active",
-    darkMode
-  );
+  if (grayToggleButton) {
+
+    grayToggleButton.textContent =
+      grayMode
+        ? "ON"
+        : "OFF";
 
 
-  grayToggleButton.classList.toggle(
-    "active",
-    grayMode
-  );
+    grayToggleButton.classList.toggle(
+      "active",
+      grayMode
+    );
+
+  }
 
 
   localStorage.setItem(
@@ -2349,166 +2698,190 @@ function updateTheme() {
 // 設定保存
 // ==================================================
 
-saveSettingsButton.addEventListener(
-  "click",
-  () => {
+if (saveSettingsButton) {
 
-    const username =
-      settingsUsernameInput.value.trim();
+  saveSettingsButton.addEventListener(
+    "click",
+    () => {
+
+      const username =
+        settingsUsernameInput.value.trim();
 
 
-    if (username) {
+      if (username) {
+
+        localStorage.setItem(
+          "veylo_username",
+          username
+        );
+
+
+        usernameInput.value =
+          username;
+
+      }
+
+
+      language =
+        languageSelect.value;
+
 
       localStorage.setItem(
-        "veylo_username",
-        username
+        "veylo_language",
+        language
       );
 
 
-      usernameInput.value =
-        username;
-
-    }
-
-
-    language =
-      languageSelect.value;
-
-
-    localStorage.setItem(
-      "veylo_language",
-      language
-    );
-
-
-    localStorage.setItem(
-      "veylo_dark_mode",
-      darkMode
-    );
-
-
-    localStorage.setItem(
-      "veylo_gray_mode",
-      grayMode
-    );
-
-
-    updateTheme();
-
-
-    settingsModal.classList.add(
-      "hidden"
-    );
-
-  }
-);
-
-
-// ==================================================
-// Enterキー：部屋作成
-// ==================================================
-
-roomNameInput.addEventListener(
-  "keydown",
-  (event) => {
-
-    if (
-      event.key ===
-      "Enter"
-    ) {
-
-      event.preventDefault();
-
-      confirmCreateButton.click();
-
-    }
-
-  }
-);
-
-
-// ==================================================
-// Enterキー：部屋参加
-// ==================================================
-
-inviteCodeInput.addEventListener(
-  "keydown",
-  (event) => {
-
-    if (
-      event.key ===
-      "Enter"
-    ) {
-
-      event.preventDefault();
-
-      confirmJoinButton.click();
-
-    }
-
-  }
-);
-
-
-// ==================================================
-// モーダル外クリック
-// ==================================================
-
-createModal.addEventListener(
-  "click",
-  (event) => {
-
-    if (
-      event.target ===
-      createModal
-    ) {
-
-      createModal.classList.add(
-        "hidden"
+      localStorage.setItem(
+        "veylo_dark_mode",
+        darkMode
       );
 
-    }
 
-  }
-);
-
-
-joinModal.addEventListener(
-  "click",
-  (event) => {
-
-    if (
-      event.target ===
-      joinModal
-    ) {
-
-      joinModal.classList.add(
-        "hidden"
+      localStorage.setItem(
+        "veylo_gray_mode",
+        grayMode
       );
 
-    }
 
-  }
-);
+      updateTheme();
 
-
-settingsModal.addEventListener(
-  "click",
-  (event) => {
-
-    if (
-      event.target ===
-      settingsModal
-    ) {
 
       settingsModal.classList.add(
         "hidden"
       );
 
     }
+  );
 
-  }
-);
+}
+
+
+// ==================================================
+// Enterキー：部屋作成
+// ==================================================
+
+if (roomNameInput) {
+
+  roomNameInput.addEventListener(
+    "keydown",
+    (event) => {
+
+      if (
+        event.key ===
+        "Enter"
+      ) {
+
+        event.preventDefault();
+
+        confirmCreateButton.click();
+
+      }
+
+    }
+  );
+
+}
+
+
+// ==================================================
+// Enterキー：部屋参加
+// ==================================================
+
+if (inviteCodeInput) {
+
+  inviteCodeInput.addEventListener(
+    "keydown",
+    (event) => {
+
+      if (
+        event.key ===
+        "Enter"
+      ) {
+
+        event.preventDefault();
+
+        confirmJoinButton.click();
+
+      }
+
+    }
+  );
+
+}
+
+
+// ==================================================
+// モーダル外クリック
+// ==================================================
+
+if (createModal) {
+
+  createModal.addEventListener(
+    "click",
+    (event) => {
+
+      if (
+        event.target ===
+        createModal
+      ) {
+
+        createModal.classList.add(
+          "hidden"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+if (joinModal) {
+
+  joinModal.addEventListener(
+    "click",
+    (event) => {
+
+      if (
+        event.target ===
+        joinModal
+      ) {
+
+        joinModal.classList.add(
+          "hidden"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+if (settingsModal) {
+
+  settingsModal.addEventListener(
+    "click",
+    (event) => {
+
+      if (
+        event.target ===
+        settingsModal
+      ) {
+
+        settingsModal.classList.add(
+          "hidden"
+        );
+
+      }
+
+    }
+  );
+
+}
 
 
 // ==================================================
@@ -2522,6 +2895,8 @@ updateBackToCasualButton();
 createScrollButtons();
 
 createReplyPreview();
+
+createNewMessageButton();
 
 cleanupLocalMessages();
 
