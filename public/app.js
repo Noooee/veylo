@@ -188,11 +188,6 @@ const casualRoomButton =
     "casualRoomButton"
   );
 
-const backToCasualButton =
-  document.getElementById(
-    "backToCasualButton"
-  );
-
 
 // ==================================================
 // 部屋作成
@@ -337,7 +332,8 @@ let language =
     "veylo_language"
   ) || "ja";
 
-let newMessageButton =
+
+const newMessageButton =
   document.getElementById(
     "newMessageButton"
   );
@@ -367,6 +363,7 @@ async function api(
 
           "Content-Type":
             "application/json"
+
         }
 
       }
@@ -1079,6 +1076,57 @@ function scrollToTop() {
 }
 
 
+// ==================================================
+// 返信先へジャンプ
+// ==================================================
+
+function scrollToMessage(
+  id
+) {
+
+  const selector =
+    `.message[data-message-id="${CSS.escape(String(id))}"]`;
+
+
+  const element =
+    document.querySelector(
+      selector
+    );
+
+
+  if (!element) {
+    return;
+  }
+
+
+  element.scrollIntoView({
+    behavior:
+      "smooth",
+
+    block:
+      "center"
+  });
+
+
+  element.classList.add(
+    "message-highlight"
+  );
+
+
+  setTimeout(
+    () => {
+
+      element.classList.remove(
+        "message-highlight"
+      );
+
+    },
+    1800
+  );
+
+}
+
+
 function showNewMessageButton() {
 
   newMessageButton.classList.remove(
@@ -1691,7 +1739,7 @@ function addMessage(
 
   if (
     Number(data.edited) ===
-    1 ||
+      1 ||
     data.edited === true
   ) {
 
@@ -1767,7 +1815,7 @@ function addMessage(
 
 
   // ==================================================
-  // 本人判定はID
+  // 本人判定
   // ==================================================
 
   if (
@@ -1894,6 +1942,20 @@ function editMessage(
   }
 
 
+  if (
+    !socket ||
+    !socket.connected
+  ) {
+
+    alert(
+      "サーバーに接続されていません。"
+    );
+
+    return;
+
+  }
+
+
   socket.emit(
     "edit message",
     {
@@ -1984,6 +2046,20 @@ function deleteMessage(
       "このコメントを削除しますか？"
     )
   ) {
+
+    return;
+
+  }
+
+
+  if (
+    !socket ||
+    !socket.connected
+  ) {
+
+    alert(
+      "サーバーに接続されていません。"
+    );
 
     return;
 
@@ -2245,9 +2321,16 @@ function returnToCasual() {
   hideNewMessageButton();
 
 
-  socket.emit(
-    "join casual"
-  );
+  if (
+    socket &&
+    socket.connected
+  ) {
+
+    socket.emit(
+      "join casual"
+    );
+
+  }
 
 }
 
@@ -2303,6 +2386,20 @@ confirmCreateButton.addEventListener(
 
       alert(
         "部屋の名前を入力してください。"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !socket ||
+      !socket.connected
+    ) {
+
+      alert(
+        "サーバーに接続されていません。"
       );
 
       return;
@@ -2423,6 +2520,19 @@ confirmJoinButton.addEventListener(
     }
 
 
+    if (
+      !socket ||
+      !socket.connected
+    ) {
+
+      joinError.textContent =
+        "サーバーに接続されていません。";
+
+      return;
+
+    }
+
+
     socket.emit(
       "join room",
       {
@@ -2516,11 +2626,6 @@ closeSettingsButton.addEventListener(
 saveSettingsButton.addEventListener(
   "click",
   () => {
-
-    // 名前変更APIは今回は作っていないので
-    // ログイン名はサーバー管理のものを使用する。
-    // 設定欄には現在の名前を表示する。
-
 
     language =
       languageSelect.value;
