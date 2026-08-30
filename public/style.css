@@ -2252,3 +2252,136 @@ body.dark-mode .edited-label {
   }
 
 }
+
+/* ==================================================
+   Veylo 追加
+================================================== */
+
+.auth-screen.hidden {
+  display: none !important;
+}
+
+#appScreen.hidden {
+  display: none !important;
+}
+
+.modal.hidden {
+  display: none !important;
+}
+
+.replying-to.hidden {
+  display: none !important;
+}
+
+
+/* ==================================================
+   メッセージアニメーション
+================================================== */
+
+.message {
+  animation:
+    messageIn 0.18s ease;
+}
+
+
+/* ==================================================
+   メッセージ返信情報
+================================================== */
+
+.message-reply-info {
+  user-select: none;
+}
+
+
+/* ==================================================
+   入力欄
+================================================== */
+
+.message-form {
+  min-height: 42px;
+}
+
+
+/* ==================================================
+   モバイルヘッダー
+================================================== */
+
+@media (max-width: 600px) {
+
+  .header-actions {
+    overflow-x: auto;
+    max-width: calc(100vw - 100px);
+    scrollbar-width: none;
+  }
+
+  .header-actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .header-button {
+    flex-shrink: 0;
+  }
+
+}
+
+
+/* ==================================================
+   フォーカス
+================================================== */
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline:
+    2px solid #5865f2;
+
+  outline-offset:
+    2px;
+}
+
+
+/* ==================================================
+   ダークモード追加
+================================================== */
+
+body.dark-mode .message-actions button {
+  color: #c3c8d3;
+}
+
+body.dark-mode .message-reply-info:hover {
+  background: #303551;
+}
+
+body.dark-mode .auth-link-button {
+  color: #aeb5c3;
+}
+
+body.dark-mode .auth-message {
+  color: #aeb6ff;
+}
+
+
+/* ==================================================
+   スマホ設定
+================================================== */
+
+@media (max-width: 600px) {
+
+  .modal {
+    padding: 12px;
+  }
+
+  .modal-box {
+    padding: 19px;
+    border-radius: 14px;
+  }
+
+  .modal-buttons {
+    flex-wrap: wrap;
+  }
+
+  .modal-buttons button {
+    min-height: 38px;
+  }
+
+}
