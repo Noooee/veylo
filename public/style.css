@@ -153,8 +153,6 @@ body {
 
 /* ==========================================
    メイン
-   → 部屋名をコンパクトにして
-     チャット欄を最大化
 ========================================== */
 
 .main {
@@ -180,7 +178,6 @@ body {
 
 /* ==========================================
    ルームヘッダー
-   → 小さく・コンパクト
 ========================================== */
 
 .room-header {
@@ -273,7 +270,6 @@ body {
 
 /* ==========================================
    チャット欄
-   → ここを最大限縦長にする
 ========================================== */
 
 .chat-container {
@@ -309,6 +305,150 @@ body {
 
 
 /* ==========================================
+   チャットツールバー
+========================================== */
+
+.chat-toolbar {
+  position:
+    absolute;
+
+  top:
+    0;
+
+  left:
+    0;
+
+  right:
+    0;
+
+  height:
+    46px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
+
+  padding:
+    0 12px 0 16px;
+
+  background:
+    rgba(255, 255, 255, 0.92);
+
+  backdrop-filter:
+    blur(8px);
+
+  border-bottom:
+    1px solid #e7e9f0;
+
+  z-index:
+    20;
+}
+
+.chat-toolbar-title {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    6px;
+
+  font-size:
+    12px;
+
+  font-weight:
+    750;
+
+  color:
+    #596176;
+}
+
+.chat-toolbar-buttons {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    6px;
+}
+
+
+/* ==========================================
+   上へ・下へボタン
+========================================== */
+
+.scroll-button {
+  writing-mode:
+    horizontal-tb;
+
+  text-orientation:
+    mixed;
+
+  white-space:
+    nowrap;
+
+  min-width:
+    62px;
+
+  height:
+    30px;
+
+  padding:
+    0 9px;
+
+  border:
+    1px solid #dfe2ed;
+
+  border-radius:
+    8px;
+
+  background:
+    rgba(255, 255, 255, 0.95);
+
+  color:
+    #596176;
+
+  font-size:
+    11px;
+
+  font-weight:
+    700;
+
+  cursor:
+    pointer;
+
+  box-shadow:
+    0 2px 7px
+    rgba(30, 40, 70, 0.07);
+
+  transition:
+    all 0.15s ease;
+}
+
+.scroll-button:hover {
+  background:
+    #eef0ff;
+
+  color:
+    #5865f2;
+
+  border-color:
+    #cfd3ff;
+
+  transform:
+    translateY(-1px);
+}
+
+
+/* ==========================================
    メッセージ一覧
 ========================================== */
 
@@ -326,7 +466,7 @@ body {
     hidden;
 
   padding:
-    18px 20px;
+    62px 20px 18px;
 
   scroll-behavior:
     smooth;
@@ -343,11 +483,13 @@ body {
 /* Chrome / Edge / Safari */
 
 .messages::-webkit-scrollbar {
-  width: 7px;
+  width:
+    7px;
 }
 
 .messages::-webkit-scrollbar-track {
-  background: transparent;
+  background:
+    transparent;
 }
 
 .messages::-webkit-scrollbar-thumb {
@@ -535,7 +677,7 @@ body {
     translateY(-1px);
 }
 
-.message-actions .delete-button:hover {
+.message-actions .delete-action:hover {
   background:
     #fff0f1;
 
@@ -549,7 +691,6 @@ body {
 
 /* ==========================================
    返信元表示
-   → 誰への返信か分かるようにする
 ========================================== */
 
 .reply-preview {
@@ -668,7 +809,6 @@ body {
 
 /* ==========================================
    入力フォーム
-   → 今までの送信デザインを維持
 ========================================== */
 
 .message-form {
@@ -788,6 +928,99 @@ body {
 
 
 /* ==========================================
+   新着メッセージボタン
+========================================== */
+
+.new-message-button {
+  position:
+    absolute;
+
+  left:
+    50%;
+
+  bottom:
+    20px;
+
+  transform:
+    translateX(-50%);
+
+  z-index:
+    50;
+
+  padding:
+    10px 18px;
+
+  border:
+    none;
+
+  border-radius:
+    999px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6875ff,
+      #5865f2
+    );
+
+  color:
+    #ffffff;
+
+  font-size:
+    13px;
+
+  font-weight:
+    700;
+
+  cursor:
+    pointer;
+
+  white-space:
+    nowrap;
+
+  box-shadow:
+    0 5px 16px
+    rgba(88, 101, 242, 0.30);
+
+  opacity:
+    1;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.new-message-button:hover {
+  transform:
+    translateX(-50%)
+    translateY(-2px);
+
+  background:
+    linear-gradient(
+      135deg,
+      #7580ff,
+      #4f5ce8
+    );
+
+  box-shadow:
+    0 7px 20px
+    rgba(88, 101, 242, 0.35);
+}
+
+.new-message-button:active {
+  transform:
+    translateX(-50%)
+    translateY(0);
+}
+
+.new-message-button.hidden {
+  display:
+    none !important;
+}
+
+
+/* ==========================================
    モーダル
 ========================================== */
 
@@ -857,7 +1090,8 @@ body {
 }
 
 .modal-box input,
-.modal-box select {
+.modal-box select,
+.modal-box textarea {
   width:
     100%;
 
@@ -881,10 +1115,22 @@ body {
 
   color:
     #172033;
+
+  font-family:
+    inherit;
+}
+
+.modal-box textarea {
+  min-height:
+    120px;
+
+  resize:
+    vertical;
 }
 
 .modal-box input:focus,
-.modal-box select:focus {
+.modal-box select:focus,
+.modal-box textarea:focus {
   border-color:
     #5865f2;
 
@@ -1063,6 +1309,34 @@ body {
     #4c5362;
 }
 
+.delete-button {
+  border:
+    none;
+
+  border-radius:
+    9px;
+
+  padding:
+    9px 15px;
+
+  font-weight:
+    650;
+
+  cursor:
+    pointer;
+
+  background:
+    #e5484d;
+
+  color:
+    white;
+}
+
+.delete-button:hover {
+  background:
+    #c9363b;
+}
+
 .error-message {
   color:
     #e5484d;
@@ -1082,103 +1356,6 @@ body {
 .hidden {
   display:
     none !important;
-}
-
-
-/* ==========================================
-   上へ・下へ
-   → 縦書きにならないように固定
-========================================== */
-
-.scroll-buttons {
-  display:
-    flex;
-
-  flex-direction:
-    row;
-
-  align-items:
-    center;
-
-  gap:
-    6px;
-
-  position:
-    absolute;
-
-  right:
-    14px;
-
-  bottom:
-    14px;
-
-  z-index:
-    5;
-}
-
-.scroll-buttons button {
-  writing-mode:
-    horizontal-tb;
-
-  text-orientation:
-    mixed;
-
-  white-space:
-    nowrap;
-
-  min-width:
-    62px;
-
-  height:
-    32px;
-
-  padding:
-    0 10px;
-
-  border:
-    1px solid #dfe2ed;
-
-  border-radius:
-    9px;
-
-  background:
-    rgba(255, 255, 255, 0.94);
-
-  backdrop-filter:
-    blur(6px);
-
-  color:
-    #596176;
-
-  font-size:
-    12px;
-
-  font-weight:
-    700;
-
-  cursor:
-    pointer;
-
-  box-shadow:
-    0 3px 10px
-    rgba(30, 40, 70, 0.10);
-
-  transition:
-    all 0.15s ease;
-}
-
-.scroll-buttons button:hover {
-  background:
-    #eef0ff;
-
-  color:
-    #5865f2;
-
-  border-color:
-    #cfd3ff;
-
-  transform:
-    translateY(-1px);
 }
 
 
@@ -1235,6 +1412,19 @@ body.dark-mode .chat-container {
   box-shadow:
     0 5px 22px
     rgba(0, 0, 0, 0.25);
+}
+
+body.dark-mode .chat-toolbar {
+  background:
+    rgba(27, 30, 37, 0.94);
+
+  border-color:
+    #30343d;
+}
+
+body.dark-mode .chat-toolbar-title {
+  color:
+    #b9bfcc;
 }
 
 body.dark-mode .message:hover {
@@ -1294,7 +1484,8 @@ body.dark-mode .modal-box {
 }
 
 body.dark-mode .modal-box input,
-body.dark-mode .modal-box select {
+body.dark-mode .modal-box select,
+body.dark-mode .modal-box textarea {
   background:
     #15171c;
 
@@ -1377,7 +1568,7 @@ body.dark-mode .replying-to {
     #aeb5c3;
 }
 
-body.dark-mode .scroll-buttons button {
+body.dark-mode .scroll-button {
   background:
     rgba(35, 39, 48, 0.94);
 
@@ -1386,6 +1577,28 @@ body.dark-mode .scroll-buttons button {
 
   color:
     #b9bfcc;
+}
+
+body.dark-mode .new-message-button {
+  background:
+    linear-gradient(
+      135deg,
+      #7580ff,
+      #6366f1
+    );
+
+  box-shadow:
+    0 5px 18px
+    rgba(0, 0, 0, 0.45);
+}
+
+body.dark-mode .new-message-button:hover {
+  background:
+    linear-gradient(
+      135deg,
+      #8790ff,
+      #7478ff
+    );
 }
 
 
@@ -1476,9 +1689,41 @@ body.gray-mode {
       10px;
   }
 
+  .chat-toolbar {
+    height:
+      42px;
+
+    padding:
+      0 8px 0 11px;
+  }
+
+  .chat-toolbar-title {
+    font-size:
+      11px;
+  }
+
+  .chat-toolbar-buttons {
+    gap:
+      4px;
+  }
+
+  .scroll-button {
+    min-width:
+      55px;
+
+    height:
+      28px;
+
+    padding:
+      0 7px;
+
+    font-size:
+      10px;
+  }
+
   .messages {
     padding:
-      14px 13px;
+      56px 13px 14px;
   }
 
   .message {
@@ -1544,127 +1789,15 @@ body.gray-mode {
       12px;
   }
 
-  .scroll-buttons {
-    right:
-      8px;
-
+  .new-message-button {
     bottom:
-      8px;
-
-    gap:
-      4px;
-  }
-
-  .scroll-buttons button {
-    min-width:
-      55px;
-
-    height:
-      30px;
+      15px;
 
     padding:
-      0 7px;
+      9px 16px;
 
     font-size:
-      10px;
-  }
-
-}
-
-/* ==================================================
-   新着メッセージボタン
-   ================================================== */
-
-.new-message-button {
-  position: absolute;
-
-  left: 50%;
-  bottom: 80px;
-
-  transform: translateX(-50%);
-
-  z-index: 1000;
-
-  padding: 10px 18px;
-
-  border: none;
-  border-radius: 999px;
-
-  background: #4f46e5;
-  color: #ffffff;
-
-  font-size: 14px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.2);
-
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
-
-/* ==================================================
-   非表示
-   ================================================== */
-
-.new-message-button.hidden {
-  display: none;
-}
-
-
-/* ==================================================
-   マウスを乗せたとき
-   ================================================== */
-
-.new-message-button:hover {
-  transform: translateX(-50%) translateY(-2px);
-
-  background: #4338ca;
-}
-
-
-/* ==================================================
-   押したとき
-   ================================================== */
-
-.new-message-button:active {
-  transform: translateX(-50%) translateY(0);
-}
-
-
-/* ==================================================
-   ダークモード
-   ================================================== */
-
-body.dark-mode .new-message-button {
-  background: #6366f1;
-
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.45);
-}
-
-
-body.dark-mode .new-message-button:hover {
-  background: #818cf8;
-}
-
-
-/* ==================================================
-   スマホ
-   ================================================== */
-
-@media (max-width: 600px) {
-
-  .new-message-button {
-    bottom: 75px;
-
-    padding: 9px 16px;
-
-    font-size: 13px;
+      12px;
   }
 
 }
