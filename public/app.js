@@ -6,79 +6,38 @@
 
 console.log("Veylo app.js loaded successfully.");
 
-
 // ==================================================
 // DOM
 // ==================================================
 
-const authScreen =
-  document.getElementById("authScreen");
+const authScreen = document.getElementById("authScreen");
+const appScreen = document.getElementById("appScreen");
 
-const appScreen =
-  document.getElementById("appScreen");
+const loginPanel = document.getElementById("loginPanel");
+const registerPanel = document.getElementById("registerPanel");
+const forgotPanel = document.getElementById("forgotPanel");
 
+const loginForm = document.getElementById("loginForm");
+const registerForm = document.getElementById("registerForm");
+const forgotForm = document.getElementById("forgotForm");
 
-// ==================================================
-// 認証DOM
-// ==================================================
+const loginName = document.getElementById("loginName");
+const loginPassword = document.getElementById("loginPassword");
 
-const loginPanel =
-  document.getElementById("loginPanel");
+const registerEmail = document.getElementById("registerEmail");
+const registerName = document.getElementById("registerName");
+const registerPassword = document.getElementById("registerPassword");
 
-const registerPanel =
-  document.getElementById("registerPanel");
+const forgotEmail = document.getElementById("forgotEmail");
 
-const forgotPanel =
-  document.getElementById("forgotPanel");
+const loginError = document.getElementById("loginError");
+const registerError = document.getElementById("registerError");
+const forgotMessage = document.getElementById("forgotMessage");
 
-const loginForm =
-  document.getElementById("loginForm");
-
-const registerForm =
-  document.getElementById("registerForm");
-
-const forgotForm =
-  document.getElementById("forgotForm");
-
-const loginName =
-  document.getElementById("loginName");
-
-const loginPassword =
-  document.getElementById("loginPassword");
-
-const registerEmail =
-  document.getElementById("registerEmail");
-
-const registerName =
-  document.getElementById("registerName");
-
-const registerPassword =
-  document.getElementById("registerPassword");
-
-const forgotEmail =
-  document.getElementById("forgotEmail");
-
-const loginError =
-  document.getElementById("loginError");
-
-const registerError =
-  document.getElementById("registerError");
-
-const forgotMessage =
-  document.getElementById("forgotMessage");
-
-const showRegisterButton =
-  document.getElementById("showRegisterButton");
-
-const showLoginButton =
-  document.getElementById("showLoginButton");
-
-const forgotPasswordButton =
-  document.getElementById("forgotPasswordButton");
-
-const backToLoginButton =
-  document.getElementById("backToLoginButton");
-
+const showRegisterButton = document.getElementById("showRegisterButton");
+const showLoginButton = document.getElementById("showLoginButton");
+const forgotPasswordButton = document.getElementById("forgotPasswordButton");
+const backToLoginButton = document.getElementById("backToLoginButton");
 
 // ==================================================
 // Socket
@@ -86,46 +45,30 @@ const backToLoginButton =
 
 let socket = null;
 
-
 // ==================================================
-// チャットDOM
+// Chat DOM
 // ==================================================
 
-const messages =
-  document.getElementById("messages");
-
-const messageForm =
-  document.getElementById("messageForm");
-
-const messageInput =
-  document.getElementById("messageInput");
-
-const usernameInput =
-  document.getElementById("usernameInput");
-
-const roomName =
-  document.getElementById("roomName");
-
-const inviteArea =
-  document.getElementById("inviteArea");
-
-const inviteCode =
-  document.getElementById("inviteCode");
+const messages = document.getElementById("messages");
+const messageForm = document.getElementById("messageForm");
+const messageInput = document.getElementById("messageInput");
+const usernameInput = document.getElementById("usernameInput");
+const roomName = document.getElementById("roomName");
+const inviteArea = document.getElementById("inviteArea");
+const inviteCode = document.getElementById("inviteCode");
 
 const newMessageButton =
   document.getElementById("newMessageButton");
 
-
 // ==================================================
-// ルーム
+// Room
 // ==================================================
 
 const casualRoomButton =
   document.getElementById("casualRoomButton");
 
-
 // ==================================================
-// 部屋作成
+// Create Room
 // ==================================================
 
 const createRoomButton =
@@ -143,9 +86,8 @@ const confirmCreateButton =
 const cancelCreateButton =
   document.getElementById("cancelCreateButton");
 
-
 // ==================================================
-// 部屋参加
+// Join Room
 // ==================================================
 
 const joinRoomButton =
@@ -166,9 +108,8 @@ const cancelJoinButton =
 const joinError =
   document.getElementById("joinError");
 
-
 // ==================================================
-// 設定
+// Settings
 // ==================================================
 
 const settingsButton =
@@ -198,18 +139,12 @@ const grayToggleButton =
 const languageSelect =
   document.getElementById("languageSelect");
 
-const replyPreview =
-  document.getElementById("replyPreview");
-
-
 // ==================================================
-// 状態
+// State
 // ==================================================
 
 let currentUser = null;
-
 let currentRoom = "casual";
-
 let replyTarget = null;
 
 let darkMode =
@@ -221,26 +156,19 @@ let grayMode =
 let language =
   localStorage.getItem("veylo_language") || "ja";
 
-
 // ==================================================
 // API
 // ==================================================
 
 async function api(url, options = {}) {
-
-  const response =
-    await fetch(
-      url,
-      {
-        credentials: "same-origin",
-        ...options,
-
-        headers: {
-          ...(options.headers || {}),
-          "Content-Type": "application/json"
-        }
-      }
-    );
+  const response = await fetch(url, {
+    credentials: "same-origin",
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      "Content-Type": "application/json"
+    }
+  });
 
   let data = {};
 
@@ -252,21 +180,18 @@ async function api(url, options = {}) {
 
   if (!response.ok) {
     throw new Error(
-      data.message ||
-      "通信に失敗しました。"
+      data.message || "通信に失敗しました。"
     );
   }
 
   return data;
 }
 
-
 // ==================================================
-// 認証画面切り替え
+// Auth Panels
 // ==================================================
 
 function showPanel(panel) {
-
   loginPanel.classList.add("hidden");
   registerPanel.classList.add("hidden");
   forgotPanel.classList.add("hidden");
@@ -274,147 +199,100 @@ function showPanel(panel) {
   panel.classList.remove("hidden");
 }
 
-
 // ==================================================
-// ログイン状態確認
+// Check Login
 // ==================================================
 
 async function checkLogin() {
-
   try {
-
-    const data =
-      await api("/api/me");
+    const data = await api("/api/me");
 
     if (data.loggedIn) {
-
-      currentUser =
-        data.user;
-
+      currentUser = data.user;
       enterApp();
-
       return;
     }
 
     showAuth();
-
   } catch (error) {
-
-    console.error(
-      "checkLogin error:",
-      error
-    );
-
+    console.error("checkLogin error:", error);
     showAuth();
   }
 }
 
-
 // ==================================================
-// 認証画面
+// Auth Screen
 // ==================================================
 
 function showAuth() {
-
   authScreen.classList.remove("hidden");
   appScreen.classList.add("hidden");
 
   showPanel(loginPanel);
 }
 
-
 // ==================================================
-// アプリ画面
+// App
 // ==================================================
 
 function enterApp() {
-
   authScreen.classList.add("hidden");
   appScreen.classList.remove("hidden");
 
-  if (usernameInput) {
-    usernameInput.value =
-      currentUser.name;
-  }
-
-  if (settingsUsernameInput) {
-    settingsUsernameInput.value =
-      currentUser.name;
+  if (currentUser) {
+    usernameInput.value = currentUser.name;
+    settingsUsernameInput.value = currentUser.name;
   }
 
   connectSocket();
 }
 
-
 // ==================================================
-// Socket接続
+// Socket Connect
 // ==================================================
 
 function connectSocket() {
-
-  if (socket) {
-
-    if (socket.connected) {
-      return;
-    }
-
-    socket.disconnect();
-    socket = null;
+  if (socket && socket.connected) {
+    return;
   }
 
-  socket =
-    io({
-      withCredentials: true
-    });
+  socket = io({
+    withCredentials: true
+  });
+
+  socket.on("connect", () => {
+    console.log(
+      "Socket connected:",
+      socket.id
+    );
+  });
+
+  socket.on("connect_error", (error) => {
+    console.error(
+      "Socket connection error:",
+      error
+    );
+
+    if (error.message === "UNAUTHORIZED") {
+      currentUser = null;
+
+      if (socket) {
+        socket.disconnect();
+        socket = null;
+      }
+
+      showAuth();
+    }
+  });
 
   setupSocketEvents();
-
-  socket.on(
-    "connect",
-    () => {
-
-      console.log(
-        "Socket connected:",
-        socket.id
-      );
-
-    }
-  );
-
-  socket.on(
-    "connect_error",
-    (error) => {
-
-      console.error(
-        "Socket connection error:",
-        error
-      );
-
-      if (
-        error.message ===
-        "UNAUTHORIZED"
-      ) {
-
-        currentUser = null;
-
-        if (socket) {
-          socket.disconnect();
-          socket = null;
-        }
-
-        showAuth();
-      }
-    }
-  );
 }
 
-
 // ==================================================
-// Socketイベント
+// Socket Events
 // ==================================================
 
 function setupSocketEvents() {
-
   socket.on(
     "chat message",
     handleChatMessage
@@ -428,17 +306,7 @@ function setupSocketEvents() {
   socket.on(
     "casual joined",
     () => {
-
-      currentRoom = "casual";
-
       messages.innerHTML = "";
-
-      roomName.textContent =
-        "雑談";
-
-      inviteArea.classList.add(
-        "hidden"
-      );
 
       loadLocalMessages();
 
@@ -461,7 +329,6 @@ function setupSocketEvents() {
   socket.on(
     "join room error",
     (data) => {
-
       joinError.textContent =
         data?.message ||
         "部屋に参加できませんでした。";
@@ -481,7 +348,6 @@ function setupSocketEvents() {
   socket.on(
     "message send error",
     (data) => {
-
       alert(
         data?.message ||
         "メッセージを送信できませんでした。"
@@ -492,7 +358,6 @@ function setupSocketEvents() {
   socket.on(
     "message edit error",
     (data) => {
-
       alert(
         data?.message ||
         "コメントを編集できませんでした。"
@@ -503,42 +368,13 @@ function setupSocketEvents() {
   socket.on(
     "message delete error",
     (data) => {
-
       alert(
         data?.message ||
         "コメントを削除できませんでした。"
       );
     }
   );
-
-  socket.on(
-    "username updated",
-    (user) => {
-
-      if (!user) {
-        return;
-      }
-
-      currentUser = user;
-
-      if (usernameInput) {
-        usernameInput.value =
-          user.name;
-      }
-
-      if (settingsUsernameInput) {
-        settingsUsernameInput.value =
-          user.name;
-      }
-
-      alert(
-        "ユーザー名を変更しました。"
-      );
-    }
-  );
-
 }
-
 
 // ==================================================
 // Login
@@ -547,32 +383,23 @@ function setupSocketEvents() {
 loginForm.addEventListener(
   "submit",
   async (event) => {
-
     event.preventDefault();
 
     loginError.textContent = "";
 
     try {
+      const data = await api(
+        "/api/login",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            name: loginName.value.trim(),
+            password: loginPassword.value
+          })
+        }
+      );
 
-      const data =
-        await api(
-          "/api/login",
-          {
-            method: "POST",
-
-            body:
-              JSON.stringify({
-                name:
-                  loginName.value.trim(),
-
-                password:
-                  loginPassword.value
-              })
-          }
-        );
-
-      currentUser =
-        data.user;
+      currentUser = data.user;
 
       usernameInput.value =
         currentUser.name;
@@ -583,52 +410,43 @@ loginForm.addEventListener(
       loginPassword.value = "";
 
       enterApp();
-
     } catch (error) {
-
       loginError.textContent =
         error.message;
     }
   }
 );
 
-
 // ==================================================
-// 登録
+// Register
 // ==================================================
 
 registerForm.addEventListener(
   "submit",
   async (event) => {
-
     event.preventDefault();
 
     registerError.textContent = "";
 
     try {
+      const data = await api(
+        "/api/register",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            email:
+              registerEmail.value.trim(),
 
-      const data =
-        await api(
-          "/api/register",
-          {
-            method: "POST",
+            password:
+              registerPassword.value,
 
-            body:
-              JSON.stringify({
-                email:
-                  registerEmail.value.trim(),
+            name:
+              registerName.value.trim()
+          })
+        }
+      );
 
-                password:
-                  registerPassword.value,
-
-                name:
-                  registerName.value.trim()
-              })
-          }
-        );
-
-      currentUser =
-        data.user;
+      currentUser = data.user;
 
       usernameInput.value =
         currentUser.name;
@@ -639,128 +457,92 @@ registerForm.addEventListener(
       registerPassword.value = "";
 
       enterApp();
-
     } catch (error) {
-
       registerError.textContent =
         error.message;
     }
   }
 );
 
-
 // ==================================================
-// パスワード忘れ
+// Forgot Password
 // ==================================================
 
 forgotForm.addEventListener(
   "submit",
   async (event) => {
-
     event.preventDefault();
 
     forgotMessage.textContent = "";
 
     try {
-
-      const data =
-        await api(
-          "/api/forgot-password",
-          {
-            method: "POST",
-
-            body:
-              JSON.stringify({
-                email:
-                  forgotEmail.value.trim()
-              })
-          }
-        );
+      const data = await api(
+        "/api/forgot-password",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            email:
+              forgotEmail.value.trim()
+          })
+        }
+      );
 
       forgotMessage.textContent =
         data.message;
-
     } catch (error) {
-
       forgotMessage.textContent =
         error.message;
     }
   }
 );
 
-
 // ==================================================
-// 認証画面ボタン
+// Auth Buttons
 // ==================================================
 
 showRegisterButton.addEventListener(
   "click",
   () => {
-
     registerError.textContent = "";
-
-    showPanel(
-      registerPanel
-    );
+    showPanel(registerPanel);
   }
 );
-
 
 showLoginButton.addEventListener(
   "click",
   () => {
-
     loginError.textContent = "";
-
-    showPanel(
-      loginPanel
-    );
+    showPanel(loginPanel);
   }
 );
-
 
 forgotPasswordButton.addEventListener(
   "click",
   () => {
-
     forgotMessage.textContent = "";
-
-    showPanel(
-      forgotPanel
-    );
+    showPanel(forgotPanel);
   }
 );
-
 
 backToLoginButton.addEventListener(
   "click",
   () => {
-
-    showPanel(
-      loginPanel
-    );
+    showPanel(loginPanel);
   }
 );
 
-
 // ==================================================
-// ログアウト
+// Logout
 // ==================================================
 
 logoutButton.addEventListener(
   "click",
   async () => {
-
-    if (
-      !confirm(
-        "ログアウトしますか？"
-      )
-    ) {
+    if (!confirm("ログアウトしますか？")) {
       return;
     }
 
     try {
-
       await api(
         "/api/logout",
         {
@@ -769,7 +551,6 @@ logoutButton.addEventListener(
       );
 
       if (socket) {
-
         socket.disconnect();
         socket = null;
       }
@@ -785,23 +566,17 @@ logoutButton.addEventListener(
       );
 
       showAuth();
-
     } catch (error) {
-
-      alert(
-        error.message
-      );
+      alert(error.message);
     }
   }
 );
 
-
 // ==================================================
-// スクロール
+// Scroll
 // ==================================================
 
 function isAtBottom() {
-
   if (!messages) {
     return true;
   }
@@ -809,51 +584,42 @@ function isAtBottom() {
   return (
     messages.scrollHeight -
       messages.scrollTop -
-      messages.clientHeight <=
-    80
+      messages.clientHeight <= 80
   );
 }
-
 
 function scrollToBottom(
   behavior = "smooth"
 ) {
-
   if (!messages) {
     return;
   }
 
   messages.scrollTo({
-    top:
-      messages.scrollHeight,
-
+    top: messages.scrollHeight,
     behavior
   });
 }
 
-
 function scrollToTop() {
-
-  if (!messages) {
-    return;
-  }
-
   messages.scrollTo({
     top: 0,
     behavior: "smooth"
   });
 }
 
+// ==================================================
+// Scroll To Message
+// ==================================================
 
 function scrollToMessage(id) {
-
   const selector =
-    `.message[data-message-id="${CSS.escape(String(id))}"]`;
+    `.message[data-message-id="${CSS.escape(
+      String(id)
+    )}"]`;
 
   const element =
-    document.querySelector(
-      selector
-    );
+    document.querySelector(selector);
 
   if (!element) {
     return;
@@ -868,99 +634,67 @@ function scrollToMessage(id) {
     "message-highlight"
   );
 
-  setTimeout(
-    () => {
-
-      element.classList.remove(
-        "message-highlight"
-      );
-
-    },
-    1800
-  );
+  setTimeout(() => {
+    element.classList.remove(
+      "message-highlight"
+    );
+  }, 1800);
 }
 
-
 function showNewMessageButton() {
-
-  if (!newMessageButton) {
-    return;
-  }
-
   newMessageButton.classList.remove(
     "hidden"
   );
 }
 
-
 function hideNewMessageButton() {
-
-  if (!newMessageButton) {
-    return;
-  }
-
   newMessageButton.classList.add(
     "hidden"
   );
 }
 
-
-newMessageButton?.addEventListener(
+newMessageButton.addEventListener(
   "click",
   () => {
-
     scrollToBottom();
-
     hideNewMessageButton();
   }
 );
 
-
 messages.addEventListener(
   "scroll",
   () => {
-
     if (isAtBottom()) {
       hideNewMessageButton();
     }
   }
 );
 
-
 document
   .getElementById("scrollTopButton")
-  ?.addEventListener(
+  .addEventListener(
     "click",
     scrollToTop
   );
 
-
 document
   .getElementById("scrollBottomButton")
-  ?.addEventListener(
+  .addEventListener(
     "click",
     () => {
-
       scrollToBottom();
-
       hideNewMessageButton();
     }
   );
 
-
 // ==================================================
-// 24時間
+// 24 Hours
 // ==================================================
 
 const MESSAGE_LIFETIME =
-  24 *
-  60 *
-  60 *
-  1000;
-
+  24 * 60 * 60 * 1000;
 
 function isMessageValid(data) {
-
   if (!data) {
     return false;
   }
@@ -979,21 +713,17 @@ function isMessageValid(data) {
   }
 
   return (
-    Date.now() -
-      time <
+    Date.now() - time <
     MESSAGE_LIFETIME
   );
 }
-
 
 // ==================================================
 // LocalStorage
 // ==================================================
 
 function cleanupLocalMessages() {
-
   try {
-
     const stored =
       JSON.parse(
         localStorage.getItem(
@@ -1012,22 +742,17 @@ function cleanupLocalMessages() {
         valid.slice(-1000)
       )
     );
-
   } catch {
-
     localStorage.removeItem(
       "veylo_casual_messages"
     );
   }
 }
 
-
 function loadLocalMessages() {
-
   cleanupLocalMessages();
 
   try {
-
     const stored =
       JSON.parse(
         localStorage.getItem(
@@ -1038,15 +763,12 @@ function loadLocalMessages() {
     stored
       .filter(isMessageValid)
       .forEach(addMessage);
-
   } catch {
-    // 無視
+    // ignore
   }
 }
 
-
 function saveLocalMessage(data) {
-
   if (
     !data ||
     data.room !== "casual"
@@ -1055,7 +777,6 @@ function saveLocalMessage(data) {
   }
 
   try {
-
     let stored =
       JSON.parse(
         localStorage.getItem(
@@ -1065,7 +786,7 @@ function saveLocalMessage(data) {
 
     const index =
       stored.findIndex(
-        item =>
+        (item) =>
           String(item.id) ===
           String(data.id)
       );
@@ -1085,20 +806,15 @@ function saveLocalMessage(data) {
       "veylo_casual_messages",
       JSON.stringify(stored)
     );
-
   } catch {
-
     localStorage.removeItem(
       "veylo_casual_messages"
     );
   }
 }
 
-
 function removeLocalMessage(id) {
-
   try {
-
     const stored =
       JSON.parse(
         localStorage.getItem(
@@ -1108,7 +824,7 @@ function removeLocalMessage(id) {
 
     const filtered =
       stored.filter(
-        item =>
+        (item) =>
           String(item.id) !==
           String(id)
       );
@@ -1117,35 +833,27 @@ function removeLocalMessage(id) {
       "veylo_casual_messages",
       JSON.stringify(filtered)
     );
-
   } catch {
-
     localStorage.removeItem(
       "veylo_casual_messages"
     );
   }
 }
 
-
 // ==================================================
-// メッセージ受信
+// Receive Message
 // ==================================================
 
 function handleChatMessage(data) {
-
   if (!data) {
     return;
   }
 
-  if (
-    data.room !== currentRoom
-  ) {
+  if (data.room !== currentRoom) {
     return;
   }
 
-  if (
-    !isMessageValid(data)
-  ) {
+  if (!isMessageValid(data)) {
     return;
   }
 
@@ -1153,28 +861,21 @@ function handleChatMessage(data) {
     isAtBottom();
 
   addMessage(data);
-
   saveLocalMessage(data);
 
   if (wasAtBottom) {
-
     scrollToBottom();
-
     hideNewMessageButton();
-
   } else {
-
     showNewMessageButton();
   }
 }
 
-
 // ==================================================
-// 過去メッセージ
+// Previous Messages
 // ==================================================
 
 function handlePreviousMessages(data) {
-
   if (!Array.isArray(data)) {
     return;
   }
@@ -1185,10 +886,7 @@ function handlePreviousMessages(data) {
     .filter(isMessageValid)
     .forEach(addMessage);
 
-  if (
-    currentRoom === "casual"
-  ) {
-
+  if (currentRoom === "casual") {
     localStorage.setItem(
       "veylo_casual_messages",
       JSON.stringify(
@@ -1200,17 +898,14 @@ function handlePreviousMessages(data) {
   }
 
   scrollToBottom("auto");
-
   hideNewMessageButton();
 }
 
-
 // ==================================================
-// メッセージ表示
+// Add Message
 // ==================================================
 
 function addMessage(data) {
-
   if (!isMessageValid(data)) {
     return;
   }
@@ -1220,11 +915,11 @@ function addMessage(data) {
   }
 
   const selector =
-    `.message[data-message-id="${CSS.escape(String(data.id))}"]`;
+    `.message[data-message-id="${CSS.escape(
+      String(data.id)
+    )}"]`;
 
-  if (
-    document.querySelector(selector)
-  ) {
+  if (document.querySelector(selector)) {
     return;
   }
 
@@ -1232,14 +927,7 @@ function addMessage(data) {
     document.createElement("div");
 
   message.className = "message";
-
-  message.dataset.messageId =
-    data.id;
-
-
-  // ==================================================
-  // Header
-  // ==================================================
+  message.dataset.messageId = data.id;
 
   const header =
     document.createElement("div");
@@ -1270,13 +958,11 @@ function addMessage(data) {
 
   message.appendChild(header);
 
-
   // ==================================================
-  // 返信元
+  // Reply
   // ==================================================
 
   if (data.replyToId) {
-
     const replyInfo =
       document.createElement("div");
 
@@ -1284,26 +970,28 @@ function addMessage(data) {
       "message-reply-info";
 
     replyInfo.textContent =
-      `↩ ${data.replyToUsername || "ゲスト"}さんの「${data.replyToText || "コメント"}」に返信`;
+      `↩ ${
+        data.replyToUsername ||
+        "ゲスト"
+      }さんの「${
+        data.replyToText ||
+        "コメント"
+      }」に返信`;
 
     replyInfo.addEventListener(
       "click",
       () => {
-
         scrollToMessage(
           data.replyToId
         );
       }
     );
 
-    message.appendChild(
-      replyInfo
-    );
+    message.appendChild(replyInfo);
   }
 
-
   // ==================================================
-  // 本文
+  // Content
   // ==================================================
 
   const content =
@@ -1319,16 +1007,14 @@ function addMessage(data) {
     "message-text";
 
   text.textContent =
-    data.text || "";
+    data.text;
 
   content.appendChild(text);
-
 
   if (
     Number(data.edited) === 1 ||
     data.edited === true
   ) {
-
     const edited =
       document.createElement("span");
 
@@ -1338,16 +1024,13 @@ function addMessage(data) {
     edited.textContent =
       "編集済み";
 
-    content.appendChild(
-      edited
-    );
+    content.appendChild(edited);
   }
 
   message.appendChild(content);
 
-
   // ==================================================
-  // 操作
+  // Actions
   // ==================================================
 
   const actions =
@@ -1356,31 +1039,23 @@ function addMessage(data) {
   actions.className =
     "message-actions";
 
-
   const replyButton =
     document.createElement("button");
 
-  replyButton.type =
-    "button";
-
-  replyButton.textContent =
-    "↩ 返信";
+  replyButton.type = "button";
+  replyButton.textContent = "↩ 返信";
 
   replyButton.addEventListener(
     "click",
     () => {
-
       setReplyTarget(data);
     }
   );
 
-  actions.appendChild(
-    replyButton
-  );
-
+  actions.appendChild(replyButton);
 
   // ==================================================
-  // 本人判定
+  // Owner Actions
   // ==================================================
 
   if (
@@ -1388,31 +1063,24 @@ function addMessage(data) {
     Number(data.userId) ===
       Number(currentUser.id)
   ) {
-
     const editButton =
       document.createElement("button");
 
-    editButton.type =
-      "button";
-
+    editButton.type = "button";
     editButton.textContent =
       "✏️ 編集";
 
     editButton.addEventListener(
       "click",
       () => {
-
         editMessage(data);
       }
     );
 
-
     const deleteButton =
       document.createElement("button");
 
-    deleteButton.type =
-      "button";
-
+    deleteButton.type = "button";
     deleteButton.className =
       "delete-action";
 
@@ -1422,32 +1090,23 @@ function addMessage(data) {
     deleteButton.addEventListener(
       "click",
       () => {
-
         deleteMessage(data);
       }
     );
 
-    actions.appendChild(
-      editButton
-    );
-
-    actions.appendChild(
-      deleteButton
-    );
+    actions.appendChild(editButton);
+    actions.appendChild(deleteButton);
   }
 
   message.appendChild(actions);
-
   messages.appendChild(message);
 }
 
-
 // ==================================================
-// 編集
+// Edit
 // ==================================================
 
 function editMessage(data) {
-
   const newText =
     prompt(
       "メッセージを編集",
@@ -1458,24 +1117,19 @@ function editMessage(data) {
     return;
   }
 
-  const text =
-    newText.trim();
+  const text = newText.trim();
 
   if (!text) {
-
     alert(
       "メッセージを入力してください。"
     );
-
     return;
   }
 
   if (text.length > 5000) {
-
     alert(
       "メッセージが長すぎます。"
     );
-
     return;
   }
 
@@ -1483,11 +1137,9 @@ function editMessage(data) {
     !socket ||
     !socket.connected
   ) {
-
     alert(
       "サーバーに接続されていません。"
     );
-
     return;
   }
 
@@ -1500,13 +1152,11 @@ function editMessage(data) {
   );
 }
 
-
 // ==================================================
-// 編集完了
+// Edited
 // ==================================================
 
 function handleMessageEdited(data) {
-
   if (
     !data ||
     data.room !== currentRoom
@@ -1515,7 +1165,9 @@ function handleMessageEdited(data) {
   }
 
   const selector =
-    `.message[data-message-id="${CSS.escape(String(data.id))}"]`;
+    `.message[data-message-id="${CSS.escape(
+      String(data.id)
+    )}"]`;
 
   const element =
     document.querySelector(selector);
@@ -1528,7 +1180,6 @@ function handleMessageEdited(data) {
   }
 
   addMessage(data);
-
   saveLocalMessage(data);
 
   if (wasAtBottom) {
@@ -1536,13 +1187,11 @@ function handleMessageEdited(data) {
   }
 }
 
-
 // ==================================================
-// 削除
+// Delete
 // ==================================================
 
 function deleteMessage(data) {
-
   if (
     !confirm(
       "このコメントを削除しますか？"
@@ -1555,11 +1204,9 @@ function deleteMessage(data) {
     !socket ||
     !socket.connected
   ) {
-
     alert(
       "サーバーに接続されていません。"
     );
-
     return;
   }
 
@@ -1571,13 +1218,11 @@ function deleteMessage(data) {
   );
 }
 
-
 // ==================================================
-// 削除完了
+// Deleted
 // ==================================================
 
 function handleMessageDeleted(data) {
-
   if (
     !data ||
     data.room !== currentRoom
@@ -1586,7 +1231,9 @@ function handleMessageDeleted(data) {
   }
 
   const selector =
-    `.message[data-message-id="${CSS.escape(String(data.id))}"]`;
+    `.message[data-message-id="${CSS.escape(
+      String(data.id)
+    )}"]`;
 
   const element =
     document.querySelector(selector);
@@ -1598,20 +1245,23 @@ function handleMessageDeleted(data) {
   removeLocalMessage(data.id);
 }
 
-
 // ==================================================
-// 返信
+// Reply
 // ==================================================
 
 function setReplyTarget(data) {
-
   replyTarget = {
     id: data.id,
     username: data.username,
     text: data.text
   };
 
-  replyPreview.innerHTML = "";
+  const preview =
+    document.getElementById(
+      "replyPreview"
+    );
+
+  preview.innerHTML = "";
 
   const text =
     document.createElement("span");
@@ -1622,48 +1272,40 @@ function setReplyTarget(data) {
   const cancel =
     document.createElement("button");
 
-  cancel.type =
-    "button";
-
-  cancel.textContent =
-    "✕";
+  cancel.type = "button";
+  cancel.textContent = "✕";
 
   cancel.addEventListener(
     "click",
     clearReplyTarget
   );
 
-  replyPreview.appendChild(text);
-  replyPreview.appendChild(cancel);
+  preview.appendChild(text);
+  preview.appendChild(cancel);
 
-  replyPreview.classList.remove(
-    "hidden"
-  );
+  preview.classList.remove("hidden");
 
   messageInput.focus();
 }
 
-
 function clearReplyTarget() {
-
   replyTarget = null;
 
-  replyPreview.classList.add(
-    "hidden"
-  );
+  const preview =
+    document.getElementById(
+      "replyPreview"
+    );
 
-  replyPreview.innerHTML = "";
+  preview.classList.add("hidden");
 }
 
-
 // ==================================================
-// 送信
+// Send
 // ==================================================
 
 messageForm.addEventListener(
   "submit",
-  event => {
-
+  (event) => {
     event.preventDefault();
 
     const text =
@@ -1674,11 +1316,9 @@ messageForm.addEventListener(
     }
 
     if (text.length > 5000) {
-
       alert(
         "メッセージが長すぎます。"
       );
-
       return;
     }
 
@@ -1686,11 +1326,9 @@ messageForm.addEventListener(
       !socket ||
       !socket.connected
     ) {
-
       alert(
         "サーバーに接続されていません。"
       );
-
       return;
     }
 
@@ -1700,7 +1338,6 @@ messageForm.addEventListener(
     };
 
     if (replyTarget) {
-
       data.replyToId =
         replyTarget.id;
     }
@@ -1718,21 +1355,16 @@ messageForm.addEventListener(
   }
 );
 
-
 // ==================================================
-// 雑談へ戻る
+// Casual Room
 // ==================================================
 
 function returnToCasual() {
-
   currentRoom = "casual";
 
-  roomName.textContent =
-    "雑談";
+  roomName.textContent = "雑談";
 
-  inviteArea.classList.add(
-    "hidden"
-  );
+  inviteArea.classList.add("hidden");
 
   messages.innerHTML = "";
 
@@ -1744,28 +1376,22 @@ function returnToCasual() {
     socket &&
     socket.connected
   ) {
-
-    socket.emit(
-      "join casual"
-    );
+    socket.emit("join casual");
   }
 }
-
 
 casualRoomButton.addEventListener(
   "click",
   returnToCasual
 );
 
-
 // ==================================================
-// 部屋作成
+// Create Room
 // ==================================================
 
 createRoomButton.addEventListener(
   "click",
   () => {
-
     roomNameInput.value = "";
 
     createModal.classList.remove(
@@ -1776,40 +1402,32 @@ createRoomButton.addEventListener(
   }
 );
 
-
 cancelCreateButton.addEventListener(
   "click",
   () => {
-
     createModal.classList.add(
       "hidden"
     );
   }
 );
 
-
 confirmCreateButton.addEventListener(
   "click",
   () => {
-
     const name =
       roomNameInput.value.trim();
 
     if (!name) {
-
       alert(
         "部屋の名前を入力してください。"
       );
-
       return;
     }
 
     if (name.length > 100) {
-
       alert(
-        "部屋名は100文字以内にしてください。"
+        "部屋の名前は100文字以内にしてください。"
       );
-
       return;
     }
 
@@ -1817,11 +1435,9 @@ confirmCreateButton.addEventListener(
       !socket ||
       !socket.connected
     ) {
-
       alert(
         "サーバーに接続されていません。"
       );
-
       return;
     }
 
@@ -1834,15 +1450,12 @@ confirmCreateButton.addEventListener(
   }
 );
 
-
 // ==================================================
-// 部屋作成完了
+// Room Created
 // ==================================================
 
 function handleRoomCreated(room) {
-
-  currentRoom =
-    room.id;
+  currentRoom = room.id;
 
   roomName.textContent =
     room.name;
@@ -1869,17 +1482,14 @@ function handleRoomCreated(room) {
   );
 }
 
-
 // ==================================================
-// 部屋参加
+// Join Room
 // ==================================================
 
 joinRoomButton.addEventListener(
   "click",
   () => {
-
     inviteCodeInput.value = "";
-
     joinError.textContent = "";
 
     joinModal.classList.remove(
@@ -1890,32 +1500,26 @@ joinRoomButton.addEventListener(
   }
 );
 
-
 cancelJoinButton.addEventListener(
   "click",
   () => {
-
     joinModal.classList.add(
       "hidden"
     );
   }
 );
 
-
 confirmJoinButton.addEventListener(
   "click",
   () => {
-
     const code =
       inviteCodeInput.value
         .trim()
         .toUpperCase();
 
     if (!code) {
-
       joinError.textContent =
         "招待コードを入力してください。";
-
       return;
     }
 
@@ -1923,10 +1527,8 @@ confirmJoinButton.addEventListener(
       !socket ||
       !socket.connected
     ) {
-
       joinError.textContent =
         "サーバーに接続されていません。";
-
       return;
     }
 
@@ -1939,15 +1541,12 @@ confirmJoinButton.addEventListener(
   }
 );
 
-
 // ==================================================
-// 部屋参加完了
+// Room Joined
 // ==================================================
 
 function handleRoomJoined(room) {
-
-  currentRoom =
-    room.id;
+  currentRoom = room.id;
 
   roomName.textContent =
     room.name;
@@ -1970,14 +1569,16 @@ function handleRoomJoined(room) {
   hideNewMessageButton();
 }
 
-
 // ==================================================
-// 設定
+// Settings
 // ==================================================
 
 settingsButton.addEventListener(
   "click",
   () => {
+    if (!currentUser) {
+      return;
+    }
 
     settingsUsernameInput.value =
       currentUser.name;
@@ -1991,64 +1592,57 @@ settingsButton.addEventListener(
   }
 );
 
-
 closeSettingsButton.addEventListener(
   "click",
   () => {
-
     settingsModal.classList.add(
       "hidden"
     );
   }
 );
 
-
 // ==================================================
-// 設定保存
+// Save Settings
 // ==================================================
 
 saveSettingsButton.addEventListener(
   "click",
   async () => {
+    if (!currentUser) {
+      return;
+    }
 
-    const newName =
+    const name =
       settingsUsernameInput.value.trim();
 
-    if (!newName) {
-
+    if (!name) {
       alert(
         "ユーザー名を入力してください。"
       );
-
       return;
     }
 
-    if (newName.length > 50) {
-
+    if (name.length > 50) {
       alert(
         "ユーザー名は50文字以内にしてください。"
       );
-
       return;
     }
 
+    saveSettingsButton.disabled = true;
+
     try {
+      const data = await api(
+        "/api/profile",
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            name
+          })
+        }
+      );
 
-      const data =
-        await api(
-          "/api/profile",
-          {
-            method: "PATCH",
-
-            body:
-              JSON.stringify({
-                name: newName
-              })
-          }
-        );
-
-      currentUser =
-        data.user;
+      currentUser = data.user;
 
       usernameInput.value =
         currentUser.name;
@@ -2069,47 +1663,35 @@ saveSettingsButton.addEventListener(
       settingsModal.classList.add(
         "hidden"
       );
-
     } catch (error) {
-
-      alert(
-        error.message
-      );
+      alert(error.message);
+    } finally {
+      saveSettingsButton.disabled = false;
     }
   }
 );
 
-
 // ==================================================
-// テーマ
+// Theme
 // ==================================================
 
 themeToggleButton.addEventListener(
   "click",
   () => {
-
-    darkMode =
-      !darkMode;
-
+    darkMode = !darkMode;
     updateTheme();
   }
 );
-
 
 grayToggleButton.addEventListener(
   "click",
   () => {
-
-    grayMode =
-      !grayMode;
-
+    grayMode = !grayMode;
     updateTheme();
   }
 );
 
-
 function updateTheme() {
-
   document.body.classList.toggle(
     "dark-mode",
     darkMode
@@ -2121,9 +1703,7 @@ function updateTheme() {
   );
 
   themeToggleButton.textContent =
-    darkMode
-      ? "ON"
-      : "OFF";
+    darkMode ? "ON" : "OFF";
 
   themeToggleButton.classList.toggle(
     "active",
@@ -2131,9 +1711,7 @@ function updateTheme() {
   );
 
   grayToggleButton.textContent =
-    grayMode
-      ? "ON"
-      : "OFF";
+    grayMode ? "ON" : "OFF";
 
   grayToggleButton.classList.toggle(
     "active",
@@ -2142,18 +1720,17 @@ function updateTheme() {
 
   localStorage.setItem(
     "veylo_dark_mode",
-    String(darkMode)
+    darkMode
   );
 
   localStorage.setItem(
     "veylo_gray_mode",
-    String(grayMode)
+    grayMode
   );
 }
 
-
 // ==================================================
-// モーダル外クリック
+// Modal Outside Click
 // ==================================================
 
 [
@@ -2161,16 +1738,13 @@ function updateTheme() {
   joinModal,
   settingsModal
 ].forEach(
-  modal => {
-
+  (modal) => {
     modal.addEventListener(
       "click",
-      event => {
-
+      (event) => {
         if (
           event.target === modal
         ) {
-
           modal.classList.add(
             "hidden"
           );
@@ -2180,45 +1754,35 @@ function updateTheme() {
   }
 );
 
-
 // ==================================================
 // Enter
 // ==================================================
 
 roomNameInput.addEventListener(
   "keydown",
-  event => {
-
+  (event) => {
     if (event.key === "Enter") {
-
       event.preventDefault();
-
       confirmCreateButton.click();
     }
   }
 );
 
-
 inviteCodeInput.addEventListener(
   "keydown",
-  event => {
-
+  (event) => {
     if (event.key === "Enter") {
-
       event.preventDefault();
-
       confirmJoinButton.click();
     }
   }
 );
 
-
 // ==================================================
-// 時刻
+// Time
 // ==================================================
 
 function formatTime(value) {
-
   if (!value) {
     return "";
   }
@@ -2231,7 +1795,6 @@ function formatTime(value) {
       date.getTime()
     )
   ) {
-
     return "";
   }
 
@@ -2244,28 +1807,16 @@ function formatTime(value) {
   );
 }
 
-
 // ==================================================
-// 初期化
+// Initialize
 // ==================================================
 
 updateTheme();
-
 cleanupLocalMessages();
-
-
-// ==================================================
-// 10分ごとのLocalStorage掃除
-// ==================================================
 
 setInterval(
   cleanupLocalMessages,
   10 * 60 * 1000
 );
-
-
-// ==================================================
-// 起動
-// ==================================================
 
 checkLogin();
