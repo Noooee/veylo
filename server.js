@@ -75,6 +75,13 @@ const io =
       }
     }
   );
+// ==================================================
+// Socket.IO と Express Session を共有
+// ==================================================
+
+io.engine.use(
+  sessionMiddleware
+);
 
 
 // ==================================================
@@ -128,11 +135,6 @@ app.use(
 // ==================================================
 // Session
 // ==================================================
-//
-// ★重要
-// sessionMiddleware として変数に保存します。
-// Socket.IOでもこのSessionを共有します。
-// ==================================================
 
 const sessionMiddleware =
   session({
@@ -182,6 +184,10 @@ const sessionMiddleware =
 
   });
 
+
+app.use(
+  sessionMiddleware
+);
 
 // 通常のHTTPリクエスト
 app.use(
@@ -1287,47 +1293,23 @@ app.post(
 
 
 // ==================================================
-// ★ Socket.IO 認証
+// Socket.IO 認証
 // ==================================================
 
 io.use(
   (socket, next) => {
 
-    /*
-     * io.engine.use(sessionMiddleware)
-     * によってここで
-     * socket.request.session が使えるようになります。
-     */
-
-    const req =
-      socket.request;
-
-    const currentSession =
-      req.session;
-
-
-    console.log(
-      "Socket authentication:",
-      {
-        socketId:
-          socket.id,
-
-        hasSession:
-          !!currentSession,
-
-        userId:
-          currentSession?.userId || null
-      }
-    );
+    const session =
+      socket.request.session;
 
 
     if (
-      !currentSession ||
-      !currentSession.userId
+      !session ||
+      !session.userId
     ) {
 
       console.log(
-        "Socket authentication failed."
+        "Socket.IO authentication failed."
       );
 
       return next(
@@ -1340,7 +1322,9 @@ io.use(
 
 
     socket.userId =
-      currentSession.userId;
+      Number(
+        session.userId
+      );
 
 
     next();
