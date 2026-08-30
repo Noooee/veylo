@@ -1,6 +1,5 @@
 "use strict";
 
-
 // ==================================================
 // Veylo App.js
 // ==================================================
@@ -305,6 +304,77 @@ const languageSelect =
 
 
 // ==================================================
+// アカウント管理
+// ==================================================
+
+const manageAccountsButton =
+  document.getElementById(
+    "manageAccountsButton"
+  );
+
+const accountsModal =
+  document.getElementById(
+    "accountsModal"
+  );
+
+const accountList =
+  document.getElementById(
+    "accountList"
+  );
+
+const closeAccountsButton =
+  document.getElementById(
+    "closeAccountsButton"
+  );
+
+const accountManageMessage =
+  document.getElementById(
+    "accountManageMessage"
+  );
+
+
+const deleteAccountModal =
+  document.getElementById(
+    "deleteAccountModal"
+  );
+
+const deleteAccountDescription =
+  document.getElementById(
+    "deleteAccountDescription"
+  );
+
+const deleteAccountEmail =
+  document.getElementById(
+    "deleteAccountEmail"
+  );
+
+const deleteAccountName =
+  document.getElementById(
+    "deleteAccountName"
+  );
+
+const deleteAccountPassword =
+  document.getElementById(
+    "deleteAccountPassword"
+  );
+
+const deleteAccountError =
+  document.getElementById(
+    "deleteAccountError"
+  );
+
+const cancelDeleteAccountButton =
+  document.getElementById(
+    "cancelDeleteAccountButton"
+  );
+
+const confirmDeleteAccountButton =
+  document.getElementById(
+    "confirmDeleteAccountButton"
+  );
+
+
+// ==================================================
 // 状態
 // ==================================================
 
@@ -358,14 +428,11 @@ async function api(
         ...options,
 
         headers: {
-
           ...(options.headers || {}),
 
           "Content-Type":
             "application/json"
-
         }
-
       }
     );
 
@@ -386,46 +453,25 @@ async function api(
 
   if (!response.ok) {
 
-    throw new Error(
-      data.message ||
-      "通信に失敗しました。"
-    );
+    const error =
+      new Error(
+        data.message ||
+        "通信に失敗しました。"
+      );
 
+    error.status =
+      response.status;
+
+    error.data =
+      data;
+
+    throw error;
   }
 
 
   return data;
-
 }
 
-// ==================================================
-// アカウント管理DOM
-// ==================================================
-
-const accountManagementButton =
-  document.getElementById(
-    "accountManagementButton"
-  );
-
-const accountModal =
-  document.getElementById(
-    "accountModal"
-  );
-
-const accountList =
-  document.getElementById(
-    "accountList"
-  );
-
-const accountCount =
-  document.getElementById(
-    "accountCount"
-  );
-
-const closeAccountModalButton =
-  document.getElementById(
-    "closeAccountModalButton"
-  );
 
 // ==================================================
 // 認証画面切り替え
@@ -451,7 +497,6 @@ function showPanel(
   panel.classList.remove(
     "hidden"
   );
-
 }
 
 
@@ -480,7 +525,6 @@ async function checkLogin() {
       enterApp();
 
       return;
-
     }
 
 
@@ -494,9 +538,7 @@ async function checkLogin() {
     );
 
     showAuth();
-
   }
-
 }
 
 
@@ -517,7 +559,6 @@ function showAuth() {
   showPanel(
     loginPanel
   );
-
 }
 
 
@@ -550,7 +591,6 @@ function enterApp() {
 
 
   connectSocket();
-
 }
 
 
@@ -566,7 +606,6 @@ function connectSocket() {
   ) {
 
     return;
-
   }
 
 
@@ -576,8 +615,8 @@ function connectSocket() {
 
     socket.disconnect();
 
-    socket = null;
-
+    socket =
+      null;
   }
 
 
@@ -585,7 +624,6 @@ function connectSocket() {
     io(
       window.location.origin,
       {
-
         withCredentials:
           true,
 
@@ -605,7 +643,6 @@ function connectSocket() {
 
         reconnectionDelayMax:
           5000
-
       }
     );
 
@@ -618,7 +655,6 @@ function connectSocket() {
         "Socket connected:",
         socket.id
       );
-
     }
   );
 
@@ -639,22 +675,8 @@ function connectSocket() {
           "UNAUTHORIZED"
       ) {
 
-        console.error(
-          "Socket.IO session authentication failed."
-        );
-
-        /*
-         * すぐにログイン画面へ戻すのではなく、
-         * /api/meを確認します。
-         *
-         * 学タブなどでSocket接続だけ一時的に
-         * 失敗した場合にログイン状態を維持できます。
-         */
-
         verifyLoginAfterSocketError();
-
       }
-
     }
   );
 
@@ -667,13 +689,11 @@ function connectSocket() {
         "Socket disconnected:",
         reason
       );
-
     }
   );
 
 
   setupSocketEvents();
-
 }
 
 
@@ -692,7 +712,6 @@ async function verifyLoginAfterSocketError() {
   ) {
 
     return;
-
   }
 
 
@@ -724,39 +743,17 @@ async function verifyLoginAfterSocketError() {
       settingsUsernameInput.value =
         currentUser.name;
 
-
-      console.log(
-        "HTTP session is still valid."
-      );
-
-
-      /*
-       * HTTPセッションが有効なら
-       * ログイン画面には戻さない。
-       *
-       * Socket.IOは自動再接続します。
-       */
-
       return;
-
     }
-
-
-    console.error(
-      "HTTP session is no longer valid."
-    );
 
 
     currentUser =
       null;
 
 
-    if (
-      socket
-    ) {
+    if (socket) {
 
       socket.disconnect();
-
     }
 
 
@@ -773,9 +770,7 @@ async function verifyLoginAfterSocketError() {
 
     socketAuthCheckRunning =
       false;
-
   }
-
 }
 
 
@@ -811,7 +806,6 @@ function setupSocketEvents() {
       );
 
       hideNewMessageButton();
-
     }
   );
 
@@ -819,6 +813,18 @@ function setupSocketEvents() {
   socket.on(
     "room created",
     handleRoomCreated
+  );
+
+
+  socket.on(
+    "create room error",
+    (data) => {
+
+      alert(
+        data?.message ||
+        "部屋を作成できませんでした。"
+      );
+    }
   );
 
 
@@ -835,7 +841,6 @@ function setupSocketEvents() {
       joinError.textContent =
         data?.message ||
         "部屋に参加できませんでした。";
-
     }
   );
 
@@ -860,7 +865,6 @@ function setupSocketEvents() {
         data?.message ||
         "メッセージを送信できませんでした。"
       );
-
     }
   );
 
@@ -873,7 +877,6 @@ function setupSocketEvents() {
         data?.message ||
         "コメントを編集できませんでした。"
       );
-
     }
   );
 
@@ -886,10 +889,8 @@ function setupSocketEvents() {
         data?.message ||
         "コメントを削除できませんでした。"
       );
-
     }
   );
-
 }
 
 
@@ -913,21 +914,16 @@ loginForm.addEventListener(
         await api(
           "/api/login",
           {
-
-            method:
-              "POST",
+            method: "POST",
 
             body:
               JSON.stringify({
-
                 name:
                   loginName.value.trim(),
 
                 password:
                   loginPassword.value
-
               })
-
           }
         );
 
@@ -950,14 +946,11 @@ loginForm.addEventListener(
 
       enterApp();
 
-
     } catch (error) {
 
       loginError.textContent =
         error.message;
-
     }
-
   }
 );
 
@@ -982,13 +975,10 @@ registerForm.addEventListener(
         await api(
           "/api/register",
           {
-
-            method:
-              "POST",
+            method: "POST",
 
             body:
               JSON.stringify({
-
                 email:
                   registerEmail.value.trim(),
 
@@ -997,9 +987,7 @@ registerForm.addEventListener(
 
                 name:
                   registerName.value.trim()
-
               })
-
           }
         );
 
@@ -1022,14 +1010,36 @@ registerForm.addEventListener(
 
       enterApp();
 
-
     } catch (error) {
+
+      // ==================================================
+      // 5アカウント上限
+      // ==================================================
+
+      if (
+        error.data &&
+        error.data.code ===
+          "MAX_ACCOUNTS"
+      ) {
+
+        registerError.textContent =
+          error.message;
+
+
+        // アカウント一覧を表示
+        showAccountManager(
+          registerEmail.value.trim(),
+          error.data.accounts || []
+        );
+
+
+        return;
+      }
+
 
       registerError.textContent =
         error.message;
-
     }
-
   }
 );
 
@@ -1054,18 +1064,13 @@ forgotForm.addEventListener(
         await api(
           "/api/forgot-password",
           {
-
-            method:
-              "POST",
+            method: "POST",
 
             body:
               JSON.stringify({
-
                 email:
                   forgotEmail.value.trim()
-
               })
-
           }
         );
 
@@ -1073,14 +1078,11 @@ forgotForm.addEventListener(
       forgotMessage.textContent =
         data.message;
 
-
     } catch (error) {
 
       forgotMessage.textContent =
         error.message;
-
     }
-
   }
 );
 
@@ -1099,7 +1101,6 @@ showRegisterButton.addEventListener(
     showPanel(
       registerPanel
     );
-
   }
 );
 
@@ -1114,7 +1115,6 @@ showLoginButton.addEventListener(
     showPanel(
       loginPanel
     );
-
   }
 );
 
@@ -1129,7 +1129,6 @@ forgotPasswordButton.addEventListener(
     showPanel(
       forgotPanel
     );
-
   }
 );
 
@@ -1141,7 +1140,6 @@ backToLoginButton.addEventListener(
     showPanel(
       loginPanel
     );
-
   }
 );
 
@@ -1184,7 +1182,6 @@ logoutButton.addEventListener(
 
         socket =
           null;
-
       }
 
 
@@ -1201,15 +1198,386 @@ logoutButton.addEventListener(
 
       showAuth();
 
-
     } catch (error) {
 
       alert(
         error.message
       );
+    }
+  }
+);
 
+
+// ==================================================
+// アカウント管理
+// ==================================================
+
+manageAccountsButton.addEventListener(
+  "click",
+  async () => {
+
+    if (!currentUser) {
+      return;
     }
 
+
+    await showAccountManager(
+      currentUser.email
+    );
+  }
+);
+
+
+// ==================================================
+// アカウント一覧表示
+// ==================================================
+
+async function showAccountManager(
+  email,
+  suppliedAccounts = null
+) {
+
+  accountManageMessage.textContent =
+    "";
+
+  accountList.innerHTML =
+    "";
+
+
+  accountsModal.classList.remove(
+    "hidden"
+  );
+
+
+  let accounts =
+    suppliedAccounts;
+
+
+  try {
+
+    if (!accounts) {
+
+      const data =
+        await api(
+          "/api/account-list",
+          {
+            method: "POST",
+
+            body:
+              JSON.stringify({
+                email
+              })
+          }
+        );
+
+      accounts =
+        data.accounts || [];
+    }
+
+
+    if (
+      accounts.length === 0
+    ) {
+
+      accountList.innerHTML =
+        "<p class='small-text'>アカウントがありません。</p>";
+
+      return;
+    }
+
+
+    accounts.forEach(
+      (account) => {
+
+        const item =
+          document.createElement(
+            "div"
+          );
+
+        item.className =
+          "account-item";
+
+
+        const name =
+          document.createElement(
+            "div"
+          );
+
+        name.className =
+          "account-item-name";
+
+
+        name.textContent =
+          account.name;
+
+
+        const small =
+          document.createElement(
+            "small"
+          );
+
+
+        if (
+          currentUser &&
+          Number(account.id) ===
+            Number(currentUser.id)
+        ) {
+
+          small.textContent =
+            "現在ログイン中";
+
+        } else {
+
+          small.textContent =
+            "Veyloアカウント";
+        }
+
+
+        name.appendChild(
+          small
+        );
+
+
+        const deleteButton =
+          document.createElement(
+            "button"
+          );
+
+
+        deleteButton.type =
+          "button";
+
+
+        deleteButton.className =
+          "account-delete-button";
+
+
+        deleteButton.textContent =
+          "削除";
+
+
+        deleteButton.addEventListener(
+          "click",
+          () => {
+
+            openDeleteAccount(
+              email,
+              account
+            );
+          }
+        );
+
+
+        item.appendChild(
+          name
+        );
+
+        item.appendChild(
+          deleteButton
+        );
+
+
+        accountList.appendChild(
+          item
+        );
+      }
+    );
+
+  } catch (error) {
+
+    accountManageMessage.textContent =
+      error.message;
+  }
+}
+
+
+// ==================================================
+// アカウント削除モーダル
+// ==================================================
+
+function openDeleteAccount(
+  email,
+  account
+) {
+
+  deleteAccountEmail.value =
+    email;
+
+  deleteAccountName.value =
+    account.name;
+
+  deleteAccountPassword.value =
+    "";
+
+  deleteAccountError.textContent =
+    "";
+
+
+  deleteAccountDescription.textContent =
+    `「${account.name}」のアカウントを削除しますか？`;
+
+
+  deleteAccountModal.classList.remove(
+    "hidden"
+  );
+
+
+  deleteAccountPassword.focus();
+}
+
+
+cancelDeleteAccountButton.addEventListener(
+  "click",
+  () => {
+
+    deleteAccountModal.classList.add(
+      "hidden"
+    );
+  }
+);
+
+
+// ==================================================
+// アカウント削除実行
+// ==================================================
+
+confirmDeleteAccountButton.addEventListener(
+  "click",
+  async () => {
+
+    deleteAccountError.textContent =
+      "";
+
+
+    const email =
+      deleteAccountEmail.value.trim();
+
+    const name =
+      deleteAccountName.value.trim();
+
+    const password =
+      deleteAccountPassword.value;
+
+
+    if (!password) {
+
+      deleteAccountError.textContent =
+        "パスワードを入力してください。";
+
+      return;
+    }
+
+
+    const confirmed =
+      confirm(
+        `「${name}」のアカウントを本当に削除しますか？\n\nこの操作は元に戻せません。`
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    confirmDeleteAccountButton.disabled =
+      true;
+
+
+    try {
+
+      const data =
+        await api(
+          "/api/delete-account",
+          {
+            method: "POST",
+
+            body:
+              JSON.stringify({
+                email,
+                name,
+                password
+              })
+          }
+        );
+
+
+      deleteAccountModal.classList.add(
+        "hidden"
+      );
+
+
+      alert(
+        data.message ||
+        "アカウントを削除しました。"
+      );
+
+
+      // 現在のアカウントを削除した場合
+      if (
+        data.loggedOut
+      ) {
+
+        accountsModal.classList.add(
+          "hidden"
+        );
+
+        settingsModal.classList.add(
+          "hidden"
+        );
+
+
+        if (socket) {
+
+          socket.removeAllListeners();
+
+          socket.disconnect();
+
+          socket =
+            null;
+        }
+
+
+        currentUser =
+          null;
+
+
+        showAuth();
+
+
+        return;
+      }
+
+
+      // 他のアカウントを削除した場合
+      if (currentUser) {
+
+        await showAccountManager(
+          currentUser.email
+        );
+      }
+
+
+    } catch (error) {
+
+      deleteAccountError.textContent =
+        error.message;
+
+    } finally {
+
+      confirmDeleteAccountButton.disabled =
+        false;
+    }
+  }
+);
+
+
+closeAccountsButton.addEventListener(
+  "click",
+  () => {
+
+    accountsModal.classList.add(
+      "hidden"
+    );
   }
 );
 
@@ -1231,7 +1599,6 @@ function isAtBottom() {
       messages.clientHeight <=
     80
   );
-
 }
 
 
@@ -1245,29 +1612,20 @@ function scrollToBottom(
 
 
   messages.scrollTo({
-
     top:
       messages.scrollHeight,
 
     behavior
-
   });
-
 }
 
 
 function scrollToTop() {
 
   messages.scrollTo({
-
-    top:
-      0,
-
-    behavior:
-      "smooth"
-
+    top: 0,
+    behavior: "smooth"
   });
-
 }
 
 
@@ -1295,13 +1653,8 @@ function scrollToMessage(
 
 
   element.scrollIntoView({
-
-    behavior:
-      "smooth",
-
-    block:
-      "center"
-
+    behavior: "smooth",
+    block: "center"
   });
 
 
@@ -1320,7 +1673,6 @@ function scrollToMessage(
     },
     1800
   );
-
 }
 
 
@@ -1329,7 +1681,6 @@ function showNewMessageButton() {
   newMessageButton.classList.remove(
     "hidden"
   );
-
 }
 
 
@@ -1338,7 +1689,6 @@ function hideNewMessageButton() {
   newMessageButton.classList.add(
     "hidden"
   );
-
 }
 
 
@@ -1349,7 +1699,6 @@ newMessageButton.addEventListener(
     scrollToBottom();
 
     hideNewMessageButton();
-
   }
 );
 
@@ -1363,9 +1712,7 @@ messages.addEventListener(
     ) {
 
       hideNewMessageButton();
-
     }
-
   }
 );
 
@@ -1391,7 +1738,6 @@ document
       scrollToBottom();
 
       hideNewMessageButton();
-
     }
   );
 
@@ -1432,7 +1778,6 @@ function isMessageValid(
   ) {
 
     return true;
-
   }
 
 
@@ -1441,7 +1786,6 @@ function isMessageValid(
       time <
     MESSAGE_LIFETIME
   );
-
 }
 
 
@@ -1479,9 +1823,7 @@ function cleanupLocalMessages() {
     localStorage.removeItem(
       "veylo_casual_messages"
     );
-
   }
-
 }
 
 
@@ -1511,9 +1853,7 @@ function loadLocalMessages() {
   } catch {
 
     // 無視
-
   }
-
 }
 
 
@@ -1528,7 +1868,6 @@ function saveLocalMessage(
   ) {
 
     return;
-
   }
 
 
@@ -1562,7 +1901,6 @@ function saveLocalMessage(
       stored.push(
         data
       );
-
     }
 
 
@@ -1586,9 +1924,7 @@ function saveLocalMessage(
     localStorage.removeItem(
       "veylo_casual_messages"
     );
-
   }
-
 }
 
 
@@ -1626,9 +1962,7 @@ function removeLocalMessage(
     localStorage.removeItem(
       "veylo_casual_messages"
     );
-
   }
-
 }
 
 
@@ -1651,7 +1985,6 @@ function handleChatMessage(
   ) {
 
     return;
-
   }
 
 
@@ -1660,7 +1993,6 @@ function handleChatMessage(
   ) {
 
     return;
-
   }
 
 
@@ -1689,9 +2021,7 @@ function handleChatMessage(
   } else {
 
     showNewMessageButton();
-
   }
-
 }
 
 
@@ -1708,7 +2038,6 @@ function handlePreviousMessages(
   ) {
 
     return;
-
   }
 
 
@@ -1740,7 +2069,6 @@ function handlePreviousMessages(
           .slice(-1000)
       )
     );
-
   }
 
 
@@ -1750,7 +2078,6 @@ function handlePreviousMessages(
 
 
   hideNewMessageButton();
-
 }
 
 
@@ -1767,7 +2094,6 @@ function addMessage(
   ) {
 
     return;
-
   }
 
 
@@ -1776,7 +2102,6 @@ function addMessage(
   ) {
 
     return;
-
   }
 
 
@@ -1787,7 +2112,6 @@ function addMessage(
   ) {
 
     return;
-
   }
 
 
@@ -1889,7 +2213,6 @@ function addMessage(
         scrollToMessage(
           data.replyToId
         );
-
       }
     );
 
@@ -1897,7 +2220,6 @@ function addMessage(
     message.appendChild(
       replyInfo
     );
-
   }
 
 
@@ -1935,8 +2257,7 @@ function addMessage(
 
 
   if (
-    Number(data.edited) ===
-      1 ||
+    Number(data.edited) === 1 ||
     data.edited === true
   ) {
 
@@ -1957,7 +2278,6 @@ function addMessage(
     content.appendChild(
       edited
     );
-
   }
 
 
@@ -2001,7 +2321,6 @@ function addMessage(
       setReplyTarget(
         data
       );
-
     }
   );
 
@@ -2042,7 +2361,6 @@ function addMessage(
         editMessage(
           data
         );
-
       }
     );
 
@@ -2072,7 +2390,6 @@ function addMessage(
         deleteMessage(
           data
         );
-
       }
     );
 
@@ -2084,7 +2401,6 @@ function addMessage(
     actions.appendChild(
       deleteButton
     );
-
   }
 
 
@@ -2096,7 +2412,6 @@ function addMessage(
   messages.appendChild(
     message
   );
-
 }
 
 
@@ -2120,7 +2435,6 @@ function editMessage(
   ) {
 
     return;
-
   }
 
 
@@ -2135,7 +2449,6 @@ function editMessage(
     );
 
     return;
-
   }
 
 
@@ -2149,23 +2462,19 @@ function editMessage(
     );
 
     return;
-
   }
 
 
   socket.emit(
     "edit message",
     {
-
       id:
         data.id,
 
       text:
         text
-
     }
   );
-
 }
 
 
@@ -2184,7 +2493,6 @@ function handleMessageEdited(
   ) {
 
     return;
-
   }
 
 
@@ -2205,7 +2513,6 @@ function handleMessageEdited(
   if (element) {
 
     element.remove();
-
   }
 
 
@@ -2224,9 +2531,7 @@ function handleMessageEdited(
   ) {
 
     scrollToBottom();
-
   }
-
 }
 
 
@@ -2245,7 +2550,6 @@ function deleteMessage(
   ) {
 
     return;
-
   }
 
 
@@ -2259,7 +2563,6 @@ function deleteMessage(
     );
 
     return;
-
   }
 
 
@@ -2270,7 +2573,6 @@ function deleteMessage(
         data.id
     }
   );
-
 }
 
 
@@ -2289,7 +2591,6 @@ function handleMessageDeleted(
   ) {
 
     return;
-
   }
 
 
@@ -2306,14 +2607,12 @@ function handleMessageDeleted(
   if (element) {
 
     element.remove();
-
   }
 
 
   removeLocalMessage(
     data.id
   );
-
 }
 
 
@@ -2335,7 +2634,6 @@ function setReplyTarget(
 
     text:
       data.text
-
   };
 
 
@@ -2394,7 +2692,6 @@ function setReplyTarget(
 
 
   messageInput.focus();
-
 }
 
 
@@ -2413,7 +2710,6 @@ function clearReplyTarget() {
   preview.classList.add(
     "hidden"
   );
-
 }
 
 
@@ -2447,7 +2743,6 @@ messageForm.addEventListener(
       );
 
       return;
-
     }
 
 
@@ -2458,7 +2753,6 @@ messageForm.addEventListener(
 
       text:
         text
-
     };
 
 
@@ -2468,7 +2762,6 @@ messageForm.addEventListener(
 
       data.replyToId =
         replyTarget.id;
-
     }
 
 
@@ -2485,7 +2778,6 @@ messageForm.addEventListener(
     clearReplyTarget();
 
     messageInput.focus();
-
   }
 );
 
@@ -2509,6 +2801,11 @@ function returnToCasual() {
   );
 
 
+  casualRoomButton.classList.add(
+    "active"
+  );
+
+
   messages.innerHTML =
     "";
 
@@ -2526,9 +2823,7 @@ function returnToCasual() {
     socket.emit(
       "join casual"
     );
-
   }
-
 }
 
 
@@ -2549,12 +2844,13 @@ createRoomButton.addEventListener(
     roomNameInput.value =
       "";
 
+
     createModal.classList.remove(
       "hidden"
     );
 
-    roomNameInput.focus();
 
+    roomNameInput.focus();
   }
 );
 
@@ -2566,7 +2862,6 @@ cancelCreateButton.addEventListener(
     createModal.classList.add(
       "hidden"
     );
-
   }
 );
 
@@ -2586,7 +2881,18 @@ confirmCreateButton.addEventListener(
       );
 
       return;
+    }
 
+
+    if (
+      name.length > 100
+    ) {
+
+      alert(
+        "部屋の名前は100文字以内にしてください。"
+      );
+
+      return;
     }
 
 
@@ -2600,8 +2906,11 @@ confirmCreateButton.addEventListener(
       );
 
       return;
-
     }
+
+
+    confirmCreateButton.disabled =
+      true;
 
 
     socket.emit(
@@ -2611,6 +2920,16 @@ confirmCreateButton.addEventListener(
       }
     );
 
+
+    setTimeout(
+      () => {
+
+        confirmCreateButton.disabled =
+          false;
+
+      },
+      1500
+    );
   }
 );
 
@@ -2654,10 +2973,14 @@ function handleRoomCreated(
   hideNewMessageButton();
 
 
-  alert(
-    `部屋を作成しました。\n\n招待コード: ${room.inviteCode}`
+  casualRoomButton.classList.remove(
+    "active"
   );
 
+
+  alert(
+    `部屋を作成しました！\n\n部屋名: ${room.name}\n招待コード: ${room.inviteCode}`
+  );
 }
 
 
@@ -2680,7 +3003,6 @@ joinRoomButton.addEventListener(
     );
 
     inviteCodeInput.focus();
-
   }
 );
 
@@ -2692,7 +3014,6 @@ cancelJoinButton.addEventListener(
     joinModal.classList.add(
       "hidden"
     );
-
   }
 );
 
@@ -2713,7 +3034,6 @@ confirmJoinButton.addEventListener(
         "招待コードを入力してください。";
 
       return;
-
     }
 
 
@@ -2726,7 +3046,6 @@ confirmJoinButton.addEventListener(
         "サーバーに接続されていません。";
 
       return;
-
     }
 
 
@@ -2736,7 +3055,6 @@ confirmJoinButton.addEventListener(
         code
       }
     );
-
   }
 );
 
@@ -2779,6 +3097,10 @@ function handleRoomJoined(
 
   hideNewMessageButton();
 
+
+  casualRoomButton.classList.remove(
+    "active"
+  );
 }
 
 
@@ -2790,16 +3112,22 @@ settingsButton.addEventListener(
   "click",
   () => {
 
+    if (!currentUser) {
+      return;
+    }
+
+
     settingsUsernameInput.value =
       currentUser.name;
+
 
     languageSelect.value =
       language;
 
+
     settingsModal.classList.remove(
       "hidden"
     );
-
   }
 );
 
@@ -2811,318 +3139,9 @@ closeSettingsButton.addEventListener(
     settingsModal.classList.add(
       "hidden"
     );
-
   }
 );
 
-// ==================================================
-// アカウント管理
-// ==================================================
-
-if (
-  accountManagementButton
-) {
-
-  accountManagementButton.addEventListener(
-    "click",
-    async () => {
-
-      await loadMyAccounts();
-
-      accountModal.classList.remove(
-        "hidden"
-      );
-
-    }
-  );
-
-}
-
-
-if (
-  closeAccountModalButton
-) {
-
-  closeAccountModalButton.addEventListener(
-    "click",
-    () => {
-
-      accountModal.classList.add(
-        "hidden"
-      );
-
-    }
-  );
-
-}
-
-
-async function loadMyAccounts() {
-
-  if (!accountList) {
-    return;
-  }
-
-
-  accountList.innerHTML =
-    "<p>読み込み中...</p>";
-
-
-  try {
-
-    const data =
-      await api(
-        "/api/my-accounts"
-      );
-
-
-    if (accountCount) {
-
-      accountCount.textContent =
-        `${data.count} / ${data.max}`;
-
-    }
-
-
-    accountList.innerHTML =
-      "";
-
-
-    data.accounts.forEach(
-      (account) => {
-
-        const item =
-          document.createElement(
-            "div"
-          );
-
-
-        item.className =
-          "account-item";
-
-
-        const info =
-          document.createElement(
-            "div"
-          );
-
-
-        info.className =
-          "account-info";
-
-
-        const name =
-          document.createElement(
-            "strong"
-          );
-
-
-        name.textContent =
-          account.name;
-
-
-        const email =
-          document.createElement(
-            "small"
-          );
-
-
-        email.textContent =
-          account.email;
-
-
-        info.appendChild(
-          name
-        );
-
-        info.appendChild(
-          email
-        );
-
-
-        const deleteButton =
-          document.createElement(
-            "button"
-          );
-
-
-        deleteButton.type =
-          "button";
-
-
-        deleteButton.className =
-          "delete-account-button";
-
-
-        deleteButton.textContent =
-          "削除";
-
-
-        deleteButton.addEventListener(
-          "click",
-          () => {
-
-            deleteAccount(
-              account
-            );
-
-          }
-        );
-
-
-        item.appendChild(
-          info
-        );
-
-        item.appendChild(
-          deleteButton
-        );
-
-
-        accountList.appendChild(
-          item
-        );
-
-      }
-    );
-
-
-  } catch (error) {
-
-    accountList.innerHTML =
-      `<p>${escapeHtml(
-        error.message
-      )}</p>`;
-
-  }
-
-}
-
-
-async function deleteAccount(
-  account
-) {
-
-  const isCurrent =
-    Number(account.id) ===
-    Number(currentUser.id);
-
-
-  const message =
-    isCurrent
-      ? "現在ログイン中のアカウントを削除しますか？\n\nこのアカウントのメッセージや作成した部屋も削除されます。"
-      : `「${account.name}」を削除しますか？\n\nこのアカウントのメッセージや作成した部屋も削除されます。`;
-
-
-  if (
-    !confirm(
-      message
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  try {
-
-    const data =
-      await api(
-        "/api/account",
-        {
-
-          method:
-            "DELETE",
-
-          body:
-            JSON.stringify({
-
-              accountId:
-                account.id
-
-            })
-
-        }
-      );
-
-
-    if (
-      data.loggedOut
-    ) {
-
-      if (socket) {
-
-        socket.removeAllListeners();
-
-        socket.disconnect();
-
-        socket =
-          null;
-
-      }
-
-
-      currentUser =
-        null;
-
-
-      messages.innerHTML =
-        "";
-
-
-      accountModal.classList.add(
-        "hidden"
-      );
-
-
-      showAuth();
-
-      alert(
-        "アカウントを削除しました。"
-      );
-
-      return;
-
-    }
-
-
-    await loadMyAccounts();
-
-
-    alert(
-      "アカウントを削除しました。"
-    );
-
-
-  } catch (error) {
-
-    alert(
-      error.message
-    );
-
-  }
-
-}
-
-
-function escapeHtml(
-  value
-) {
-
-  const div =
-    document.createElement(
-      "div"
-    );
-
-
-  div.textContent =
-    String(value || "");
-
-
-  return div.innerHTML;
-
-}
 
 // ==================================================
 // 設定保存
@@ -3148,7 +3167,6 @@ saveSettingsButton.addEventListener(
     settingsModal.classList.add(
       "hidden"
     );
-
   }
 );
 
@@ -3165,7 +3183,6 @@ themeToggleButton.addEventListener(
       !darkMode;
 
     updateTheme();
-
   }
 );
 
@@ -3178,7 +3195,6 @@ grayToggleButton.addEventListener(
       !grayMode;
 
     updateTheme();
-
   }
 );
 
@@ -3231,7 +3247,6 @@ function updateTheme() {
     "veylo_gray_mode",
     grayMode
   );
-
 }
 
 
@@ -3242,7 +3257,9 @@ function updateTheme() {
 [
   createModal,
   joinModal,
-  settingsModal
+  settingsModal,
+  accountsModal,
+  deleteAccountModal
 ].forEach(
   (modal) => {
 
@@ -3258,12 +3275,9 @@ function updateTheme() {
           modal.classList.add(
             "hidden"
           );
-
         }
-
       }
     );
-
   }
 );
 
@@ -3284,9 +3298,7 @@ roomNameInput.addEventListener(
       event.preventDefault();
 
       confirmCreateButton.click();
-
     }
-
   }
 );
 
@@ -3303,9 +3315,24 @@ inviteCodeInput.addEventListener(
       event.preventDefault();
 
       confirmJoinButton.click();
-
     }
+  }
+);
 
+
+deleteAccountPassword.addEventListener(
+  "keydown",
+  (event) => {
+
+    if (
+      event.key ===
+      "Enter"
+    ) {
+
+      event.preventDefault();
+
+      confirmDeleteAccountButton.click();
+    }
   }
 );
 
@@ -3334,23 +3361,16 @@ function formatTime(
   ) {
 
     return "";
-
   }
 
 
   return date.toLocaleTimeString(
     "ja-JP",
     {
-
-      hour:
-        "2-digit",
-
-      minute:
-        "2-digit"
-
+      hour: "2-digit",
+      minute: "2-digit"
     }
   );
-
 }
 
 
