@@ -398,6 +398,34 @@ async function api(
 
 }
 
+// ==================================================
+// アカウント管理DOM
+// ==================================================
+
+const accountManagementButton =
+  document.getElementById(
+    "accountManagementButton"
+  );
+
+const accountModal =
+  document.getElementById(
+    "accountModal"
+  );
+
+const accountList =
+  document.getElementById(
+    "accountList"
+  );
+
+const accountCount =
+  document.getElementById(
+    "accountCount"
+  );
+
+const closeAccountModalButton =
+  document.getElementById(
+    "closeAccountModalButton"
+  );
 
 // ==================================================
 // 認証画面切り替え
@@ -2787,6 +2815,314 @@ closeSettingsButton.addEventListener(
   }
 );
 
+// ==================================================
+// アカウント管理
+// ==================================================
+
+if (
+  accountManagementButton
+) {
+
+  accountManagementButton.addEventListener(
+    "click",
+    async () => {
+
+      await loadMyAccounts();
+
+      accountModal.classList.remove(
+        "hidden"
+      );
+
+    }
+  );
+
+}
+
+
+if (
+  closeAccountModalButton
+) {
+
+  closeAccountModalButton.addEventListener(
+    "click",
+    () => {
+
+      accountModal.classList.add(
+        "hidden"
+      );
+
+    }
+  );
+
+}
+
+
+async function loadMyAccounts() {
+
+  if (!accountList) {
+    return;
+  }
+
+
+  accountList.innerHTML =
+    "<p>読み込み中...</p>";
+
+
+  try {
+
+    const data =
+      await api(
+        "/api/my-accounts"
+      );
+
+
+    if (accountCount) {
+
+      accountCount.textContent =
+        `${data.count} / ${data.max}`;
+
+    }
+
+
+    accountList.innerHTML =
+      "";
+
+
+    data.accounts.forEach(
+      (account) => {
+
+        const item =
+          document.createElement(
+            "div"
+          );
+
+
+        item.className =
+          "account-item";
+
+
+        const info =
+          document.createElement(
+            "div"
+          );
+
+
+        info.className =
+          "account-info";
+
+
+        const name =
+          document.createElement(
+            "strong"
+          );
+
+
+        name.textContent =
+          account.name;
+
+
+        const email =
+          document.createElement(
+            "small"
+          );
+
+
+        email.textContent =
+          account.email;
+
+
+        info.appendChild(
+          name
+        );
+
+        info.appendChild(
+          email
+        );
+
+
+        const deleteButton =
+          document.createElement(
+            "button"
+          );
+
+
+        deleteButton.type =
+          "button";
+
+
+        deleteButton.className =
+          "delete-account-button";
+
+
+        deleteButton.textContent =
+          "削除";
+
+
+        deleteButton.addEventListener(
+          "click",
+          () => {
+
+            deleteAccount(
+              account
+            );
+
+          }
+        );
+
+
+        item.appendChild(
+          info
+        );
+
+        item.appendChild(
+          deleteButton
+        );
+
+
+        accountList.appendChild(
+          item
+        );
+
+      }
+    );
+
+
+  } catch (error) {
+
+    accountList.innerHTML =
+      `<p>${escapeHtml(
+        error.message
+      )}</p>`;
+
+  }
+
+}
+
+
+async function deleteAccount(
+  account
+) {
+
+  const isCurrent =
+    Number(account.id) ===
+    Number(currentUser.id);
+
+
+  const message =
+    isCurrent
+      ? "現在ログイン中のアカウントを削除しますか？\n\nこのアカウントのメッセージや作成した部屋も削除されます。"
+      : `「${account.name}」を削除しますか？\n\nこのアカウントのメッセージや作成した部屋も削除されます。`;
+
+
+  if (
+    !confirm(
+      message
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+    const data =
+      await api(
+        "/api/account",
+        {
+
+          method:
+            "DELETE",
+
+          body:
+            JSON.stringify({
+
+              accountId:
+                account.id
+
+            })
+
+        }
+      );
+
+
+    if (
+      data.loggedOut
+    ) {
+
+      if (socket) {
+
+        socket.removeAllListeners();
+
+        socket.disconnect();
+
+        socket =
+          null;
+
+      }
+
+
+      currentUser =
+        null;
+
+
+      messages.innerHTML =
+        "";
+
+
+      accountModal.classList.add(
+        "hidden"
+      );
+
+
+      showAuth();
+
+      alert(
+        "アカウントを削除しました。"
+      );
+
+      return;
+
+    }
+
+
+    await loadMyAccounts();
+
+
+    alert(
+      "アカウントを削除しました。"
+    );
+
+
+  } catch (error) {
+
+    alert(
+      error.message
+    );
+
+  }
+
+}
+
+
+function escapeHtml(
+  value
+) {
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+
+  div.textContent =
+    String(value || "");
+
+
+  return div.innerHTML;
+
+}
 
 // ==================================================
 // 設定保存
