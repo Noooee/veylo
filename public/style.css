@@ -1801,3 +1801,454 @@ body.gray-mode {
   }
 
 }
+
+/* ==================================================
+   認証画面
+================================================== */
+
+.auth-screen {
+  min-height: 100vh;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+}
+
+
+.auth-box {
+  width: 100%;
+
+  max-width: 410px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #f7f8fd
+    );
+
+  border:
+    1px solid #e1e4ed;
+
+  border-radius: 20px;
+
+  padding: 30px;
+
+  box-shadow:
+    0 20px 60px
+    rgba(35, 45, 80, 0.12);
+}
+
+
+.auth-logo {
+  text-align: center;
+
+  font-size: 32px;
+
+  font-weight: 850;
+
+  letter-spacing: -1.5px;
+
+  color: #5865f2;
+}
+
+
+.auth-subtitle {
+  text-align: center;
+
+  color: #858c9e;
+
+  font-size: 12px;
+
+  margin:
+    6px 0 24px;
+}
+
+
+.auth-panel h1 {
+  font-size: 20px;
+
+  margin:
+    0 0 18px;
+
+  color: #252c3d;
+}
+
+
+.auth-panel label {
+  display: block;
+
+  font-size: 12px;
+
+  font-weight: 750;
+
+  color: #596176;
+
+  margin:
+    13px 0 6px;
+}
+
+
+.auth-panel input {
+  width: 100%;
+
+  border:
+    1px solid #dce0e9;
+
+  background: #ffffff;
+
+  color: #172033;
+
+  border-radius: 9px;
+
+  padding:
+    11px 12px;
+
+  font-size: 14px;
+
+  outline: none;
+
+  transition:
+    border 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.auth-panel input:focus {
+  border-color:
+    #5865f2;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(88, 101, 242, 0.1);
+}
+
+
+.auth-panel small {
+  display: block;
+
+  color: #9299aa;
+
+  font-size: 10px;
+
+  margin-top: 5px;
+}
+
+
+.auth-primary {
+  width: 100%;
+
+  border: none;
+
+  border-radius: 9px;
+
+  padding: 11px;
+
+  margin-top: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6875ff,
+      #5865f2
+    );
+
+  color: white;
+
+  font-size: 13px;
+
+  font-weight: 750;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 12px
+    rgba(88, 101, 242, 0.2);
+
+  transition:
+    0.15s ease;
+}
+
+
+.auth-primary:hover {
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 6px 17px
+    rgba(88, 101, 242, 0.27);
+}
+
+
+.auth-secondary {
+  width: 100%;
+
+  border: none;
+
+  border-radius: 9px;
+
+  padding: 10px;
+
+  margin-top: 9px;
+
+  background: #eef0ff;
+
+  color: #5865f2;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.auth-secondary:hover {
+  background: #e3e6ff;
+}
+
+
+.auth-link-button {
+  display: block;
+
+  margin:
+    13px auto 0;
+
+  border: none;
+
+  background: transparent;
+
+  color: #70788c;
+
+  font-size: 11px;
+
+  cursor: pointer;
+}
+
+
+.auth-link-button:hover {
+  color: #5865f2;
+
+  text-decoration: underline;
+}
+
+
+.auth-error {
+  color: #e5484d;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+
+  margin:
+    12px 0 0;
+}
+
+
+.auth-message {
+  color: #5865f2;
+
+  font-size: 12px;
+
+  line-height: 1.5;
+
+  margin:
+    13px 0 0;
+}
+
+
+.auth-description {
+  color: #747c8e;
+
+  font-size: 12px;
+
+  line-height: 1.6;
+}
+
+
+.auth-secondary-link {
+  display: block;
+
+  text-align: center;
+
+  margin-top: 15px;
+
+  color: #5865f2;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  text-decoration: none;
+}
+
+
+/* ==================================================
+   返信表示
+================================================== */
+
+.message-reply-info {
+  display: inline-block;
+
+  max-width: 90%;
+
+  margin-bottom: 5px;
+
+  padding: 5px 8px;
+
+  border-left:
+    3px solid #5865f2;
+
+  background: #f1f2ff;
+
+  border-radius: 6px;
+
+  color: #626a80;
+
+  font-size: 10px;
+
+  line-height: 1.4;
+
+  cursor: pointer;
+
+  transition: 0.15s ease;
+}
+
+
+.message-reply-info:hover {
+  background: #e8eaff;
+
+  color: #5865f2;
+}
+
+
+.message-content {
+  display: block;
+}
+
+
+.edited-label {
+  display: inline-block;
+
+  margin-left: 6px;
+
+  color: #9ca3b3;
+
+  font-size: 9px;
+}
+
+
+/* ==================================================
+   返信ジャンプ
+================================================== */
+
+.message-highlight {
+  background:
+    rgba(88, 101, 242, 0.12) !important;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(88, 101, 242, 0.18);
+
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+/* ==================================================
+   ダークモード認証
+================================================== */
+
+body.dark-mode .auth-box {
+  background:
+    linear-gradient(
+      145deg,
+      #1e2128,
+      #181b21
+    );
+
+  border-color:
+    #30343d;
+
+  box-shadow:
+    0 20px 60px
+    rgba(0, 0, 0, 0.35);
+}
+
+
+body.dark-mode .auth-panel h1 {
+  color: #f1f3f7;
+}
+
+
+body.dark-mode .auth-panel label {
+  color: #aeb5c3;
+}
+
+
+body.dark-mode .auth-panel input {
+  background: #15171c;
+
+  border-color: #363b45;
+
+  color: #f1f3f7;
+}
+
+
+body.dark-mode .auth-secondary {
+  background: #2c3040;
+
+  color: #aeb6ff;
+}
+
+
+body.dark-mode .auth-subtitle {
+  color: #858d9e;
+}
+
+
+body.dark-mode .auth-description {
+  color: #aeb5c3;
+}
+
+
+body.dark-mode .message-reply-info {
+  background: #252941;
+
+  color: #c0c5d0;
+
+  border-color: #6875ff;
+}
+
+
+body.dark-mode .edited-label {
+  color: #81899a;
+}
+
+
+/* ==================================================
+   スマホ認証
+================================================== */
+
+@media (max-width: 600px) {
+
+  .auth-screen {
+    padding: 12px;
+  }
+
+  .auth-box {
+    padding: 23px 18px;
+
+    border-radius: 16px;
+  }
+
+  .auth-logo {
+    font-size: 28px;
+  }
+
+}
