@@ -19,11 +19,9 @@ const nodemailer = require("nodemailer");
 // 環境変数
 // ==================================================
 
-const PORT =
-  process.env.PORT || 10000;
+const PORT = process.env.PORT || 10000;
 
-const DATABASE_URL =
-  process.env.DATABASE_URL;
+const DATABASE_URL = process.env.DATABASE_URL;
 
 const SESSION_SECRET =
   process.env.SESSION_SECRET ||
@@ -35,14 +33,11 @@ const SESSION_SECRET =
 
 const app = express();
 
-if (
-  process.env.NODE_ENV === "production"
-) {
+if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-const server =
-  http.createServer(app);
+const server = http.createServer(app);
 
 // ==================================================
 // PostgreSQL
@@ -56,18 +51,16 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-const pool =
-  new Pool({
-    connectionString:
-      DATABASE_URL,
+const pool = new Pool({
+  connectionString: DATABASE_URL,
 
-    ssl:
-      process.env.NODE_ENV === "production"
-        ? {
-            rejectUnauthorized: false
-          }
-        : false
-  });
+  ssl:
+    process.env.NODE_ENV === "production"
+      ? {
+          rejectUnauthorized: false
+        }
+      : false
+});
 
 // ==================================================
 // Middleware
@@ -89,41 +82,38 @@ app.use(
 // Session
 // ==================================================
 
-const sessionMiddleware =
-  session({
-    store:
-      new pgSession({
-        pool,
-        tableName: "user_sessions",
-        createTableIfMissing: true
-      }),
+const sessionMiddleware = session({
+  store: new pgSession({
+    pool: pool,
+    tableName: "user_sessions",
+    createTableIfMissing: true
+  }),
 
-    secret:
-      SESSION_SECRET,
+  secret: SESSION_SECRET,
 
-    resave: false,
+  resave: false,
 
-    saveUninitialized: false,
+  saveUninitialized: false,
 
-    proxy:
+  proxy:
+    process.env.NODE_ENV === "production",
+
+  cookie: {
+    httpOnly: true,
+
+    secure:
       process.env.NODE_ENV === "production",
 
-    cookie: {
-      httpOnly: true,
+    sameSite: "lax",
 
-      secure:
-        process.env.NODE_ENV === "production",
-
-      sameSite: "lax",
-
-      maxAge:
-        1000 *
-        60 *
-        60 *
-        24 *
-        30
-    }
-  });
+    maxAge:
+      1000 *
+      60 *
+      60 *
+      24 *
+      30
+  }
+});
 
 app.use(sessionMiddleware);
 
@@ -131,16 +121,12 @@ app.use(sessionMiddleware);
 // Socket.IO
 // ==================================================
 
-const io =
-  new Server(
-    server,
-    {
-      cors: {
-        origin: true,
-        credentials: true
-      }
-    }
-  );
+const io = new Server(server, {
+  cors: {
+    origin: true,
+    credentials: true
+  }
+});
 
 io.engine.use(sessionMiddleware);
 
@@ -150,57 +136,9 @@ io.engine.use(sessionMiddleware);
 
 app.use(
   express.static(
-    path.join(
-      __dirname,
-      "public"
-    )
+    path.join(__dirname, "public")
   )
 );
-
-// ==================================================
-// DB helper
-// ==================================================
-
-async function columnExists(
-  tableName,
-  columnName
-) {
-  const result =
-    await pool.query(
-      `
-      SELECT 1
-      FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = $1
-        AND column_name = $2
-      LIMIT 1
-      `,
-      [
-        tableName,
-        columnName
-      ]
-    );
-
-  return result.rows.length > 0;
-}
-
-async function getRoomsColumns() {
-  const result =
-    await pool.query(
-      `
-      SELECT
-        column_name,
-        data_type,
-        is_nullable
-      FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = 'rooms'
-      ORDER BY ordinal_position
-      `
-    );
-
-  return result.rows;
-}
 
 // ==================================================
 // DB 初期化
@@ -235,14 +173,15 @@ async function initDatabase() {
   // ==================================================
 
   /*
-   * 新規環境では owner_id を作る。
+   * 重要
    *
-   * 既存Render DBには
+   * 既存DBには
    *
-   * rooms.owner
+   * owner
    *
-   * が存在するため、その場合も壊さずに
-   * owner_id を追加する。
+   * という古いカラムが存在する可能性があります。
+   *
+   * 新しいコードでは owner_id を使用します。
    */
 
   await pool.query(`
@@ -255,46 +194,59 @@ async function initDatabase() {
     )
   `);
 
-  // --------------------------------------------------
-  // 既存DBの owner / owner_id 修復
-  // --------------------------------------------------
-
-  const hasOwner =
-    await columnExists(
-      "rooms",
-      "owner"
-    );
-
-  const hasOwnerId =
-    await columnExists(
-      "rooms",
-      "owner_id"
-    );
-
-  console.log(
-    "rooms.owner:",
-    hasOwner
-  );
-
-  console.log(
-    "rooms.owner_id:",
-    hasOwnerId
-  );
-
   /*
-   * owner_id が存在しなければ追加
+   * 既存の rooms テーブルに
+   * owner_id がない場合は追加する
    */
 
-  if (!hasOwnerId) {
-    console.log(
-      "rooms.owner_id が存在しないため追加します..."
-    );
+  await pool.query(`
+    ALTER TABLE rooms
+    ADD COLUMN IF NOT EXISTS owner_id INTEGER
+  `);
 
-    await pool.query(`
-      ALTER TABLE rooms
-      ADD COLUMN owner_id INTEGER
+  /*
+   * 古い owner カラムがある場合、
+   * owner_id が空の部屋について owner の値を移す。
+   *
+   * owner の型が INTEGER の場合のみ実行。
+   */
+
+  try {
+    const ownerColumn = await pool.query(`
+      SELECT
+        column_name,
+        data_type
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'rooms'
+        AND column_name = 'owner'
+      LIMIT 1
     `);
 
+    if (
+      ownerColumn.rows.length > 0 &&
+      ownerColumn.rows[0].data_type === "integer"
+    ) {
+      await pool.query(`
+        UPDATE rooms
+        SET owner_id = owner
+        WHERE owner_id IS NULL
+          AND owner IS NOT NULL
+      `);
+    }
+  } catch (error) {
+    console.warn(
+      "rooms.owner の移行をスキップ:",
+      error.message
+    );
+  }
+
+  /*
+   * owner_id に外部キーを追加。
+   * 既に存在している場合はエラーを無視。
+   */
+
+  try {
     await pool.query(`
       ALTER TABLE rooms
       ADD CONSTRAINT rooms_owner_id_fkey
@@ -302,68 +254,14 @@ async function initDatabase() {
       REFERENCES users(id)
       ON DELETE CASCADE
     `);
-  }
-
-  /*
-   * owner が存在する古いDBの場合、
-   * owner の値を owner_id に移す。
-   *
-   * owner がINTEGERならそのまま。
-   * TEXT等なら安全に数値化できる場合だけ移す。
-   */
-
-  if (hasOwner) {
-    const roomColumns =
-      await getRoomsColumns();
-
-    const ownerColumn =
-      roomColumns.find(
-        (column) =>
-          column.column_name === "owner"
+  } catch (error) {
+    if (error.code !== "42710") {
+      console.warn(
+        "rooms_owner_id_fkey:",
+        error.message
       );
-
-    if (ownerColumn) {
-      console.log(
-        "既存 rooms.owner の型:",
-        ownerColumn.data_type
-      );
-
-      if (
-        ownerColumn.data_type ===
-        "integer"
-      ) {
-        await pool.query(`
-          UPDATE rooms
-          SET owner_id = owner
-          WHERE owner_id IS NULL
-            AND owner IS NOT NULL
-        `);
-      } else {
-        /*
-         * TEXTなどの場合。
-         * 数字だけなら user id として移行。
-         */
-        await pool.query(`
-          UPDATE rooms
-          SET owner_id =
-            CASE
-              WHEN owner ~ '^[0-9]+$'
-              THEN owner::INTEGER
-              ELSE NULL
-            END
-          WHERE owner_id IS NULL
-            AND owner IS NOT NULL
-        `);
-      }
     }
   }
-
-  /*
-   * owner_id に入らなかった既存部屋について、
-   * room_members から所有者を推測できる場合は補完。
-   *
-   * room_members作成後にもう一度実行する。
-   */
 
   // ==================================================
   // Room Members
@@ -397,94 +295,6 @@ async function initDatabase() {
     CREATE INDEX IF NOT EXISTS room_members_room_idx
     ON room_members(room_id)
   `);
-
-  /*
-   * owner_id が設定されている既存部屋を
-   * room_membersへ追加
-   */
-
-  await pool.query(`
-    INSERT INTO room_members (
-      room_id,
-      user_id
-    )
-    SELECT
-      r.id,
-      r.owner_id
-    FROM rooms r
-    WHERE r.owner_id IS NOT NULL
-      AND EXISTS (
-        SELECT 1
-        FROM users u
-        WHERE u.id = r.owner_id
-      )
-    ON CONFLICT (
-      room_id,
-      user_id
-    )
-    DO NOTHING
-  `);
-
-  /*
-   * owner_id がNULLの既存部屋について、
-   * room_membersの最初のユーザーを所有者として設定。
-   */
-
-  await pool.query(`
-    UPDATE rooms r
-    SET owner_id = x.user_id
-    FROM (
-      SELECT
-        room_id,
-        MIN(user_id) AS user_id
-      FROM room_members
-      GROUP BY room_id
-    ) x
-    WHERE r.id = x.room_id
-      AND r.owner_id IS NULL
-  `);
-
-  /*
-   * ownerがNOT NULLの古いDBの場合、
-   * owner_idからownerにも値を戻す。
-   *
-   * これにより古いDBの制約も満たせる。
-   */
-
-  if (hasOwner) {
-    const roomColumns =
-      await getRoomsColumns();
-
-    const ownerColumn =
-      roomColumns.find(
-        (column) =>
-          column.column_name === "owner"
-      );
-
-    if (
-      ownerColumn &&
-      ownerColumn.is_nullable === "NO"
-    ) {
-      if (
-        ownerColumn.data_type ===
-        "integer"
-      ) {
-        await pool.query(`
-          UPDATE rooms
-          SET owner = owner_id
-          WHERE owner IS NULL
-            AND owner_id IS NOT NULL
-        `);
-      } else {
-        await pool.query(`
-          UPDATE rooms
-          SET owner = owner_id::TEXT
-          WHERE owner IS NULL
-            AND owner_id IS NOT NULL
-        `);
-      }
-    }
-  }
 
   // ==================================================
   // Messages
@@ -533,7 +343,8 @@ async function initDatabase() {
 
   await pool.query(`
     ALTER TABLE messages
-    ADD COLUMN IF NOT EXISTS edited BOOLEAN NOT NULL DEFAULT FALSE
+    ADD COLUMN IF NOT EXISTS edited
+    BOOLEAN NOT NULL DEFAULT FALSE
   `);
 
   await pool.query(`
@@ -566,6 +377,28 @@ async function initDatabase() {
   await pool.query(`
     CREATE INDEX IF NOT EXISTS password_reset_token_hash_idx
     ON password_reset_tokens(token_hash)
+  `);
+
+  // ==================================================
+  // 既存部屋のオーナーを
+  // room_members に追加
+  // ==================================================
+
+  await pool.query(`
+    INSERT INTO room_members (
+      room_id,
+      user_id
+    )
+    SELECT
+      r.id,
+      r.owner_id
+    FROM rooms r
+    WHERE r.owner_id IS NOT NULL
+    ON CONFLICT (
+      room_id,
+      user_id
+    )
+    DO NOTHING
   `);
 
   console.log(
@@ -617,6 +450,10 @@ function hashToken(token) {
     .digest("hex");
 }
 
+// ==================================================
+// User format
+// ==================================================
+
 function sanitizeUser(user) {
   if (!user) {
     return null;
@@ -629,14 +466,45 @@ function sanitizeUser(user) {
   };
 }
 
+// ==================================================
+// Room format
+// ==================================================
+
 function formatRoom(room) {
   return {
     id: room.id,
     name: room.name,
-    inviteCode:
-      room.invite_code,
-    ownerId:
-      room.owner_id
+    inviteCode: room.invite_code,
+    ownerId: room.owner_id
+  };
+}
+
+// ==================================================
+// Message format
+// ==================================================
+
+function formatMessage(row) {
+  return {
+    id: row.id,
+    room: row.room,
+    userId: row.user_id,
+    username: row.username,
+    text: row.text,
+
+    replyToId:
+      row.reply_to_id,
+
+    replyToUsername:
+      row.reply_to_username,
+
+    replyToText:
+      row.reply_to_text,
+
+    edited:
+      row.edited,
+
+    createdAt:
+      row.created_at
   };
 }
 
@@ -662,7 +530,7 @@ function requireLogin(
 }
 
 // ==================================================
-// API /me
+// /api/me
 // ==================================================
 
 app.get(
@@ -710,7 +578,6 @@ app.get(
             result.rows[0]
           )
       });
-
     } catch (error) {
       console.error(
         "/api/me error:",
@@ -728,7 +595,7 @@ app.get(
 );
 
 // ==================================================
-// 自分の部屋一覧
+// 自分の参加中の部屋一覧
 // ==================================================
 
 app.get(
@@ -750,11 +617,6 @@ app.get(
             ON rm.room_id = r.id
           WHERE rm.user_id = $1
           ORDER BY
-            CASE
-              WHEN LOWER(r.name) = '雑談'
-              THEN 0
-              ELSE 1
-            END,
             r.created_at ASC
           `,
           [
@@ -768,7 +630,6 @@ app.get(
             formatRoom
           )
       });
-
     } catch (error) {
       console.error(
         "/api/rooms error:",
@@ -826,7 +687,9 @@ app.post(
           });
       }
 
-      if (password.length < 8) {
+      if (
+        password.length < 8
+      ) {
         return res
           .status(400)
           .json({
@@ -838,21 +701,24 @@ app.post(
       const emailCountResult =
         await pool.query(
           `
-          SELECT COUNT(*)::integer AS count
+          SELECT
+            COUNT(*)::integer AS count
           FROM users
           WHERE email = $1
           `,
-          [email]
+          [
+            email
+          ]
         );
 
       const emailCount =
         Number(
-          emailCountResult
-            .rows[0]
-            .count
+          emailCountResult.rows[0].count
         );
 
-      if (emailCount >= 5) {
+      if (
+        emailCount >= 5
+      ) {
         return res
           .status(409)
           .json({
@@ -872,7 +738,9 @@ app.post(
           WHERE name = $1
           LIMIT 1
           `,
-          [name]
+          [
+            name
+          ]
         );
 
       if (
@@ -947,7 +815,6 @@ app.post(
           });
         }
       );
-
     } catch (error) {
       console.error(
         "/api/register error:",
@@ -1015,7 +882,9 @@ app.post(
           WHERE name = $1
           LIMIT 1
           `,
-          [name]
+          [
+            name
+          ]
         );
 
       if (
@@ -1099,7 +968,6 @@ app.post(
           );
         }
       );
-
     } catch (error) {
       console.error(
         "/api/login error:",
@@ -1181,7 +1049,9 @@ app.delete(
           WHERE id = $1
           RETURNING id
           `,
-          [userId]
+          [
+            userId
+          ]
         );
 
       if (
@@ -1225,7 +1095,6 @@ app.delete(
           });
         }
       );
-
     } catch (error) {
       console.error(
         "/api/account error:",
@@ -1276,7 +1145,9 @@ app.post(
           ORDER BY id DESC
           LIMIT 1
           `,
-          [email]
+          [
+            email
+          ]
         );
 
       if (
@@ -1298,7 +1169,9 @@ app.post(
         WHERE user_id = $1
           AND used = FALSE
         `,
-        [user.id]
+        [
+          user.id
+        ]
       );
 
       const token =
@@ -1409,7 +1282,6 @@ app.post(
         message:
           "パスワード再設定の案内を送信しました。"
       });
-
     } catch (error) {
       console.error(
         "/api/forgot-password error:",
@@ -1427,7 +1299,7 @@ app.post(
 );
 
 // ==================================================
-// パスワード再設定API
+// パスワード再設定
 // ==================================================
 
 app.post(
@@ -1453,7 +1325,9 @@ app.post(
           });
       }
 
-      if (password.length < 8) {
+      if (
+        password.length < 8
+      ) {
         return res
           .status(400)
           .json({
@@ -1477,7 +1351,9 @@ app.post(
             AND expires_at > NOW()
           LIMIT 1
           `,
-          [tokenHash]
+          [
+            tokenHash
+          ]
         );
 
       if (
@@ -1518,7 +1394,9 @@ app.post(
         SET used = TRUE
         WHERE id = $1
         `,
-        [resetToken.id]
+        [
+          resetToken.id
+        ]
       );
 
       return res.json({
@@ -1527,7 +1405,6 @@ app.post(
         message:
           "パスワードを変更しました。"
       });
-
     } catch (error) {
       console.error(
         "/api/reset-password error:",
@@ -1543,13 +1420,13 @@ app.post(
     }
   }
 );
-
 // ==================================================
 // Socket.IO 認証
 // ==================================================
 
 io.use(
   (socket, next) => {
+
     const currentSession =
       socket.request.session;
 
@@ -1557,11 +1434,17 @@ io.use(
       !currentSession ||
       !currentSession.userId
     ) {
+
+      console.log(
+        "Socket.IO authentication failed."
+      );
+
       return next(
         new Error(
           "UNAUTHORIZED"
         )
       );
+
     }
 
     const userId =
@@ -1573,27 +1456,36 @@ io.use(
       !Number.isInteger(userId) ||
       userId <= 0
     ) {
+
       return next(
         new Error(
           "UNAUTHORIZED"
         )
       );
+
     }
 
     socket.userId =
       userId;
 
+    console.log(
+      "Socket.IO authentication successful:",
+      userId
+    );
+
     next();
   }
 );
 
+
 // ==================================================
-// Socket.IO
+// Socket.IO 接続
 // ==================================================
 
 io.on(
   "connection",
   async (socket) => {
+
     console.log(
       "Socket connected:",
       socket.id,
@@ -1601,9 +1493,15 @@ io.on(
       socket.userId
     );
 
+
+    // ==================================================
+    // ユーザー取得
+    // ==================================================
+
     let userResult;
 
     try {
+
       userResult =
         await pool.query(
           `
@@ -1613,10 +1511,15 @@ io.on(
             name
           FROM users
           WHERE id = $1
+          LIMIT 1
           `,
-          [socket.userId]
+          [
+            socket.userId
+          ]
         );
+
     } catch (error) {
+
       console.error(
         "Socket user query error:",
         error
@@ -1627,53 +1530,932 @@ io.on(
       return;
     }
 
+
     if (
       userResult.rows.length === 0
     ) {
+
+      console.error(
+        "Socket user not found:",
+        socket.userId
+      );
+
       socket.disconnect();
 
       return;
     }
 
+
     const user =
       userResult.rows[0];
 
+
     console.log(
-      'Socket user authenticated:',
-      `"${user.name}"`,
+      "Socket user authenticated:",
+      JSON.stringify(user.name),
+      user.email
+    );
+
+
+    // ==================================================
+    // 接続直後
+    // ==================================================
+
+    /*
+     * 接続したら最初は「雑談」へ。
+     */
+
+    await joinCasual(
+      socket
+    );
+
+
+    /*
+     * 接続時に参加中の部屋一覧も送る。
+     */
+
+    await sendMyRooms(
+      socket,
       user.id
     );
 
-    // ==================================================
-    // 接続直後は雑談
-    // ==================================================
-
-    await joinCasual(socket);
 
     // ==================================================
-    // 雑談
+    // 雑談へ移動
     // ==================================================
 
     socket.on(
       "join casual",
       async () => {
-        await joinCasual(socket);
+
+        try {
+
+          await joinCasual(
+            socket
+          );
+
+        } catch (error) {
+
+          console.error(
+            "join casual error:",
+            error
+          );
+
+        }
+
       }
     );
 
+
     // ==================================================
-    // 自分の部屋一覧
+    // 参加中の部屋一覧
     // ==================================================
 
     socket.on(
       "get my rooms",
       async () => {
+
         await sendMyRooms(
           socket,
           user.id
         );
+
       }
     );
+
+
+    // ==================================================
+    // 部屋作成
+    // ==================================================
+
+    socket.on(
+      "create room",
+      async (data) => {
+
+        const client =
+          await pool.connect();
+
+        try {
+
+          // --------------------------------------------------
+          // 部屋名
+          // --------------------------------------------------
+
+          const name =
+            String(
+              data?.name || ""
+            ).trim();
+
+
+          if (!name) {
+
+            socket.emit(
+              "create room error",
+              {
+                message:
+                  "部屋の名前を入力してください。"
+              }
+            );
+
+            return;
+          }
+
+
+          if (
+            name.length > 100
+          ) {
+
+            socket.emit(
+              "create room error",
+              {
+                message:
+                  "部屋の名前は100文字以内にしてください。"
+              }
+            );
+
+            return;
+          }
+
+
+          // --------------------------------------------------
+          // 部屋ID
+          // --------------------------------------------------
+
+          const roomId =
+            generateRoomId();
+
+
+          // --------------------------------------------------
+          // 招待コード
+          // --------------------------------------------------
+
+          let inviteCode =
+            generateInviteCode();
+
+
+          for (;;) {
+
+            const exists =
+              await pool.query(
+                `
+                SELECT id
+                FROM rooms
+                WHERE invite_code = $1
+                LIMIT 1
+                `,
+                [
+                  inviteCode
+                ]
+              );
+
+
+            if (
+              exists.rows.length === 0
+            ) {
+
+              break;
+            }
+
+
+            inviteCode =
+              generateInviteCode();
+          }
+
+
+          // --------------------------------------------------
+          // トランザクション
+          // --------------------------------------------------
+
+          await client.query(
+            "BEGIN"
+          );
+
+
+          /*
+           * 重要
+           *
+           * owner_id に必ず user.id を入れる。
+           *
+           * これによって
+           * 「自分が作った部屋」
+           * を判定できる。
+           */
+
+          const roomResult =
+            await client.query(
+              `
+              INSERT INTO rooms (
+                id,
+                name,
+                invite_code,
+                owner_id
+              )
+              VALUES (
+                $1,
+                $2,
+                $3,
+                $4
+              )
+              RETURNING
+                id,
+                name,
+                invite_code,
+                owner_id,
+                created_at
+              `,
+              [
+                roomId,
+                name,
+                inviteCode,
+                user.id
+              ]
+            );
+
+
+          const room =
+            roomResult.rows[0];
+
+
+          // --------------------------------------------------
+          // 作成者を自動的に参加させる
+          // --------------------------------------------------
+
+          await client.query(
+            `
+            INSERT INTO room_members (
+              room_id,
+              user_id
+            )
+            VALUES (
+              $1,
+              $2
+            )
+            ON CONFLICT (
+              room_id,
+              user_id
+            )
+            DO NOTHING
+            `,
+            [
+              room.id,
+              user.id
+            ]
+          );
+
+
+          await client.query(
+            "COMMIT"
+          );
+
+
+          // --------------------------------------------------
+          // 現在の部屋から退出
+          // --------------------------------------------------
+
+          leaveCurrentRooms(
+            socket
+          );
+
+
+          // --------------------------------------------------
+          // 新しい部屋へ移動
+          // --------------------------------------------------
+
+          await socket.join(
+            room.id
+          );
+
+
+          // --------------------------------------------------
+          // 部屋作成成功
+          // --------------------------------------------------
+
+          socket.emit(
+            "room created",
+            formatRoom(
+              room
+            )
+          );
+
+
+          // --------------------------------------------------
+          // 過去メッセージ
+          // --------------------------------------------------
+
+          await sendPreviousMessages(
+            socket,
+            room.id
+          );
+
+
+          // --------------------------------------------------
+          // 参加中の部屋を更新
+          // --------------------------------------------------
+
+          await sendMyRooms(
+            socket,
+            user.id
+          );
+
+
+          console.log(
+            "Room created:",
+            room.id,
+            room.name,
+            "owner:",
+            user.id
+          );
+
+        } catch (error) {
+
+          try {
+
+            await client.query(
+              "ROLLBACK"
+            );
+
+          } catch (rollbackError) {
+
+            console.error(
+              "Room rollback error:",
+              rollbackError
+            );
+
+          }
+
+
+          console.error(
+            "create room error:",
+            error
+          );
+
+
+          socket.emit(
+            "create room error",
+            {
+              message:
+                "部屋を作成できませんでした。もう一度お試しください。"
+            }
+          );
+
+        } finally {
+
+          client.release();
+
+        }
+
+      }
+    );
+
+
+    // ==================================================
+    // 部屋参加
+    // ==================================================
+
+    socket.on(
+      "join room",
+      async (data) => {
+
+        try {
+
+          const code =
+            String(
+              data?.code || ""
+            )
+              .trim()
+              .toUpperCase();
+
+
+          if (!code) {
+
+            socket.emit(
+              "join room error",
+              {
+                message:
+                  "招待コードを入力してください。"
+              }
+            );
+
+            return;
+          }
+
+
+          // --------------------------------------------------
+          // 招待コードから部屋を探す
+          // --------------------------------------------------
+
+          const result =
+            await pool.query(
+              `
+              SELECT
+                id,
+                name,
+                invite_code,
+                owner_id,
+                created_at
+              FROM rooms
+              WHERE invite_code = $1
+              LIMIT 1
+              `,
+              [
+                code
+              ]
+            );
+
+
+          if (
+            result.rows.length === 0
+          ) {
+
+            socket.emit(
+              "join room error",
+              {
+                message:
+                  "部屋が見つかりません。招待コードを確認してください。"
+              }
+            );
+
+            return;
+          }
+
+
+          const room =
+            result.rows[0];
+
+
+          // --------------------------------------------------
+          // 参加
+          // --------------------------------------------------
+
+          await pool.query(
+            `
+            INSERT INTO room_members (
+              room_id,
+              user_id
+            )
+            VALUES (
+              $1,
+              $2
+            )
+            ON CONFLICT (
+              room_id,
+              user_id
+            )
+            DO NOTHING
+            `,
+            [
+              room.id,
+              user.id
+            ]
+          );
+
+
+          // --------------------------------------------------
+          // 現在の部屋から退出
+          // --------------------------------------------------
+
+          leaveCurrentRooms(
+            socket
+          );
+
+
+          // --------------------------------------------------
+          // 部屋へ移動
+          // --------------------------------------------------
+
+          await socket.join(
+            room.id
+          );
+
+
+          // --------------------------------------------------
+          // 成功
+          // --------------------------------------------------
+
+          socket.emit(
+            "room joined",
+            formatRoom(
+              room
+            )
+          );
+
+
+          await sendPreviousMessages(
+            socket,
+            room.id
+          );
+
+
+          // --------------------------------------------------
+          // 参加中の部屋一覧更新
+          // --------------------------------------------------
+
+          await sendMyRooms(
+            socket,
+            user.id
+          );
+
+
+          console.log(
+            "Room joined:",
+            room.id,
+            "user:",
+            user.id
+          );
+
+        } catch (error) {
+
+          console.error(
+            "join room error:",
+            error
+          );
+
+
+          socket.emit(
+            "join room error",
+            {
+              message:
+                "部屋に参加できませんでした。"
+            }
+          );
+
+        }
+
+      }
+    );
+
+
+    // ==================================================
+    // 参加中の部屋を開く
+    // ==================================================
+
+    socket.on(
+      "open my room",
+      async (data) => {
+
+        try {
+
+          const roomId =
+            String(
+              data?.roomId || ""
+            ).trim();
+
+
+          if (!roomId) {
+
+            return;
+          }
+
+
+          // --------------------------------------------------
+          // 本当に参加しているか確認
+          // --------------------------------------------------
+
+          const result =
+            await pool.query(
+              `
+              SELECT
+                r.id,
+                r.name,
+                r.invite_code,
+                r.owner_id,
+                r.created_at
+              FROM rooms r
+              INNER JOIN room_members rm
+                ON rm.room_id = r.id
+              WHERE r.id = $1
+                AND rm.user_id = $2
+              LIMIT 1
+              `,
+              [
+                roomId,
+                user.id
+              ]
+            );
+
+
+          if (
+            result.rows.length === 0
+          ) {
+
+            socket.emit(
+              "room open error",
+              {
+                message:
+                  "この部屋には参加していません。"
+              }
+            );
+
+
+            await sendMyRooms(
+              socket,
+              user.id
+            );
+
+
+            return;
+          }
+
+
+          const room =
+            result.rows[0];
+
+
+          // --------------------------------------------------
+          // 部屋移動
+          // --------------------------------------------------
+
+          leaveCurrentRooms(
+            socket
+          );
+
+
+          await socket.join(
+            room.id
+          );
+
+
+          socket.emit(
+            "room opened",
+            formatRoom(
+              room
+            )
+          );
+
+
+          await sendPreviousMessages(
+            socket,
+            room.id
+          );
+
+
+          console.log(
+            "Room opened:",
+            room.id,
+            "user:",
+            user.id
+          );
+
+        } catch (error) {
+
+          console.error(
+            "open my room error:",
+            error
+          );
+
+
+          socket.emit(
+            "room open error",
+            {
+              message:
+                "部屋を開けませんでした。"
+            }
+          );
+
+        }
+
+      }
+    );
+
+
+    // ==================================================
+    // 部屋削除
+    // ==================================================
+
+    socket.on(
+      "delete room",
+      async (data) => {
+
+        try {
+
+          const roomId =
+            String(
+              data?.roomId || ""
+            ).trim();
+
+
+          if (!roomId) {
+
+            socket.emit(
+              "delete room error",
+              {
+                message:
+                  "削除する部屋が指定されていません。"
+              }
+            );
+
+            return;
+          }
+
+
+          // --------------------------------------------------
+          // オーナー確認
+          // --------------------------------------------------
+
+          const roomResult =
+            await pool.query(
+              `
+              SELECT
+                id,
+                name,
+                owner_id
+              FROM rooms
+              WHERE id = $1
+              LIMIT 1
+              `,
+              [
+                roomId
+              ]
+            );
+
+
+          if (
+            roomResult.rows.length === 0
+          ) {
+
+            socket.emit(
+              "delete room error",
+              {
+                message:
+                  "部屋が見つかりません。"
+              }
+            );
+
+            return;
+          }
+
+
+          const room =
+            roomResult.rows[0];
+
+
+          /*
+           * ここが重要。
+           *
+           * 作成者本人でなければ
+           * サーバー側で削除を拒否する。
+           */
+
+          if (
+            Number(room.owner_id) !==
+            Number(user.id)
+          ) {
+
+            socket.emit(
+              "delete room error",
+              {
+                message:
+                  "この部屋を削除できるのは作成者だけです。"
+              }
+            );
+
+            return;
+          }
+
+
+          // --------------------------------------------------
+          // 削除
+          // --------------------------------------------------
+
+          await pool.query(
+            `
+            DELETE FROM rooms
+            WHERE id = $1
+              AND owner_id = $2
+            `,
+            [
+              roomId,
+              user.id
+            ]
+          );
+
+
+          /*
+           * rooms が削除されると
+           * room_members も ON DELETE CASCADE で削除される。
+           *
+           * messages は rooms とは直接FKで
+           * 結びついていないため、
+           * 部屋削除時に手動で消す。
+           */
+
+          await pool.query(
+            `
+            DELETE FROM messages
+            WHERE room = $1
+            `,
+            [
+              roomId
+            ]
+          );
+
+
+          // --------------------------------------------------
+          // その部屋にいたSocketを退出させる
+          // --------------------------------------------------
+
+          const targetRoom =
+            io.sockets.adapter.rooms.get(
+              roomId
+            );
+
+
+          if (targetRoom) {
+
+            for (
+              const socketId of targetRoom
+            ) {
+
+              const targetSocket =
+                io.sockets.sockets.get(
+                  socketId
+                );
+
+
+              if (
+                targetSocket
+              ) {
+
+                targetSocket.leave(
+                  roomId
+                );
+
+
+                /*
+                 * 削除された部屋を
+                 * 開いていたユーザーには
+                 * 雑談へ戻ってもらう。
+                 */
+
+                if (
+                  targetSocket.id ===
+                  socket.id
+                ) {
+
+                  await joinCasual(
+                    targetSocket
+                  );
+
+                }
+
+              }
+
+            }
+
+          }
+
+
+          // --------------------------------------------------
+          // 削除成功
+          // --------------------------------------------------
+
+          socket.emit(
+            "room deleted",
+            {
+              roomId:
+                roomId
+            }
+          );
+
+
+          // --------------------------------------------------
+          // 自分の部屋一覧を更新
+          // --------------------------------------------------
+
+          await sendMyRooms(
+            socket,
+            user.id
+          );
+
+
+          console.log(
+            "Room deleted:",
+            roomId,
+            "by owner:",
+            user.id
+          );
+
+        } catch (error) {
+
+          console.error(
+            "delete room error:",
+            error
+          );
+
+
+          socket.emit(
+            "delete room error",
+            {
+              message:
+                "部屋を削除できませんでした。"
+            }
+          );
+
+        }
+
+      }
+    );
+
 
     // ==================================================
     // メッセージ送信
@@ -1682,22 +2464,34 @@ io.on(
     socket.on(
       "chat message",
       async (data) => {
+
         try {
+
           const room =
             String(
               data?.room || ""
             ).trim();
+
 
           const text =
             String(
               data?.text || ""
             ).trim();
 
-          if (!room || !text) {
+
+          if (
+            !room ||
+            !text
+          ) {
+
             return;
           }
 
-          if (text.length > 5000) {
+
+          if (
+            text.length > 5000
+          ) {
+
             socket.emit(
               "message send error",
               {
@@ -1709,16 +2503,23 @@ io.on(
             return;
           }
 
+
+          // --------------------------------------------------
+          // Socketがその部屋にいるか
+          // --------------------------------------------------
+
           const socketRooms =
             Array.from(
               socket.rooms
             );
+
 
           if (
             !socketRooms.includes(
               room
             )
           ) {
+
             socket.emit(
               "message send error",
               {
@@ -1730,9 +2531,15 @@ io.on(
             return;
           }
 
+
+          // --------------------------------------------------
+          // 雑談以外はDB上の参加確認
+          // --------------------------------------------------
+
           if (
             room !== "casual"
           ) {
+
             const membership =
               await pool.query(
                 `
@@ -1748,9 +2555,11 @@ io.on(
                 ]
               );
 
+
             if (
               membership.rows.length === 0
             ) {
+
               socket.emit(
                 "message send error",
                 {
@@ -1761,15 +2570,28 @@ io.on(
 
               return;
             }
+
           }
 
-          let replyToId = null;
-          let replyToUsername = null;
-          let replyToText = null;
+
+          // --------------------------------------------------
+          // 返信情報
+          // --------------------------------------------------
+
+          let replyToId =
+            null;
+
+          let replyToUsername =
+            null;
+
+          let replyToText =
+            null;
+
 
           if (
             data?.replyToId
           ) {
+
             const replyResult =
               await pool.query(
                 `
@@ -1779,18 +2601,23 @@ io.on(
                   text
                 FROM messages
                 WHERE id = $1
+                  AND room = $2
                 LIMIT 1
                 `,
                 [
-                  data.replyToId
+                  data.replyToId,
+                  room
                 ]
               );
+
 
             if (
               replyResult.rows.length > 0
             ) {
+
               const reply =
                 replyResult.rows[0];
+
 
               replyToId =
                 reply.id;
@@ -1800,8 +2627,15 @@ io.on(
 
               replyToText =
                 reply.text;
+
             }
+
           }
+
+
+          // --------------------------------------------------
+          // 保存
+          // --------------------------------------------------
 
           const result =
             await pool.query(
@@ -1847,10 +2681,16 @@ io.on(
               ]
             );
 
+
           const message =
             formatMessage(
               result.rows[0]
             );
+
+
+          // --------------------------------------------------
+          // 送信
+          // --------------------------------------------------
 
           io
             .to(room)
@@ -1860,10 +2700,12 @@ io.on(
             );
 
         } catch (error) {
+
           console.error(
             "chat message error:",
             error
           );
+
 
           socket.emit(
             "message send error",
@@ -1872,664 +2714,49 @@ io.on(
                 "メッセージを送信できませんでした。"
             }
           );
+
         }
+
       }
     );
 
-    // ==================================================
-    // 部屋作成
-    // ==================================================
-
-    socket.on(
-      "create room",
-      async (data) => {
-        try {
-          const name =
-            String(
-              data?.name || ""
-            ).trim();
-
-          if (!name) {
-            socket.emit(
-              "create room error",
-              {
-                message:
-                  "部屋の名前を入力してください。"
-              }
-            );
-
-            return;
-          }
-
-          if (name.length > 100) {
-            socket.emit(
-              "create room error",
-              {
-                message:
-                  "部屋の名前は100文字以内にしてください。"
-              }
-            );
-
-            return;
-          }
-
-          const id =
-            generateRoomId();
-
-          let inviteCode =
-            generateInviteCode();
-
-          for (;;) {
-            const exists =
-              await pool.query(
-                `
-                SELECT id
-                FROM rooms
-                WHERE invite_code = $1
-                LIMIT 1
-                `,
-                [
-                  inviteCode
-                ]
-              );
-
-            if (
-              exists.rows.length === 0
-            ) {
-              break;
-            }
-
-            inviteCode =
-              generateInviteCode();
-          }
-
-          const client =
-            await pool.connect();
-
-          try {
-            await client.query(
-              "BEGIN"
-            );
-
-            /*
-             * ここが重要。
-             *
-             * 古いDBでは rooms.owner が
-             * NOT NULL なので、
-             * owner_id だけINSERTすると
-             *
-             * null value in column "owner"
-             *
-             * になる。
-             *
-             * そのため owner と owner_id の
-             * 両方をセットする。
-             */
-
-            const roomColumnsResult =
-              await client.query(
-                `
-                SELECT
-                  column_name,
-                  data_type,
-                  is_nullable
-                FROM information_schema.columns
-                WHERE table_schema = 'public'
-                  AND table_name = 'rooms'
-                `
-              );
-
-            const roomColumns =
-              roomColumnsResult.rows;
-
-            const hasOwnerColumn =
-              roomColumns.some(
-                (c) =>
-                  c.column_name ===
-                  "owner"
-              );
-
-            const hasOwnerIdColumn =
-              roomColumns.some(
-                (c) =>
-                  c.column_name ===
-                  "owner_id"
-              );
-
-            let roomResult;
-
-            /*
-             * owner + owner_id
-             */
-
-            if (
-              hasOwnerColumn &&
-              hasOwnerIdColumn
-            ) {
-              const ownerColumn =
-                roomColumns.find(
-                  (c) =>
-                    c.column_name ===
-                    "owner"
-                );
-
-              let ownerValue =
-                user.id;
-
-              if (
-                ownerColumn &&
-                ownerColumn.data_type !==
-                  "integer"
-              ) {
-                ownerValue =
-                  String(user.id);
-              }
-
-              roomResult =
-                await client.query(
-                  `
-                  INSERT INTO rooms (
-                    id,
-                    name,
-                    invite_code,
-                    owner,
-                    owner_id
-                  )
-                  VALUES (
-                    $1,
-                    $2,
-                    $3,
-                    $4,
-                    $5
-                  )
-                  RETURNING
-                    id,
-                    name,
-                    invite_code,
-                    owner_id
-                  `,
-                  [
-                    id,
-                    name,
-                    inviteCode,
-                    ownerValue,
-                    user.id
-                  ]
-                );
-
-            /*
-             * owner_id only
-             */
-
-            } else if (
-              hasOwnerIdColumn
-            ) {
-              roomResult =
-                await client.query(
-                  `
-                  INSERT INTO rooms (
-                    id,
-                    name,
-                    invite_code,
-                    owner_id
-                  )
-                  VALUES (
-                    $1,
-                    $2,
-                    $3,
-                    $4
-                  )
-                  RETURNING
-                    id,
-                    name,
-                    invite_code,
-                    owner_id
-                  `,
-                  [
-                    id,
-                    name,
-                    inviteCode,
-                    user.id
-                  ]
-                );
-
-            /*
-             * owner only
-             */
-
-            } else if (
-              hasOwnerColumn
-            ) {
-              const ownerColumn =
-                roomColumns.find(
-                  (c) =>
-                    c.column_name ===
-                    "owner"
-                );
-
-              let ownerValue =
-                user.id;
-
-              if (
-                ownerColumn &&
-                ownerColumn.data_type !==
-                  "integer"
-              ) {
-                ownerValue =
-                  String(user.id);
-              }
-
-              roomResult =
-                await client.query(
-                  `
-                  INSERT INTO rooms (
-                    id,
-                    name,
-                    invite_code,
-                    owner
-                  )
-                  VALUES (
-                    $1,
-                    $2,
-                    $3,
-                    $4
-                  )
-                  RETURNING
-                    id,
-                    name,
-                    invite_code,
-                    owner
-                  `,
-                  [
-                    id,
-                    name,
-                    inviteCode,
-                    ownerValue
-                  ]
-                );
-
-              /*
-               * ownerしかない場合でも
-               * formatRoom用にowner_idを
-               * JS側で補完。
-               */
-              roomResult.rows[0].owner_id =
-                user.id;
-
-            } else {
-              throw new Error(
-                "roomsテーブルにowner/owner_idが存在しません。"
-              );
-            }
-
-            const room =
-              roomResult.rows[0];
-
-            /*
-             * room_membersにも登録
-             */
-
-            await client.query(
-              `
-              INSERT INTO room_members (
-                room_id,
-                user_id
-              )
-              VALUES (
-                $1,
-                $2
-              )
-              ON CONFLICT (
-                room_id,
-                user_id
-              )
-              DO NOTHING
-              `,
-              [
-                room.id,
-                user.id
-              ]
-            );
-
-            await client.query(
-              "COMMIT"
-            );
-
-            /*
-             * 現在の部屋から移動
-             */
-
-            leaveCurrentRooms(
-              socket
-            );
-
-            await socket.join(
-              room.id
-            );
-
-            socket.emit(
-              "room created",
-              formatRoom(room)
-            );
-
-            await sendPreviousMessages(
-              socket,
-              room.id
-            );
-
-            await sendMyRooms(
-              socket,
-              user.id
-            );
-
-            console.log(
-              "Room created successfully:",
-              room.id,
-              room.name,
-              "owner:",
-              user.id
-            );
-
-          } catch (transactionError) {
-            await client.query(
-              "ROLLBACK"
-            );
-
-            throw transactionError;
-
-          } finally {
-            client.release();
-          }
-
-        } catch (error) {
-          console.error(
-            "create room error:",
-            error
-          );
-
-          socket.emit(
-            "create room error",
-            {
-              message:
-                "部屋を作成できませんでした。もう一度お試しください。"
-            }
-          );
-        }
-      }
-    );
 
     // ==================================================
-    // 部屋参加
-    // ==================================================
-
-    socket.on(
-      "join room",
-      async (data) => {
-        try {
-          const code =
-            String(
-              data?.code || ""
-            )
-              .trim()
-              .toUpperCase();
-
-          if (!code) {
-            socket.emit(
-              "join room error",
-              {
-                message:
-                  "招待コードを入力してください。"
-              }
-            );
-
-            return;
-          }
-
-          const result =
-            await pool.query(
-              `
-              SELECT
-                r.id,
-                r.name,
-                r.invite_code,
-                r.owner_id
-              FROM rooms r
-              WHERE r.invite_code = $1
-              LIMIT 1
-              `,
-              [code]
-            );
-
-          if (
-            result.rows.length === 0
-          ) {
-            socket.emit(
-              "join room error",
-              {
-                message:
-                  "部屋が見つかりません。"
-              }
-            );
-
-            return;
-          }
-
-          const room =
-            result.rows[0];
-
-          await pool.query(
-            `
-            INSERT INTO room_members (
-              room_id,
-              user_id
-            )
-            VALUES (
-              $1,
-              $2
-            )
-            ON CONFLICT (
-              room_id,
-              user_id
-            )
-            DO NOTHING
-            `,
-            [
-              room.id,
-              user.id
-            ]
-          );
-
-          /*
-           * owner_idがNULLだった場合、
-           * 最初に参加したユーザーを所有者にする。
-           */
-
-          if (!room.owner_id) {
-            await pool.query(
-              `
-              UPDATE rooms
-              SET owner_id = $1
-              WHERE id = $2
-                AND owner_id IS NULL
-              `,
-              [
-                user.id,
-                room.id
-              ]
-            );
-
-            room.owner_id =
-              user.id;
-          }
-
-          leaveCurrentRooms(
-            socket
-          );
-
-          await socket.join(
-            room.id
-          );
-
-          socket.emit(
-            "room joined",
-            formatRoom(room)
-          );
-
-          await sendPreviousMessages(
-            socket,
-            room.id
-          );
-
-          await sendMyRooms(
-            socket,
-            user.id
-          );
-
-          console.log(
-            "Room joined:",
-            room.id,
-            "user:",
-            user.id
-          );
-
-        } catch (error) {
-          console.error(
-            "join room error:",
-            error
-          );
-
-          socket.emit(
-            "join room error",
-            {
-              message:
-                "部屋に参加できませんでした。"
-            }
-          );
-        }
-      }
-    );
-
-    // ==================================================
-    // 既存部屋へ移動
-    // ==================================================
-
-    socket.on(
-      "open my room",
-      async (data) => {
-        try {
-          const roomId =
-            String(
-              data?.roomId || ""
-            ).trim();
-
-          if (!roomId) {
-            return;
-          }
-
-          const result =
-            await pool.query(
-              `
-              SELECT
-                r.id,
-                r.name,
-                r.invite_code,
-                r.owner_id
-              FROM rooms r
-              INNER JOIN room_members rm
-                ON rm.room_id = r.id
-              WHERE r.id = $1
-                AND rm.user_id = $2
-              LIMIT 1
-              `,
-              [
-                roomId,
-                user.id
-              ]
-            );
-
-          if (
-            result.rows.length === 0
-          ) {
-            socket.emit(
-              "room open error",
-              {
-                message:
-                  "この部屋には参加していません。"
-              }
-            );
-
-            await sendMyRooms(
-              socket,
-              user.id
-            );
-
-            return;
-          }
-
-          const room =
-            result.rows[0];
-
-          leaveCurrentRooms(
-            socket
-          );
-
-          await socket.join(
-            room.id
-          );
-
-          socket.emit(
-            "room opened",
-            formatRoom(room)
-          );
-
-          await sendPreviousMessages(
-            socket,
-            room.id
-          );
-
-        } catch (error) {
-          console.error(
-            "open my room error:",
-            error
-          );
-
-          socket.emit(
-            "room open error",
-            {
-              message:
-                "部屋を開けませんでした。"
-            }
-          );
-        }
-      }
-    );
-
-    // ==================================================
-    // 編集
+    // メッセージ編集
     // ==================================================
 
     socket.on(
       "edit message",
       async (data) => {
+
         try {
+
           const id =
             Number(
               data?.id
             );
+
 
           const text =
             String(
               data?.text || ""
             ).trim();
 
+
           if (
             !Number.isInteger(id) ||
+            id <= 0 ||
             !text
           ) {
+
             return;
           }
 
-          if (text.length > 5000) {
+
+          if (
+            text.length > 5000
+          ) {
+
             socket.emit(
               "message edit error",
               {
@@ -2540,6 +2767,11 @@ io.on(
 
             return;
           }
+
+
+          // --------------------------------------------------
+          // 編集
+          // --------------------------------------------------
 
           const result =
             await pool.query(
@@ -2569,9 +2801,11 @@ io.on(
               ]
             );
 
+
           if (
             result.rows.length === 0
           ) {
+
             socket.emit(
               "message edit error",
               {
@@ -2583,10 +2817,12 @@ io.on(
             return;
           }
 
+
           const message =
             formatMessage(
               result.rows[0]
             );
+
 
           io
             .to(message.room)
@@ -2596,10 +2832,12 @@ io.on(
             );
 
         } catch (error) {
+
           console.error(
             "edit message error:",
             error
           );
+
 
           socket.emit(
             "message edit error",
@@ -2608,28 +2846,37 @@ io.on(
                 "コメントを編集できませんでした。"
             }
           );
+
         }
+
       }
     );
 
+
     // ==================================================
-    // 削除
+    // メッセージ削除
     // ==================================================
 
     socket.on(
       "delete message",
       async (data) => {
+
         try {
+
           const id =
             Number(
               data?.id
             );
 
+
           if (
-            !Number.isInteger(id)
+            !Number.isInteger(id) ||
+            id <= 0
           ) {
+
             return;
           }
+
 
           const result =
             await pool.query(
@@ -2647,9 +2894,11 @@ io.on(
               ]
             );
 
+
           if (
             result.rows.length === 0
           ) {
+
             socket.emit(
               "message delete error",
               {
@@ -2661,8 +2910,10 @@ io.on(
             return;
           }
 
+
           const message =
             result.rows[0];
+
 
           io
             .to(message.room)
@@ -2678,10 +2929,12 @@ io.on(
             );
 
         } catch (error) {
+
           console.error(
             "delete message error:",
             error
           );
+
 
           socket.emit(
             "message delete error",
@@ -2690,9 +2943,12 @@ io.on(
                 "コメントを削除できませんでした。"
             }
           );
+
         }
+
       }
     );
+
 
     // ==================================================
     // 切断
@@ -2701,35 +2957,60 @@ io.on(
     socket.on(
       "disconnect",
       (reason) => {
+
         console.log(
           "Socket disconnected:",
           socket.id,
           reason
         );
+
       }
     );
+
   }
 );
 
+
 // ==================================================
-// 雑談
+// 雑談へ移動
 // ==================================================
 
 async function joinCasual(
   socket
 ) {
+
   try {
+
+    /*
+     * 現在の部屋から全部退出。
+     */
+
     leaveCurrentRooms(
       socket
     );
+
+
+    /*
+     * 雑談へ参加。
+     */
 
     await socket.join(
       "casual"
     );
 
+
+    /*
+     * フロントへ通知。
+     */
+
     socket.emit(
       "casual joined"
     );
+
+
+    /*
+     * 雑談の過去メッセージ。
+     */
 
     await sendPreviousMessages(
       socket,
@@ -2737,22 +3018,28 @@ async function joinCasual(
     );
 
   } catch (error) {
+
     console.error(
       "joinCasual error:",
       error
     );
+
   }
+
 }
 
+
 // ==================================================
-// 自分の部屋一覧送信
+// 参加中の部屋一覧
 // ==================================================
 
 async function sendMyRooms(
   socket,
   userId
 ) {
+
   try {
+
     const result =
       await pool.query(
         `
@@ -2767,35 +3054,50 @@ async function sendMyRooms(
           ON rm.room_id = r.id
         WHERE rm.user_id = $1
         ORDER BY
-          CASE
-            WHEN LOWER(r.name) = '雑談'
-            THEN 0
-            ELSE 1
-          END,
           r.created_at ASC
         `,
-        [userId]
+        [
+          userId
+        ]
       );
+
+
+    /*
+     * 雑談はDBの部屋ではないので、
+     * フロント側で一番上に固定する。
+     *
+     * ここでは作成した部屋・参加した部屋を
+     * すべて返す。
+     */
+
+    const rooms =
+      result.rows.map(
+        formatRoom
+      );
+
 
     socket.emit(
       "my rooms",
-      result.rows.map(
-        formatRoom
-      )
+      rooms
     );
 
   } catch (error) {
+
     console.error(
       "sendMyRooms error:",
       error
     );
 
+
     socket.emit(
       "my rooms",
       []
     );
+
   }
+
 }
+
 
 // ==================================================
 // 現在の部屋から退出
@@ -2804,18 +3106,30 @@ async function sendMyRooms(
 function leaveCurrentRooms(
   socket
 ) {
+
   for (
     const room of socket.rooms
   ) {
+
+    /*
+     * socket.id はSocket.IOが
+     * 自動的に参加させる部屋なので除外。
+     */
+
     if (
       room !== socket.id
     ) {
+
       socket.leave(
         room
       );
+
     }
+
   }
+
 }
+
 
 // ==================================================
 // 過去メッセージ
@@ -2825,7 +3139,9 @@ async function sendPreviousMessages(
   socket,
   room
 ) {
+
   try {
+
     const result =
       await pool.query(
         `
@@ -2848,8 +3164,11 @@ async function sendPreviousMessages(
           created_at ASC
         LIMIT 1000
         `,
-        [room]
+        [
+          room
+        ]
       );
+
 
     socket.emit(
       "previous messages",
@@ -2859,62 +3178,31 @@ async function sendPreviousMessages(
     );
 
   } catch (error) {
+
     console.error(
       "previous messages error:",
       error
     );
 
+
     socket.emit(
       "previous messages",
       []
     );
+
   }
+
 }
 
-// ==================================================
-// Message format
-// ==================================================
-
-function formatMessage(row) {
-  return {
-    id:
-      row.id,
-
-    room:
-      row.room,
-
-    userId:
-      row.user_id,
-
-    username:
-      row.username,
-
-    text:
-      row.text,
-
-    replyToId:
-      row.reply_to_id,
-
-    replyToUsername:
-      row.reply_to_username,
-
-    replyToText:
-      row.reply_to_text,
-
-    edited:
-      row.edited,
-
-    createdAt:
-      row.created_at
-  };
-}
 
 // ==================================================
-// 24時間以上経過したメッセージ削除
+// 24時間以上前のメッセージを削除
 // ==================================================
 
 async function cleanupOldMessages() {
+
   try {
+
     const result =
       await pool.query(
         `
@@ -2924,21 +3212,32 @@ async function cleanupOldMessages() {
         `
       );
 
+
     if (
       result.rowCount > 0
     ) {
+
       console.log(
         `古いメッセージを ${result.rowCount} 件削除しました。`
       );
+
     }
 
   } catch (error) {
+
     console.error(
       "cleanupOldMessages error:",
       error
     );
+
   }
+
 }
+
+
+// ==================================================
+// 定期クリーンアップ
+// ==================================================
 
 setInterval(
   cleanupOldMessages,
@@ -2947,6 +3246,7 @@ setInterval(
   1000
 );
 
+
 // ==================================================
 // Health Check
 // ==================================================
@@ -2954,26 +3254,45 @@ setInterval(
 app.get(
   "/health",
   async (req, res) => {
+
     try {
+
       await pool.query(
         "SELECT 1"
       );
 
+
       res.json({
-        status: "ok",
-        database: "connected"
+        status:
+          "ok",
+
+        database:
+          "connected"
       });
 
     } catch (error) {
+
+      console.error(
+        "Health check error:",
+        error
+      );
+
+
       res
         .status(500)
         .json({
-          status: "error",
-          database: "disconnected"
+          status:
+            "error",
+
+          database:
+            "disconnected"
         });
+
     }
+
   }
 );
+
 
 // ==================================================
 // SPA fallback
@@ -2982,6 +3301,7 @@ app.get(
 app.get(
   "*",
   (req, res) => {
+
     res.sendFile(
       path.join(
         __dirname,
@@ -2989,23 +3309,47 @@ app.get(
         "index.html"
       )
     );
+
   }
 );
 
+
 // ==================================================
-// 起動
+// サーバー起動
 // ==================================================
 
 async function start() {
+
   try {
+
+    console.log(
+      "Veylo server starting..."
+    );
+
+
+    // --------------------------------------------------
+    // DB初期化
+    // --------------------------------------------------
+
     await initDatabase();
 
+
+    // --------------------------------------------------
+    // 古いメッセージ削除
+    // --------------------------------------------------
+
     await cleanupOldMessages();
+
+
+    // --------------------------------------------------
+    // HTTP Server
+    // --------------------------------------------------
 
     server.listen(
       PORT,
       "0.0.0.0",
       () => {
+
         console.log(
           "=========================================="
         );
@@ -3021,17 +3365,27 @@ async function start() {
         console.log(
           "=========================================="
         );
+
       }
     );
 
   } catch (error) {
+
     console.error(
       "Server startup failed:",
       error
     );
 
+
     process.exit(1);
+
   }
+
 }
+
+
+// ==================================================
+// START
+// ==================================================
 
 start();
