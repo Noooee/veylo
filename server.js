@@ -61,10 +61,6 @@ const app =
   express();
 
 
-// ==================================================
-// Render / Reverse Proxy
-// ==================================================
-
 if (
   process.env.NODE_ENV === "production"
 ) {
@@ -215,10 +211,6 @@ const io =
   );
 
 
-// ==================================================
-// Socket.IO と Express Session を共有
-// ==================================================
-
 io.engine.use(
   sessionMiddleware
 );
@@ -250,15 +242,8 @@ async function initDatabase() {
 
 
   // ==================================================
-  // users
+  // Users
   // ==================================================
-  //
-  // 重要:
-  // email に UNIQUE を付けません。
-  //
-  // 同じメールアドレスで最大5アカウント
-  // 作れるようにするためです。
-  //
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -271,75 +256,23 @@ async function initDatabase() {
   `);
 
 
-  // ==================================================
-  // 既存DBのemail UNIQUE制約を削除
-  // ==================================================
-  //
-  // 以前のバージョンでは
-  //
-  // email TEXT NOT NULL UNIQUE
-  //
-  // だったため、既存DBにもUNIQUE制約が
-  // 残っている可能性があります。
-  //
-  // PostgreSQLの制約名を調べて削除します。
-  //
+  /*
+   * 以前のVeyloではemail UNIQUEだったため、
+   * 同じメールアドレスで複数アカウントを
+   * 作成できませんでした。
+   *
+   * 今回はメールアドレスのUNIQUE制約を削除します。
+   */
 
-  const emailConstraints =
-    await pool.query(`
-      SELECT
-        tc.constraint_name
-      FROM
-        information_schema.table_constraints tc
-      JOIN
-        information_schema.constraint_column_usage ccu
-        ON tc.constraint_name = ccu.constraint_name
-      WHERE
-        tc.table_name = 'users'
-        AND tc.constraint_type = 'UNIQUE'
-        AND ccu.column_name = 'email'
-    `);
-
-
-  for (
-    const row of emailConstraints.rows
-  ) {
-
-    try {
-
-      await pool.query(`
-        ALTER TABLE users
-        DROP CONSTRAINT IF EXISTS "${row.constraint_name}"
-      `);
-
-      console.log(
-        `users.email の UNIQUE 制約を削除しました: ${row.constraint_name}`
-      );
-
-    } catch (error) {
-
-      console.error(
-        "email UNIQUE constraint removal error:",
-        error
-      );
-
-    }
-
-  }
-
-
-  // ==================================================
-  // email検索用INDEX
-  // ==================================================
 
   await pool.query(`
-    CREATE INDEX IF NOT EXISTS users_email_idx
-    ON users(email)
+    ALTER TABLE users
+    DROP CONSTRAINT IF EXISTS users_email_key
   `);
 
 
   // ==================================================
-  // rooms
+  // Rooms
   // ==================================================
 
   await pool.query(`
@@ -354,7 +287,33 @@ async function initDatabase() {
 
 
   // ==================================================
-  // messages
+  // Room Members
+  // ==================================================
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS room_members (
+      room_id TEXT NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (room_id, user_id)
+    )
+  `);
+
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS room_members_user_idx
+    ON room_members(user_id)
+  `);
+
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS room_members_room_idx
+    ON room_members(room_id)
+  `);
+
+
+  // ==================================================
+  // Messages
   // ==================================================
 
   await pool.query(`
@@ -372,10 +331,6 @@ async function initDatabase() {
     )
   `);
 
-
-  // ==================================================
-  // 既存messagesへのカラム追加
-  // ==================================================
 
   await pool.query(`
     ALTER TABLE messages
@@ -401,10 +356,6 @@ async function initDatabase() {
   `);
 
 
-  // ==================================================
-  // messages index
-  // ==================================================
-
   await pool.query(`
     CREATE INDEX IF NOT EXISTS messages_room_created_idx
     ON messages(room, created_at)
@@ -412,7 +363,7 @@ async function initDatabase() {
 
 
   // ==================================================
-  // password reset
+  // Password Reset
   // ==================================================
 
   await pool.query(`
@@ -430,6 +381,29 @@ async function initDatabase() {
   await pool.query(`
     CREATE INDEX IF NOT EXISTS password_reset_token_hash_idx
     ON password_reset_tokens(token_hash)
+  `);
+
+
+  // ==================================================
+  // 既存の部屋を作ったユーザーを
+  // room_membersにも追加
+  // ==================================================
+
+  await pool.query(`
+    INSERT INTO room_members (
+      room_id,
+      user_id
+    )
+    SELECT
+      id,
+      owner_id
+    FROM rooms
+    WHERE owner_id IS NOT NULL
+    ON CONFLICT (
+      room_id,
+      user_id
+    )
+    DO NOTHING
   `);
 
 
@@ -517,9 +491,7 @@ function sanitizeUser(
 ) {
 
   if (!user) {
-
     return null;
-
   }
 
 
@@ -533,6 +505,29 @@ function sanitizeUser(
 
     name:
       user.name
+
+  };
+
+}
+
+
+function formatRoom(
+  room
+) {
+
+  return {
+
+    id:
+      room.id,
+
+    name:
+      room.name,
+
+    inviteCode:
+      room.invite_code,
+
+    ownerId:
+      room.owner_id
 
   };
 
@@ -659,32 +654,31 @@ app.get(
 
 
 // ==================================================
-// 自分のアカウント一覧
+// 自分の部屋一覧
 // ==================================================
-//
-// 同じメールアドレスで作成した
-// アカウントを確認できます。
-//
-// 現在ログインしているアカウント以外も
-// 一覧に表示します。
-//
 
 app.get(
-  "/api/my-accounts",
+  "/api/rooms",
   requireLogin,
   async (req, res) => {
 
     try {
 
-      const currentResult =
+      const result =
         await pool.query(
           `
           SELECT
-            id,
-            email
-          FROM users
-          WHERE id = $1
-          LIMIT 1
+            r.id,
+            r.name,
+            r.invite_code,
+            r.owner_id,
+            r.created_at
+          FROM rooms r
+          INNER JOIN room_members rm
+            ON rm.room_id = r.id
+          WHERE rm.user_id = $1
+          ORDER BY
+            r.created_at ASC
           `,
           [
             req.session.userId
@@ -692,70 +686,11 @@ app.get(
         );
 
 
-      if (
-        currentResult.rows.length === 0
-      ) {
-
-        return res
-          .status(401)
-          .json({
-
-            message:
-              "アカウントが見つかりません。"
-
-          });
-
-      }
-
-
-      const email =
-        currentResult.rows[0].email;
-
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            id,
-            email,
-            name,
-            created_at
-          FROM users
-          WHERE email = $1
-          ORDER BY created_at ASC
-          `,
-          [
-            email
-          ]
-        );
-
-
       return res.json({
 
-        email:
-          email,
-
-        maxAccounts:
-          5,
-
-        accounts:
+        rooms:
           result.rows.map(
-            (user) => ({
-
-              id:
-                user.id,
-
-              name:
-                user.name,
-
-              createdAt:
-                user.created_at,
-
-              current:
-                Number(user.id) ===
-                Number(req.session.userId)
-
-            })
+            formatRoom
           )
 
       });
@@ -763,7 +698,7 @@ app.get(
     } catch (error) {
 
       console.error(
-        "/api/my-accounts error:",
+        "/api/rooms error:",
         error
       );
 
@@ -772,7 +707,7 @@ app.get(
         .json({
 
           message:
-            "アカウント一覧を取得できませんでした。"
+            "部屋一覧を取得できませんでした。"
 
         });
 
@@ -807,10 +742,6 @@ app.post(
           req.body.password || ""
         );
 
-
-      // ==================================================
-      // 入力チェック
-      // ==================================================
 
       if (!email) {
 
@@ -854,14 +785,14 @@ app.post(
       }
 
 
-      // ==================================================
-      // 同じメールアドレスのアカウント数確認
-      // ==================================================
+      /*
+       * 同じメールアドレスは最大5アカウント
+       */
 
-      const countResult =
+      const emailCountResult =
         await pool.query(
           `
-          SELECT COUNT(*)::INTEGER AS count
+          SELECT COUNT(*)::integer AS count
           FROM users
           WHERE email = $1
           `,
@@ -871,18 +802,14 @@ app.post(
         );
 
 
-      const accountCount =
+      const emailCount =
         Number(
-          countResult.rows[0].count
+          emailCountResult.rows[0].count
         );
 
 
-      // ==================================================
-      // 最大5アカウント
-      // ==================================================
-
       if (
-        accountCount >= 5
+        emailCount >= 5
       ) {
 
         return res
@@ -890,25 +817,50 @@ app.post(
           .json({
 
             code:
-              "MAX_ACCOUNTS_REACHED",
+              "EMAIL_ACCOUNT_LIMIT",
 
             message:
-              "このメールアドレスでは5個までアカウントを作成できます。新しいアカウントを作るには、既存のアカウントを1つ削除してください。",
-
-            maxAccounts:
-              5,
-
-            accountCount:
-              accountCount
+              "このメールアドレスでは5個までアカウントを作成できます。新しいアカウントを作る場合は、既存のアカウントを削除してください。"
 
           });
 
       }
 
 
-      // ==================================================
-      // パスワード
-      // ==================================================
+      /*
+       * 同じ名前のログイン事故を防ぐため、
+       * 名前は全体で重複させない。
+       */
+
+      const nameExists =
+        await pool.query(
+          `
+          SELECT id
+          FROM users
+          WHERE name = $1
+          LIMIT 1
+          `,
+          [
+            name
+          ]
+        );
+
+
+      if (
+        nameExists.rows.length > 0
+      ) {
+
+        return res
+          .status(409)
+          .json({
+
+            message:
+              "この名前は既に使用されています。別の名前を入力してください。"
+
+          });
+
+      }
+
 
       const passwordHash =
         await bcrypt.hash(
@@ -916,10 +868,6 @@ app.post(
           12
         );
 
-
-      // ==================================================
-      // 登録
-      // ==================================================
 
       const result =
         await pool.query(
@@ -929,7 +877,11 @@ app.post(
             name,
             password_hash
           )
-          VALUES ($1, $2, $3)
+          VALUES (
+            $1,
+            $2,
+            $3
+          )
           RETURNING
             id,
             email,
@@ -946,10 +898,6 @@ app.post(
       const user =
         result.rows[0];
 
-
-      // ==================================================
-      // 自動ログイン
-      // ==================================================
 
       req.session.userId =
         user.id;
@@ -982,13 +930,7 @@ app.post(
             user:
               sanitizeUser(
                 user
-              ),
-
-            accountCount:
-              accountCount + 1,
-
-            maxAccounts:
-              5
+              )
 
           });
 
@@ -1003,9 +945,10 @@ app.post(
       );
 
 
-      // ==================================================
-      // 同時登録などで5個を超えないようにする
-      // ==================================================
+      /*
+       * PostgreSQL側で予期せぬUNIQUEエラーが
+       * 発生した場合にも分かりやすく返す。
+       */
 
       if (
         error &&
@@ -1017,7 +960,7 @@ app.post(
           .json({
 
             message:
-              "アカウントを作成できませんでした。もう一度お試しください。"
+              "この情報は既に使用されています。"
 
           });
 
@@ -1032,305 +975,6 @@ app.post(
             "登録に失敗しました。"
 
         });
-
-    }
-
-  }
-);
-
-
-// ==================================================
-// アカウント削除
-// ==================================================
-//
-// 自分と同じメールアドレスのアカウントだけ
-// 削除できます。
-//
-// 現在ログイン中のアカウントを削除した場合は
-// セッションも破棄します。
-//
-
-app.delete(
-  "/api/accounts/:id",
-  requireLogin,
-  async (req, res) => {
-
-    const client =
-      await pool.connect();
-
-
-    try {
-
-      const accountId =
-        Number(
-          req.params.id
-        );
-
-
-      if (
-        !Number.isInteger(accountId) ||
-        accountId <= 0
-      ) {
-
-        return res
-          .status(400)
-          .json({
-
-            message:
-              "無効なアカウントです。"
-
-          });
-
-      }
-
-
-      // ==================================================
-      // 現在のユーザー確認
-      // ==================================================
-
-      const currentResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            email
-          FROM users
-          WHERE id = $1
-          LIMIT 1
-          `,
-          [
-            req.session.userId
-          ]
-        );
-
-
-      if (
-        currentResult.rows.length === 0
-      ) {
-
-        return res
-          .status(401)
-          .json({
-
-            message:
-              "現在のアカウントが見つかりません。"
-
-          });
-
-      }
-
-
-      const currentUser =
-        currentResult.rows[0];
-
-
-      // ==================================================
-      // 削除対象確認
-      // ==================================================
-
-      const targetResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            email,
-            name
-          FROM users
-          WHERE id = $1
-          LIMIT 1
-          `,
-          [
-            accountId
-          ]
-        );
-
-
-      if (
-        targetResult.rows.length === 0
-      ) {
-
-        return res
-          .status(404)
-          .json({
-
-            message:
-              "削除するアカウントが見つかりません。"
-
-          });
-
-      }
-
-
-      const targetUser =
-        targetResult.rows[0];
-
-
-      // ==================================================
-      // 同じメールアドレスか確認
-      // ==================================================
-
-      if (
-        targetUser.email !==
-        currentUser.email
-      ) {
-
-        return res
-          .status(403)
-          .json({
-
-            message:
-              "このアカウントを削除する権限がありません。"
-
-          });
-
-      }
-
-
-      // ==================================================
-      // 最後の1アカウントは削除可能
-      // ==================================================
-      //
-      // 「5個作ったら1個削除してまた作る」
-      // という使い方を可能にするため、
-      // 1個しかない場合も削除できます。
-      //
-      // 現在ログイン中ならログアウト扱いにします。
-      //
-
-      await client.query(
-        "BEGIN"
-      );
-
-
-      await client.query(
-        `
-        DELETE FROM users
-        WHERE id = $1
-        `,
-        [
-          accountId
-        ]
-      );
-
-
-      await client.query(
-        "COMMIT"
-      );
-
-
-      const deletedCurrent =
-        Number(accountId) ===
-        Number(req.session.userId);
-
-
-      if (
-        deletedCurrent
-      ) {
-
-        req.session.destroy(
-          (sessionError) => {
-
-            if (sessionError) {
-
-              console.error(
-                "delete account session destroy error:",
-                sessionError
-              );
-
-              return res
-                .status(500)
-                .json({
-
-                  message:
-                    "アカウントは削除されましたが、ログアウト処理に失敗しました。"
-
-                });
-
-            }
-
-
-            res.clearCookie(
-              "connect.sid",
-              {
-
-                httpOnly:
-                  true,
-
-                secure:
-                  process.env.NODE_ENV === "production",
-
-                sameSite:
-                  "lax"
-
-              }
-            );
-
-
-            return res.json({
-
-              success:
-                true,
-
-              deletedCurrent:
-                true,
-
-              message:
-                "アカウントを削除しました。"
-
-            });
-
-          }
-        );
-
-        return;
-
-      }
-
-
-      return res.json({
-
-        success:
-          true,
-
-        deletedCurrent:
-          false,
-
-        message:
-          "アカウントを削除しました。"
-
-      });
-
-    } catch (error) {
-
-      try {
-
-        await client.query(
-          "ROLLBACK"
-        );
-
-      } catch {
-        // 無視
-      }
-
-
-      console.error(
-        "/api/accounts/:id DELETE error:",
-        error
-      );
-
-
-      return res
-        .status(500)
-        .json({
-
-          message:
-            "アカウントの削除に失敗しました。"
-
-        });
-
-    } finally {
-
-      client.release();
 
     }
 
@@ -1383,7 +1027,6 @@ app.post(
             password_hash
           FROM users
           WHERE name = $1
-          ORDER BY created_at ASC
           LIMIT 1
           `,
           [
@@ -1433,10 +1076,6 @@ app.post(
       }
 
 
-      // ==================================================
-      // セッション固定攻撃対策
-      // ==================================================
-
       req.session.regenerate(
         (error) => {
 
@@ -1464,7 +1103,7 @@ app.post(
 
 
           req.session.save(
-            async (saveError) => {
+            (saveError) => {
 
               if (saveError) {
 
@@ -1493,56 +1132,12 @@ app.post(
               );
 
 
-              // ==================================================
-              // 同じメールアドレスのアカウント数
-              // ==================================================
-
-              let accountCount =
-                1;
-
-
-              try {
-
-                const countResult =
-                  await pool.query(
-                    `
-                    SELECT COUNT(*)::INTEGER AS count
-                    FROM users
-                    WHERE email = $1
-                    `,
-                    [
-                      user.email
-                    ]
-                  );
-
-
-                accountCount =
-                  Number(
-                    countResult.rows[0].count
-                  );
-
-              } catch (countError) {
-
-                console.error(
-                  "account count error:",
-                  countError
-                );
-
-              }
-
-
               return res.json({
 
                 user:
                   sanitizeUser(
                     user
-                  ),
-
-                accountCount:
-                  accountCount,
-
-                maxAccounts:
-                  5
+                  )
 
               });
 
@@ -1636,6 +1231,117 @@ app.post(
 
 
 // ==================================================
+// アカウント削除
+// ==================================================
+
+app.delete(
+  "/api/account",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+
+      const userId =
+        Number(
+          req.session.userId
+        );
+
+
+      const result =
+        await pool.query(
+          `
+          DELETE FROM users
+          WHERE id = $1
+          RETURNING id
+          `,
+          [
+            userId
+          ]
+        );
+
+
+      if (
+        result.rows.length === 0
+      ) {
+
+        return res
+          .status(404)
+          .json({
+
+            message:
+              "アカウントが見つかりません。"
+
+          });
+
+      }
+
+
+      req.session.destroy(
+        (error) => {
+
+          if (error) {
+
+            console.error(
+              "account session destroy error:",
+              error
+            );
+
+          }
+
+
+          res.clearCookie(
+            "connect.sid",
+            {
+
+              httpOnly:
+                true,
+
+              secure:
+                process.env.NODE_ENV === "production",
+
+              sameSite:
+                "lax"
+
+            }
+          );
+
+
+          return res.json({
+
+            success:
+              true,
+
+            message:
+              "アカウントを削除しました。"
+
+          });
+
+        }
+      );
+
+    } catch (error) {
+
+      console.error(
+        "/api/account error:",
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+
+          message:
+            "アカウントを削除できませんでした。"
+
+        });
+
+    }
+
+  }
+);
+
+
+// ==================================================
 // パスワードリセット
 // ==================================================
 
@@ -1665,12 +1371,6 @@ app.post(
       }
 
 
-      /*
-       * 同じメールアドレスで複数アカウントが
-       * 存在するため、ここでは全アカウントに対して
-       * リセット処理を行います。
-       */
-
       const result =
         await pool.query(
           `
@@ -1680,17 +1380,14 @@ app.post(
             name
           FROM users
           WHERE email = $1
-          ORDER BY created_at ASC
+          ORDER BY id DESC
+          LIMIT 1
           `,
           [
             email
           ]
         );
 
-
-      /*
-       * アカウントが存在しなくても同じメッセージを返す
-       */
 
       if (
         result.rows.length === 0
@@ -1706,151 +1403,140 @@ app.post(
       }
 
 
-      const users =
-        result.rows;
+      const user =
+        result.rows[0];
 
 
-      for (
-        const user of users
+      await pool.query(
+        `
+        UPDATE password_reset_tokens
+        SET used = TRUE
+        WHERE user_id = $1
+          AND used = FALSE
+        `,
+        [
+          user.id
+        ]
+      );
+
+
+      const token =
+        generateResetToken();
+
+      const tokenHash =
+        hashToken(
+          token
+        );
+
+
+      await pool.query(
+        `
+        INSERT INTO password_reset_tokens (
+          user_id,
+          token_hash,
+          expires_at
+        )
+        VALUES (
+          $1,
+          $2,
+          NOW() + INTERVAL '30 minutes'
+        )
+        `,
+        [
+          user.id,
+          tokenHash
+        ]
+      );
+
+
+      const baseUrl =
+        process.env.BASE_URL ||
+        `http://localhost:${PORT}`;
+
+
+      const resetUrl =
+        `${baseUrl}/reset-password.html?token=${token}`;
+
+
+      console.log(
+        "=========================================="
+      );
+
+      console.log(
+        "PASSWORD RESET URL"
+      );
+
+      console.log(
+        resetUrl
+      );
+
+      console.log(
+        "=========================================="
+      );
+
+
+      if (
+        process.env.SMTP_HOST &&
+        process.env.SMTP_USER &&
+        process.env.SMTP_PASS
       ) {
 
-        await pool.query(
-          `
-          UPDATE password_reset_tokens
-          SET used = TRUE
-          WHERE user_id = $1
-            AND used = FALSE
-          `,
-          [
-            user.id
-          ]
-        );
+        const transporter =
+          nodemailer.createTransport({
 
+            host:
+              process.env.SMTP_HOST,
 
-        const token =
-          generateResetToken();
+            port:
+              Number(
+                process.env.SMTP_PORT ||
+                587
+              ),
 
+            secure:
+              String(
+                process.env.SMTP_SECURE
+              ) === "true",
 
-        const tokenHash =
-          hashToken(
-            token
-          );
+            auth: {
 
+              user:
+                process.env.SMTP_USER,
 
-        await pool.query(
-          `
-          INSERT INTO password_reset_tokens (
-            user_id,
-            token_hash,
-            expires_at
-          )
-          VALUES (
-            $1,
-            $2,
-            NOW() + INTERVAL '30 minutes'
-          )
-          `,
-          [
-            user.id,
-            tokenHash
-          ]
-        );
+              pass:
+                process.env.SMTP_PASS
 
-
-        const baseUrl =
-          process.env.BASE_URL ||
-          `http://localhost:${PORT}`;
-
-
-        const resetUrl =
-          `${baseUrl}/reset-password.html?token=${token}`;
-
-
-        console.log(
-          "=========================================="
-        );
-
-        console.log(
-          "PASSWORD RESET URL"
-        );
-
-        console.log(
-          `Account: ${user.name}`
-        );
-
-        console.log(
-          resetUrl
-        );
-
-        console.log(
-          "=========================================="
-        );
-
-
-        if (
-          process.env.SMTP_HOST &&
-          process.env.SMTP_USER &&
-          process.env.SMTP_PASS
-        ) {
-
-          const transporter =
-            nodemailer.createTransport({
-
-              host:
-                process.env.SMTP_HOST,
-
-              port:
-                Number(
-                  process.env.SMTP_PORT ||
-                  587
-                ),
-
-              secure:
-                String(
-                  process.env.SMTP_SECURE
-                ) === "true",
-
-              auth: {
-
-                user:
-                  process.env.SMTP_USER,
-
-                pass:
-                  process.env.SMTP_PASS
-
-              }
-
-            });
-
-
-          await transporter.sendMail({
-
-            from:
-              process.env.MAIL_FROM ||
-              process.env.SMTP_USER,
-
-            to:
-              user.email,
-
-            subject:
-              "Veylo パスワード再設定",
-
-            text:
-              [
-                `${user.name}さん`,
-                "",
-                "Veyloのパスワード再設定を受け付けました。",
-                "",
-                "以下のリンクから新しいパスワードを設定してください。",
-                "",
-                resetUrl,
-                "",
-                "このリンクは30分間有効です。"
-              ].join("\n")
+            }
 
           });
 
-        }
+
+        await transporter.sendMail({
+
+          from:
+            process.env.MAIL_FROM ||
+            process.env.SMTP_USER,
+
+          to:
+            user.email,
+
+          subject:
+            "Veylo パスワード再設定",
+
+          text:
+            [
+              `${user.name}さん`,
+              "",
+              "Veyloのパスワード再設定を受け付けました。",
+              "",
+              "以下のリンクから新しいパスワードを設定してください。",
+              "",
+              resetUrl,
+              "",
+              "このリンクは30分間有効です。"
+            ].join("\n")
+
+        });
 
       }
 
@@ -2052,28 +1738,10 @@ io.use(
       socket.request.session;
 
 
-    console.log(
-      "Socket session:",
-      currentSession
-        ? {
-            id:
-              currentSession.id,
-
-            userId:
-              currentSession.userId
-          }
-        : null
-    );
-
-
     if (
       !currentSession ||
       !currentSession.userId
     ) {
-
-      console.log(
-        "Socket.IO authentication failed."
-      );
 
       return next(
         new Error(
@@ -2095,11 +1763,6 @@ io.use(
       userId <= 0
     ) {
 
-      console.log(
-        "Socket.IO invalid userId:",
-        currentSession.userId
-      );
-
       return next(
         new Error(
           "UNAUTHORIZED"
@@ -2111,12 +1774,6 @@ io.use(
 
     socket.userId =
       userId;
-
-
-    console.log(
-      "Socket.IO authentication successful:",
-      socket.userId
-    );
 
 
     next();
@@ -2190,14 +1847,8 @@ io.on(
       userResult.rows[0];
 
 
-    console.log(
-      "Socket user authenticated:",
-      user.name
-    );
-
-
     // ==================================================
-    // 雑談へ参加
+    // 接続直後は雑談
     // ==================================================
 
     await joinCasual(
@@ -2215,6 +1866,23 @@ io.on(
 
         await joinCasual(
           socket
+        );
+
+      }
+    );
+
+
+    // ==================================================
+    // 自分の部屋一覧
+    // ==================================================
+
+    socket.on(
+      "get my rooms",
+      async () => {
+
+        await sendMyRooms(
+          socket,
+          user.id
         );
 
       }
@@ -2291,6 +1959,51 @@ io.on(
             );
 
             return;
+
+          }
+
+
+          /*
+           * 雑談以外はDB上のメンバーかも確認
+           */
+
+          if (
+            room !== "casual"
+          ) {
+
+            const membership =
+              await pool.query(
+                `
+                SELECT 1
+                FROM room_members
+                WHERE room_id = $1
+                  AND user_id = $2
+                LIMIT 1
+                `,
+                [
+                  room,
+                  user.id
+                ]
+              );
+
+
+            if (
+              membership.rows.length === 0
+            ) {
+
+              socket.emit(
+                "message send error",
+                {
+
+                  message:
+                    "この部屋には参加していません。"
+
+                }
+              );
+
+              return;
+
+            }
 
           }
 
@@ -2464,7 +2177,9 @@ io.on(
           }
 
 
-          if (name.length > 100) {
+          if (
+            name.length > 100
+          ) {
 
             socket.emit(
               "create room error",
@@ -2484,11 +2199,16 @@ io.on(
           const id =
             generateRoomId();
 
+
           let inviteCode =
             generateInviteCode();
 
 
-          while (true) {
+          /*
+           * 招待コードが重複しないようにする
+           */
+
+          for (;;) {
 
             const exists =
               await pool.query(
@@ -2496,6 +2216,7 @@ io.on(
                 SELECT id
                 FROM rooms
                 WHERE invite_code = $1
+                LIMIT 1
                 `,
                 [
                   inviteCode
@@ -2518,72 +2239,139 @@ io.on(
           }
 
 
-          const result =
-            await pool.query(
+          /*
+           * 部屋作成とメンバー追加を
+           * トランザクションで実行
+           */
+
+          const client =
+            await pool.connect();
+
+
+          try {
+
+            await client.query(
+              "BEGIN"
+            );
+
+
+            const roomResult =
+              await client.query(
+                `
+                INSERT INTO rooms (
+                  id,
+                  name,
+                  invite_code,
+                  owner_id
+                )
+                VALUES (
+                  $1,
+                  $2,
+                  $3,
+                  $4
+                )
+                RETURNING
+                  id,
+                  name,
+                  invite_code,
+                  owner_id
+                `,
+                [
+                  id,
+                  name,
+                  inviteCode,
+                  user.id
+                ]
+              );
+
+
+            const room =
+              roomResult.rows[0];
+
+
+            await client.query(
               `
-              INSERT INTO rooms (
-                id,
-                name,
-                invite_code,
-                owner_id
+              INSERT INTO room_members (
+                room_id,
+                user_id
               )
               VALUES (
                 $1,
-                $2,
-                $3,
-                $4
+                $2
               )
-              RETURNING
-                id,
-                name,
-                invite_code,
-                owner_id
+              ON CONFLICT (
+                room_id,
+                user_id
+              )
+              DO NOTHING
               `,
               [
-                id,
-                name,
-                inviteCode,
+                room.id,
                 user.id
               ]
             );
 
 
-          const room =
-            result.rows[0];
+            await client.query(
+              "COMMIT"
+            );
 
 
-          leaveCurrentRooms(
-            socket
-          );
+            /*
+             * 現在の部屋から移動
+             */
+
+            leaveCurrentRooms(
+              socket
+            );
 
 
-          await socket.join(
-            room.id
-          );
+            await socket.join(
+              room.id
+            );
 
 
-          socket.emit(
-            "room created",
-            {
-
-              id:
-                room.id,
-
-              name:
-                room.name,
-
-              inviteCode:
-                room.invite_code
-
-            }
-          );
+            socket.emit(
+              "room created",
+              formatRoom(
+                room
+              )
+            );
 
 
-          await sendPreviousMessages(
-            socket,
-            room.id
-          );
+            await sendPreviousMessages(
+              socket,
+              room.id
+            );
 
+
+            await sendMyRooms(
+              socket,
+              user.id
+            );
+
+
+            console.log(
+              "Room created:",
+              room.id,
+              room.name,
+              "by user:",
+              user.id
+            );
+
+          } catch (transactionError) {
+
+            await client.query(
+              "ROLLBACK"
+            );
+
+            throw transactionError;
+
+          } finally {
+
+            client.release();
+
+          }
 
         } catch (error) {
 
@@ -2598,7 +2386,7 @@ io.on(
             {
 
               message:
-                "部屋を作成できませんでした。"
+                "部屋を作成できませんでした。もう一度お試しください。"
 
             }
           );
@@ -2650,7 +2438,8 @@ io.on(
               SELECT
                 id,
                 name,
-                invite_code
+                invite_code,
+                owner_id
               FROM rooms
               WHERE invite_code = $1
               LIMIT 1
@@ -2684,6 +2473,33 @@ io.on(
             result.rows[0];
 
 
+          /*
+           * メンバーとして登録
+           */
+
+          await pool.query(
+            `
+            INSERT INTO room_members (
+              room_id,
+              user_id
+            )
+            VALUES (
+              $1,
+              $2
+            )
+            ON CONFLICT (
+              room_id,
+              user_id
+            )
+            DO NOTHING
+            `,
+            [
+              room.id,
+              user.id
+            ]
+          );
+
+
           leaveCurrentRooms(
             socket
           );
@@ -2696,18 +2512,9 @@ io.on(
 
           socket.emit(
             "room joined",
-            {
-
-              id:
-                room.id,
-
-              name:
-                room.name,
-
-              inviteCode:
-                room.invite_code
-
-            }
+            formatRoom(
+              room
+            )
           );
 
 
@@ -2716,6 +2523,19 @@ io.on(
             room.id
           );
 
+
+          await sendMyRooms(
+            socket,
+            user.id
+          );
+
+
+          console.log(
+            "Room joined:",
+            room.id,
+            "user:",
+            user.id
+          );
 
         } catch (error) {
 
@@ -2731,6 +2551,126 @@ io.on(
 
               message:
                 "部屋に参加できませんでした。"
+
+            }
+          );
+
+        }
+
+      }
+    );
+
+
+    // ==================================================
+    // 既存部屋へ移動
+    // ==================================================
+
+    socket.on(
+      "open my room",
+      async (data) => {
+
+        try {
+
+          const roomId =
+            String(
+              data?.roomId || ""
+            ).trim();
+
+
+          if (!roomId) {
+
+            return;
+
+          }
+
+
+          const result =
+            await pool.query(
+              `
+              SELECT
+                r.id,
+                r.name,
+                r.invite_code,
+                r.owner_id
+              FROM rooms r
+              INNER JOIN room_members rm
+                ON rm.room_id = r.id
+              WHERE r.id = $1
+                AND rm.user_id = $2
+              LIMIT 1
+              `,
+              [
+                roomId,
+                user.id
+              ]
+            );
+
+
+          if (
+            result.rows.length === 0
+          ) {
+
+            socket.emit(
+              "room open error",
+              {
+
+                message:
+                  "この部屋には参加していません。"
+
+              }
+            );
+
+            await sendMyRooms(
+              socket,
+              user.id
+            );
+
+            return;
+
+          }
+
+
+          const room =
+            result.rows[0];
+
+
+          leaveCurrentRooms(
+            socket
+          );
+
+
+          await socket.join(
+            room.id
+          );
+
+
+          socket.emit(
+            "room opened",
+            formatRoom(
+              room
+            )
+          );
+
+
+          await sendPreviousMessages(
+            socket,
+            room.id
+          );
+
+        } catch (error) {
+
+          console.error(
+            "open my room error:",
+            error
+          );
+
+
+          socket.emit(
+            "room open error",
+            {
+
+              message:
+                "部屋を開けませんでした。"
 
             }
           );
@@ -3004,7 +2944,7 @@ io.on(
 
 
 // ==================================================
-// Socket 関数
+// 雑談
 // ==================================================
 
 async function joinCasual(
@@ -3045,6 +2985,68 @@ async function joinCasual(
 }
 
 
+// ==================================================
+// 自分の部屋一覧送信
+// ==================================================
+
+async function sendMyRooms(
+  socket,
+  userId
+) {
+
+  try {
+
+    const result =
+      await pool.query(
+        `
+        SELECT
+          r.id,
+          r.name,
+          r.invite_code,
+          r.owner_id,
+          r.created_at
+        FROM rooms r
+        INNER JOIN room_members rm
+          ON rm.room_id = r.id
+        WHERE rm.user_id = $1
+        ORDER BY
+          r.created_at ASC
+        `,
+        [
+          userId
+        ]
+      );
+
+
+    socket.emit(
+      "my rooms",
+      result.rows.map(
+        formatRoom
+      )
+    );
+
+  } catch (error) {
+
+    console.error(
+      "sendMyRooms error:",
+      error
+    );
+
+
+    socket.emit(
+      "my rooms",
+      []
+    );
+
+  }
+
+}
+
+
+// ==================================================
+// 現在の部屋から退出
+// ==================================================
+
 function leaveCurrentRooms(
   socket
 ) {
@@ -3067,6 +3069,10 @@ function leaveCurrentRooms(
 
 }
 
+
+// ==================================================
+// 過去メッセージ
+// ==================================================
 
 async function sendPreviousMessages(
   socket,
@@ -3125,6 +3131,10 @@ async function sendPreviousMessages(
 
 }
 
+
+// ==================================================
+// Message format
+// ==================================================
 
 function formatMessage(
   row
