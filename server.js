@@ -1,63 +1,118 @@
 "use strict";
 
+
 // ==================================================
 // Veylo Server
 // ==================================================
 
-const express = require("express");
-const http = require("http");
-const path = require("path");
-const crypto = require("crypto");
-const bcrypt = require("bcryptjs");
-const session = require("express-session");
-const pgSession = require("connect-pg-simple")(session);
-const { Pool } = require("pg");
-const { Server } = require("socket.io");
-const nodemailer = require("nodemailer");
+const express =
+  require("express");
+
+const http =
+  require("http");
+
+const path =
+  require("path");
+
+const crypto =
+  require("crypto");
+
+const bcrypt =
+  require("bcryptjs");
+
+const session =
+  require("express-session");
+
+const pgSession =
+  require("connect-pg-simple")(
+    session
+  );
+
+const { Pool } =
+  require("pg");
+
+const { Server } =
+  require("socket.io");
+
+const nodemailer =
+  require("nodemailer");
+
 
 // ==================================================
 // 環境変数
 // ==================================================
 
-const PORT = process.env.PORT || 10000;
+const PORT =
+  process.env.PORT || 10000;
 
-const DATABASE_URL = process.env.DATABASE_URL;
+const DATABASE_URL =
+  process.env.DATABASE_URL;
 
 const SESSION_SECRET =
   process.env.SESSION_SECRET ||
   "veylo-development-secret";
 
-if (!DATABASE_URL) {
-  console.error("DATABASE_URL が設定されていません。");
-  process.exit(1);
-}
 
 // ==================================================
 // Express
 // ==================================================
 
-const app = express();
+const app =
+  express();
 
-if (process.env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
+
+// ==================================================
+// Render / Reverse Proxy
+// ==================================================
+
+if (
+  process.env.NODE_ENV === "production"
+) {
+
+  app.set(
+    "trust proxy",
+    1
+  );
+
 }
 
-const server = http.createServer(app);
+
+const server =
+  http.createServer(
+    app
+  );
+
 
 // ==================================================
 // PostgreSQL
 // ==================================================
 
-const pool = new Pool({
-  connectionString: DATABASE_URL,
+if (!DATABASE_URL) {
 
-  ssl:
-    process.env.NODE_ENV === "production"
-      ? {
-          rejectUnauthorized: false
-        }
-      : false
-});
+  console.error(
+    "DATABASE_URL が設定されていません。"
+  );
+
+  process.exit(1);
+
+}
+
+
+const pool =
+  new Pool({
+
+    connectionString:
+      DATABASE_URL,
+
+    ssl:
+      process.env.NODE_ENV === "production"
+        ? {
+            rejectUnauthorized: false
+          }
+        : false
+
+  });
+
 
 // ==================================================
 // Middleware
@@ -75,57 +130,99 @@ app.use(
   })
 );
 
+
 // ==================================================
 // Session
 // ==================================================
 
-const sessionMiddleware = session({
-  store: new pgSession({
-    pool,
-    tableName: "user_sessions",
-    createTableIfMissing: true
-  }),
+const sessionMiddleware =
+  session({
 
-  secret: SESSION_SECRET,
+    store:
+      new pgSession({
 
-  resave: false,
+        pool:
+          pool,
 
-  saveUninitialized: false,
+        tableName:
+          "user_sessions",
 
-  proxy:
-    process.env.NODE_ENV === "production",
+        createTableIfMissing:
+          true
 
-  cookie: {
-    httpOnly: true,
+      }),
 
-    secure:
+    secret:
+      SESSION_SECRET,
+
+    resave:
+      false,
+
+    saveUninitialized:
+      false,
+
+    proxy:
       process.env.NODE_ENV === "production",
 
-    sameSite: "lax",
+    cookie: {
 
-    maxAge:
-      1000 *
-      60 *
-      60 *
-      24 *
-      30
-  }
-});
+      httpOnly:
+        true,
 
-app.use(sessionMiddleware);
+      secure:
+        process.env.NODE_ENV === "production",
+
+      sameSite:
+        "lax",
+
+      maxAge:
+        1000 *
+        60 *
+        60 *
+        24 *
+        30
+
+    }
+
+  });
+
+
+app.use(
+  sessionMiddleware
+);
+
 
 // ==================================================
 // Socket.IO
 // ==================================================
 
-const io = new Server(server, {
-  cors: {
-    origin: true,
-    credentials: true
-  }
-});
+const io =
+  new Server(
+    server,
+    {
 
-io.engine.use(sessionMiddleware);
+      cors: {
+
+        origin:
+          true,
+
+        credentials:
+          true
+
+      }
+
+    }
+  );
+
+
+// ==================================================
+// Socket.IO と Express Session を共有
+// ==================================================
+
+io.engine.use(
+  sessionMiddleware
+);
+
 
 // ==================================================
 // Static
@@ -133,25 +230,35 @@ io.engine.use(sessionMiddleware);
 
 app.use(
   express.static(
-    path.join(__dirname, "public")
+    path.join(
+      __dirname,
+      "public"
+    )
   )
 );
+
 
 // ==================================================
 // DB 初期化
 // ==================================================
 
 async function initDatabase() {
+
   console.log(
     "データベースを初期化しています..."
   );
 
+
   // ==================================================
   // users
-  //
-  // email UNIQUE は使わない。
-  // 同じメールアドレスで最大5アカウント作れるようにする。
   // ==================================================
+  //
+  // 重要:
+  // email に UNIQUE を付けません。
+  //
+  // 同じメールアドレスで最大5アカウント
+  // 作れるようにするためです。
+  //
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
@@ -163,23 +270,73 @@ async function initDatabase() {
     )
   `);
 
-  // 古いDBで email UNIQUE 制約が残っている場合に削除する
-  try {
+
+  // ==================================================
+  // 既存DBのemail UNIQUE制約を削除
+  // ==================================================
+  //
+  // 以前のバージョンでは
+  //
+  // email TEXT NOT NULL UNIQUE
+  //
+  // だったため、既存DBにもUNIQUE制約が
+  // 残っている可能性があります。
+  //
+  // PostgreSQLの制約名を調べて削除します。
+  //
+
+  const emailConstraints =
     await pool.query(`
-      ALTER TABLE users
-      DROP CONSTRAINT IF EXISTS users_email_key
+      SELECT
+        tc.constraint_name
+      FROM
+        information_schema.table_constraints tc
+      JOIN
+        information_schema.constraint_column_usage ccu
+        ON tc.constraint_name = ccu.constraint_name
+      WHERE
+        tc.table_name = 'users'
+        AND tc.constraint_type = 'UNIQUE'
+        AND ccu.column_name = 'email'
     `);
-  } catch (error) {
-    console.log(
-      "users_email_key の削除をスキップ:",
-      error.message
-    );
+
+
+  for (
+    const row of emailConstraints.rows
+  ) {
+
+    try {
+
+      await pool.query(`
+        ALTER TABLE users
+        DROP CONSTRAINT IF EXISTS "${row.constraint_name}"
+      `);
+
+      console.log(
+        `users.email の UNIQUE 制約を削除しました: ${row.constraint_name}`
+      );
+
+    } catch (error) {
+
+      console.error(
+        "email UNIQUE constraint removal error:",
+        error
+      );
+
+    }
+
   }
+
+
+  // ==================================================
+  // email検索用INDEX
+  // ==================================================
 
   await pool.query(`
     CREATE INDEX IF NOT EXISTS users_email_idx
     ON users(email)
   `);
+
 
   // ==================================================
   // rooms
@@ -194,6 +351,7 @@ async function initDatabase() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+
 
   // ==================================================
   // messages
@@ -214,30 +372,44 @@ async function initDatabase() {
     )
   `);
 
+
+  // ==================================================
+  // 既存messagesへのカラム追加
+  // ==================================================
+
   await pool.query(`
     ALTER TABLE messages
     ADD COLUMN IF NOT EXISTS reply_to_id BIGINT NULL
   `);
+
 
   await pool.query(`
     ALTER TABLE messages
     ADD COLUMN IF NOT EXISTS reply_to_username TEXT NULL
   `);
 
+
   await pool.query(`
     ALTER TABLE messages
     ADD COLUMN IF NOT EXISTS reply_to_text TEXT NULL
   `);
+
 
   await pool.query(`
     ALTER TABLE messages
     ADD COLUMN IF NOT EXISTS edited BOOLEAN NOT NULL DEFAULT FALSE
   `);
 
+
+  // ==================================================
+  // messages index
+  // ==================================================
+
   await pool.query(`
     CREATE INDEX IF NOT EXISTS messages_room_created_idx
     ON messages(room, created_at)
   `);
+
 
   // ==================================================
   // password reset
@@ -254,99 +426,257 @@ async function initDatabase() {
     )
   `);
 
+
   await pool.query(`
     CREATE INDEX IF NOT EXISTS password_reset_token_hash_idx
     ON password_reset_tokens(token_hash)
   `);
 
+
   console.log(
     "データベースの準備が完了しました。"
   );
+
 }
+
 
 // ==================================================
 // 共通関数
 // ==================================================
 
-function normalizeEmail(email) {
-  return String(email || "")
+function normalizeEmail(
+  email
+) {
+
+  return String(
+    email || ""
+  )
     .trim()
     .toLowerCase();
+
 }
 
-function normalizeName(name) {
-  return String(name || "")
+
+function normalizeName(
+  name
+) {
+
+  return String(
+    name || ""
+  )
     .trim();
+
 }
+
 
 function generateRoomId() {
+
   return (
     "room_" +
     crypto
       .randomBytes(8)
       .toString("hex")
   );
+
 }
 
+
 function generateInviteCode() {
+
   return crypto
     .randomBytes(5)
     .toString("hex")
     .toUpperCase();
+
 }
 
+
 function generateResetToken() {
+
   return crypto
     .randomBytes(32)
     .toString("hex");
+
 }
 
-function hashToken(token) {
+
+function hashToken(
+  token
+) {
+
   return crypto
     .createHash("sha256")
     .update(token)
     .digest("hex");
+
 }
 
-function sanitizeUser(user) {
+
+function sanitizeUser(
+  user
+) {
+
   if (!user) {
+
     return null;
+
   }
 
+
   return {
-    id: user.id,
-    email: user.email,
-    name: user.name
+
+    id:
+      user.id,
+
+    email:
+      user.email,
+
+    name:
+      user.name
+
   };
+
 }
+
 
 // ==================================================
 // 認証 Middleware
 // ==================================================
 
-function requireLogin(req, res, next) {
+function requireLogin(
+  req,
+  res,
+  next
+) {
+
   if (!req.session.userId) {
+
     return res
       .status(401)
       .json({
+
         message:
           "ログインしてください。"
+
       });
+
   }
 
+
   next();
+
 }
 
+
 // ==================================================
-// アカウント一覧
+// /api/me
 // ==================================================
 
 app.get(
-  "/api/accounts",
+  "/api/me",
+  async (req, res) => {
+
+    try {
+
+      if (!req.session.userId) {
+
+        return res.json({
+
+          loggedIn:
+            false
+
+        });
+
+      }
+
+
+      const result =
+        await pool.query(
+          `
+          SELECT
+            id,
+            email,
+            name
+          FROM users
+          WHERE id = $1
+          `,
+          [
+            req.session.userId
+          ]
+        );
+
+
+      if (
+        result.rows.length === 0
+      ) {
+
+        req.session.destroy(
+          () => {}
+        );
+
+        return res.json({
+
+          loggedIn:
+            false
+
+        });
+
+      }
+
+
+      return res.json({
+
+        loggedIn:
+          true,
+
+        user:
+          sanitizeUser(
+            result.rows[0]
+          )
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "/api/me error:",
+        error
+      );
+
+      return res
+        .status(500)
+        .json({
+
+          message:
+            "ログイン状態を確認できませんでした。"
+
+        });
+
+    }
+
+  }
+);
+
+
+// ==================================================
+// 自分のアカウント一覧
+// ==================================================
+//
+// 同じメールアドレスで作成した
+// アカウントを確認できます。
+//
+// 現在ログインしているアカウント以外も
+// 一覧に表示します。
+//
+
+app.get(
+  "/api/my-accounts",
   requireLogin,
   async (req, res) => {
+
     try {
-      const currentUserResult =
+
+      const currentResult =
         await pool.query(
           `
           SELECT
@@ -356,22 +686,31 @@ app.get(
           WHERE id = $1
           LIMIT 1
           `,
-          [req.session.userId]
+          [
+            req.session.userId
+          ]
         );
 
+
       if (
-        currentUserResult.rows.length === 0
+        currentResult.rows.length === 0
       ) {
+
         return res
           .status(401)
           .json({
+
             message:
               "アカウントが見つかりません。"
+
           });
+
       }
 
+
       const email =
-        currentUserResult.rows[0].email;
+        currentResult.rows[0].email;
+
 
       const result =
         await pool.query(
@@ -385,312 +724,63 @@ app.get(
           WHERE email = $1
           ORDER BY created_at ASC
           `,
-          [email]
-        );
-
-      return res.json({
-        email,
-        maxAccounts: 5,
-        accounts: result.rows.map(
-          (user) => ({
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            createdAt: user.created_at
-          })
-        )
-      });
-    } catch (error) {
-      console.error(
-        "/api/accounts error:",
-        error
-      );
-
-      return res
-        .status(500)
-        .json({
-          message:
-            "アカウント一覧を取得できませんでした。"
-        });
-    }
-  }
-);
-
-// ==================================================
-// アカウント削除
-// ==================================================
-
-app.post(
-  "/api/delete-account",
-  requireLogin,
-  async (req, res) => {
-    const client =
-      await pool.connect();
-
-    try {
-      const password =
-        String(
-          req.body.password || ""
-        );
-
-      const deleteUserId =
-        Number(
-          req.body.userId
-        );
-
-      if (
-        !Number.isInteger(
-          deleteUserId
-        ) ||
-        deleteUserId <= 0
-      ) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "削除するアカウントを選択してください。"
-          });
-      }
-
-      if (!password) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "パスワードを入力してください。"
-          });
-      }
-
-      const currentUserResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            email,
-            password_hash
-          FROM users
-          WHERE id = $1
-          LIMIT 1
-          `,
-          [req.session.userId]
-        );
-
-      if (
-        currentUserResult.rows.length === 0
-      ) {
-        return res
-          .status(401)
-          .json({
-            message:
-              "ログイン情報が無効です。"
-          });
-      }
-
-      const currentUser =
-        currentUserResult.rows[0];
-
-      const passwordValid =
-        await bcrypt.compare(
-          password,
-          currentUser.password_hash
-        );
-
-      if (!passwordValid) {
-        return res
-          .status(401)
-          .json({
-            message:
-              "パスワードが正しくありません。"
-          });
-      }
-
-      const targetResult =
-        await client.query(
-          `
-          SELECT
-            id,
-            email,
-            name
-          FROM users
-          WHERE id = $1
-            AND email = $2
-          LIMIT 1
-          `,
           [
-            deleteUserId,
-            currentUser.email
+            email
           ]
         );
 
-      if (
-        targetResult.rows.length === 0
-      ) {
-        return res
-          .status(404)
-          .json({
-            message:
-              "削除できるアカウントが見つかりません。"
-          });
-      }
-
-      // ==================================================
-      // 現在ログイン中のアカウントを削除する場合
-      // ==================================================
-
-      if (
-        deleteUserId ===
-        Number(req.session.userId)
-      ) {
-        await client.query(
-          "BEGIN"
-        );
-
-        await client.query(
-          `
-          DELETE FROM users
-          WHERE id = $1
-          `,
-          [deleteUserId]
-        );
-
-        await client.query(
-          "COMMIT"
-        );
-
-        req.session.destroy(
-          (sessionError) => {
-            if (sessionError) {
-              console.error(
-                "destroy session error:",
-                sessionError
-              );
-            }
-
-            res.clearCookie(
-              "connect.sid",
-              {
-                httpOnly: true,
-                secure:
-                  process.env.NODE_ENV ===
-                  "production",
-                sameSite: "lax"
-              }
-            );
-
-            return res.json({
-              success: true,
-              loggedOut: true,
-              message:
-                "アカウントを削除しました。"
-            });
-          }
-        );
-
-        return;
-      }
-
-      // ==================================================
-      // 別アカウントを削除
-      // ==================================================
-
-      await client.query(
-        `
-        DELETE FROM users
-        WHERE id = $1
-        `,
-        [deleteUserId]
-      );
 
       return res.json({
-        success: true,
-        loggedOut: false,
-        message:
-          "アカウントを削除しました。"
+
+        email:
+          email,
+
+        maxAccounts:
+          5,
+
+        accounts:
+          result.rows.map(
+            (user) => ({
+
+              id:
+                user.id,
+
+              name:
+                user.name,
+
+              createdAt:
+                user.created_at,
+
+              current:
+                Number(user.id) ===
+                Number(req.session.userId)
+
+            })
+          )
+
       });
+
     } catch (error) {
-      try {
-        await client.query(
-          "ROLLBACK"
-        );
-      } catch {}
 
       console.error(
-        "/api/delete-account error:",
+        "/api/my-accounts error:",
         error
       );
 
       return res
         .status(500)
         .json({
+
           message:
-            "アカウントを削除できませんでした。"
+            "アカウント一覧を取得できませんでした。"
+
         });
-    } finally {
-      client.release();
+
     }
+
   }
 );
 
-// ==================================================
-// /api/me
-// ==================================================
-
-app.get(
-  "/api/me",
-  async (req, res) => {
-    try {
-      if (!req.session.userId) {
-        return res.json({
-          loggedIn: false
-        });
-      }
-
-      const result =
-        await pool.query(
-          `
-          SELECT
-            id,
-            email,
-            name
-          FROM users
-          WHERE id = $1
-          `,
-          [req.session.userId]
-        );
-
-      if (
-        result.rows.length === 0
-      ) {
-        req.session.destroy(
-          () => {}
-        );
-
-        return res.json({
-          loggedIn: false
-        });
-      }
-
-      return res.json({
-        loggedIn: true,
-        user: sanitizeUser(
-          result.rows[0]
-        )
-      });
-    } catch (error) {
-      console.error(
-        "/api/me error:",
-        error
-      );
-
-      return res
-        .status(500)
-        .json({
-          message:
-            "ログイン状態を確認できませんでした。"
-        });
-    }
-  }
-);
 
 // ==================================================
 // 登録
@@ -699,10 +789,9 @@ app.get(
 app.post(
   "/api/register",
   async (req, res) => {
-    const client =
-      await pool.connect();
 
     try {
+
       const email =
         normalizeEmail(
           req.body.email
@@ -718,91 +807,108 @@ app.post(
           req.body.password || ""
         );
 
-      if (!email) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "メールアドレスを入力してください。"
-          });
-      }
-
-      if (!name) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "名前を入力してください。"
-          });
-      }
-
-      if (password.length < 8) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "パスワードは8文字以上にしてください。"
-          });
-      }
 
       // ==================================================
-      // 同じメールアドレスのアカウント数を確認
+      // 入力チェック
+      // ==================================================
+
+      if (!email) {
+
+        return res
+          .status(400)
+          .json({
+
+            message:
+              "メールアドレスを入力してください。"
+
+          });
+
+      }
+
+
+      if (!name) {
+
+        return res
+          .status(400)
+          .json({
+
+            message:
+              "名前を入力してください。"
+
+          });
+
+      }
+
+
+      if (password.length < 8) {
+
+        return res
+          .status(400)
+          .json({
+
+            message:
+              "パスワードは8文字以上にしてください。"
+
+          });
+
+      }
+
+
+      // ==================================================
+      // 同じメールアドレスのアカウント数確認
       // ==================================================
 
       const countResult =
-        await client.query(
+        await pool.query(
           `
-          SELECT COUNT(*)::integer AS count
+          SELECT COUNT(*)::INTEGER AS count
           FROM users
           WHERE email = $1
           `,
-          [email]
+          [
+            email
+          ]
         );
+
 
       const accountCount =
         Number(
           countResult.rows[0].count
         );
 
+
+      // ==================================================
+      // 最大5アカウント
+      // ==================================================
+
       if (
         accountCount >= 5
       ) {
+
         return res
           .status(409)
           .json({
+
             code:
               "MAX_ACCOUNTS_REACHED",
 
             message:
-              "このメールアドレスでは最大5個までアカウントを作成できます。6個目を作成する場合は、先に作成済みのアカウントを1つ削除してください。"
+              "このメールアドレスでは5個までアカウントを作成できます。新しいアカウントを作るには、既存のアカウントを1つ削除してください。",
+
+            maxAccounts:
+              5,
+
+            accountCount:
+              accountCount
+
           });
+
       }
 
-      // ==================================================
-      // 名前の重複チェック
-      // ==================================================
 
-      const nameExists =
-        await client.query(
-          `
-          SELECT id
-          FROM users
-          WHERE name = $1
-          LIMIT 1
-          `,
-          [name]
-        );
-
-      if (
-        nameExists.rows.length > 0
-      ) {
-        return res
-          .status(409)
-          .json({
-            message:
-              "この名前は既に使用されています。別の名前を入力してください。"
-          });
-      }
+      // ==================================================
+      // パスワード
+      // ==================================================
 
       const passwordHash =
         await bcrypt.hash(
@@ -810,8 +916,13 @@ app.post(
           12
         );
 
+
+      // ==================================================
+      // 登録
+      // ==================================================
+
       const result =
-        await client.query(
+        await pool.query(
           `
           INSERT INTO users (
             email,
@@ -831,15 +942,24 @@ app.post(
           ]
         );
 
+
       const user =
         result.rows[0];
+
+
+      // ==================================================
+      // 自動ログイン
+      // ==================================================
 
       req.session.userId =
         user.id;
 
+
       req.session.save(
         (error) => {
+
           if (error) {
+
             console.error(
               "register session save error:",
               error
@@ -848,36 +968,375 @@ app.post(
             return res
               .status(500)
               .json({
+
                 message:
                   "ログインセッションの保存に失敗しました。"
+
               });
+
           }
 
+
           return res.json({
+
             user:
               sanitizeUser(
                 user
-              )
+              ),
+
+            accountCount:
+              accountCount + 1,
+
+            maxAccounts:
+              5
+
           });
+
         }
       );
+
     } catch (error) {
+
       console.error(
         "/api/register error:",
         error
       );
 
+
+      // ==================================================
+      // 同時登録などで5個を超えないようにする
+      // ==================================================
+
+      if (
+        error &&
+        error.code === "23505"
+      ) {
+
+        return res
+          .status(409)
+          .json({
+
+            message:
+              "アカウントを作成できませんでした。もう一度お試しください。"
+
+          });
+
+      }
+
+
       return res
         .status(500)
         .json({
+
           message:
             "登録に失敗しました。"
+
         });
-    } finally {
-      client.release();
+
     }
+
   }
 );
+
+
+// ==================================================
+// アカウント削除
+// ==================================================
+//
+// 自分と同じメールアドレスのアカウントだけ
+// 削除できます。
+//
+// 現在ログイン中のアカウントを削除した場合は
+// セッションも破棄します。
+//
+
+app.delete(
+  "/api/accounts/:id",
+  requireLogin,
+  async (req, res) => {
+
+    const client =
+      await pool.connect();
+
+
+    try {
+
+      const accountId =
+        Number(
+          req.params.id
+        );
+
+
+      if (
+        !Number.isInteger(accountId) ||
+        accountId <= 0
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            message:
+              "無効なアカウントです。"
+
+          });
+
+      }
+
+
+      // ==================================================
+      // 現在のユーザー確認
+      // ==================================================
+
+      const currentResult =
+        await client.query(
+          `
+          SELECT
+            id,
+            email
+          FROM users
+          WHERE id = $1
+          LIMIT 1
+          `,
+          [
+            req.session.userId
+          ]
+        );
+
+
+      if (
+        currentResult.rows.length === 0
+      ) {
+
+        return res
+          .status(401)
+          .json({
+
+            message:
+              "現在のアカウントが見つかりません。"
+
+          });
+
+      }
+
+
+      const currentUser =
+        currentResult.rows[0];
+
+
+      // ==================================================
+      // 削除対象確認
+      // ==================================================
+
+      const targetResult =
+        await client.query(
+          `
+          SELECT
+            id,
+            email,
+            name
+          FROM users
+          WHERE id = $1
+          LIMIT 1
+          `,
+          [
+            accountId
+          ]
+        );
+
+
+      if (
+        targetResult.rows.length === 0
+      ) {
+
+        return res
+          .status(404)
+          .json({
+
+            message:
+              "削除するアカウントが見つかりません。"
+
+          });
+
+      }
+
+
+      const targetUser =
+        targetResult.rows[0];
+
+
+      // ==================================================
+      // 同じメールアドレスか確認
+      // ==================================================
+
+      if (
+        targetUser.email !==
+        currentUser.email
+      ) {
+
+        return res
+          .status(403)
+          .json({
+
+            message:
+              "このアカウントを削除する権限がありません。"
+
+          });
+
+      }
+
+
+      // ==================================================
+      // 最後の1アカウントは削除可能
+      // ==================================================
+      //
+      // 「5個作ったら1個削除してまた作る」
+      // という使い方を可能にするため、
+      // 1個しかない場合も削除できます。
+      //
+      // 現在ログイン中ならログアウト扱いにします。
+      //
+
+      await client.query(
+        "BEGIN"
+      );
+
+
+      await client.query(
+        `
+        DELETE FROM users
+        WHERE id = $1
+        `,
+        [
+          accountId
+        ]
+      );
+
+
+      await client.query(
+        "COMMIT"
+      );
+
+
+      const deletedCurrent =
+        Number(accountId) ===
+        Number(req.session.userId);
+
+
+      if (
+        deletedCurrent
+      ) {
+
+        req.session.destroy(
+          (sessionError) => {
+
+            if (sessionError) {
+
+              console.error(
+                "delete account session destroy error:",
+                sessionError
+              );
+
+              return res
+                .status(500)
+                .json({
+
+                  message:
+                    "アカウントは削除されましたが、ログアウト処理に失敗しました。"
+
+                });
+
+            }
+
+
+            res.clearCookie(
+              "connect.sid",
+              {
+
+                httpOnly:
+                  true,
+
+                secure:
+                  process.env.NODE_ENV === "production",
+
+                sameSite:
+                  "lax"
+
+              }
+            );
+
+
+            return res.json({
+
+              success:
+                true,
+
+              deletedCurrent:
+                true,
+
+              message:
+                "アカウントを削除しました。"
+
+            });
+
+          }
+        );
+
+        return;
+
+      }
+
+
+      return res.json({
+
+        success:
+          true,
+
+        deletedCurrent:
+          false,
+
+        message:
+          "アカウントを削除しました。"
+
+      });
+
+    } catch (error) {
+
+      try {
+
+        await client.query(
+          "ROLLBACK"
+        );
+
+      } catch {
+        // 無視
+      }
+
+
+      console.error(
+        "/api/accounts/:id DELETE error:",
+        error
+      );
+
+
+      return res
+        .status(500)
+        .json({
+
+          message:
+            "アカウントの削除に失敗しました。"
+
+        });
+
+    } finally {
+
+      client.release();
+
+    }
+
+  }
+);
+
 
 // ==================================================
 // ログイン
@@ -886,7 +1345,9 @@ app.post(
 app.post(
   "/api/login",
   async (req, res) => {
+
     try {
+
       const name =
         normalizeName(
           req.body.name
@@ -897,14 +1358,20 @@ app.post(
           req.body.password || ""
         );
 
+
       if (!name || !password) {
+
         return res
           .status(400)
           .json({
+
             message:
               "名前とパスワードを入力してください。"
+
           });
+
       }
+
 
       const result =
         await pool.query(
@@ -916,24 +1383,34 @@ app.post(
             password_hash
           FROM users
           WHERE name = $1
+          ORDER BY created_at ASC
           LIMIT 1
           `,
-          [name]
+          [
+            name
+          ]
         );
+
 
       if (
         result.rows.length === 0
       ) {
+
         return res
           .status(401)
           .json({
+
             message:
               "名前またはパスワードが正しくありません。"
+
           });
+
       }
+
 
       const user =
         result.rows[0];
+
 
       const valid =
         await bcrypt.compare(
@@ -941,18 +1418,30 @@ app.post(
           user.password_hash
         );
 
+
       if (!valid) {
+
         return res
           .status(401)
           .json({
+
             message:
               "名前またはパスワードが正しくありません。"
+
           });
+
       }
+
+
+      // ==================================================
+      // セッション固定攻撃対策
+      // ==================================================
 
       req.session.regenerate(
         (error) => {
+
           if (error) {
+
             console.error(
               "session regenerate error:",
               error
@@ -961,17 +1450,24 @@ app.post(
             return res
               .status(500)
               .json({
+
                 message:
                   "ログインセッションの作成に失敗しました。"
+
               });
+
           }
+
 
           req.session.userId =
             user.id;
 
+
           req.session.save(
-            (saveError) => {
+            async (saveError) => {
+
               if (saveError) {
+
                 console.error(
                   "session save error:",
                   saveError
@@ -980,10 +1476,14 @@ app.post(
                 return res
                   .status(500)
                   .json({
+
                     message:
                       "ログインセッションの保存に失敗しました。"
+
                   });
+
               }
+
 
               console.log(
                 "Login successful:",
@@ -992,17 +1492,68 @@ app.post(
                 user.id
               );
 
+
+              // ==================================================
+              // 同じメールアドレスのアカウント数
+              // ==================================================
+
+              let accountCount =
+                1;
+
+
+              try {
+
+                const countResult =
+                  await pool.query(
+                    `
+                    SELECT COUNT(*)::INTEGER AS count
+                    FROM users
+                    WHERE email = $1
+                    `,
+                    [
+                      user.email
+                    ]
+                  );
+
+
+                accountCount =
+                  Number(
+                    countResult.rows[0].count
+                  );
+
+              } catch (countError) {
+
+                console.error(
+                  "account count error:",
+                  countError
+                );
+
+              }
+
+
               return res.json({
+
                 user:
                   sanitizeUser(
                     user
-                  )
+                  ),
+
+                accountCount:
+                  accountCount,
+
+                maxAccounts:
+                  5
+
               });
+
             }
           );
+
         }
       );
+
     } catch (error) {
+
       console.error(
         "/api/login error:",
         error
@@ -1011,12 +1562,17 @@ app.post(
       return res
         .status(500)
         .json({
+
           message:
             "ログインに失敗しました。"
+
         });
+
     }
+
   }
 );
+
 
 // ==================================================
 // ログアウト
@@ -1025,9 +1581,12 @@ app.post(
 app.post(
   "/api/logout",
   (req, res) => {
+
     req.session.destroy(
       (error) => {
+
         if (error) {
+
           console.error(
             "/api/logout error:",
             error
@@ -1036,29 +1595,45 @@ app.post(
           return res
             .status(500)
             .json({
+
               message:
                 "ログアウトに失敗しました。"
-            });
+
+              });
+
         }
+
 
         res.clearCookie(
           "connect.sid",
           {
-            httpOnly: true,
+
+            httpOnly:
+              true,
+
             secure:
-              process.env.NODE_ENV ===
-              "production",
-            sameSite: "lax"
+              process.env.NODE_ENV === "production",
+
+            sameSite:
+              "lax"
+
           }
         );
 
+
         return res.json({
-          success: true
+
+          success:
+            true
+
         });
+
       }
     );
+
   }
 );
+
 
 // ==================================================
 // パスワードリセット
@@ -1067,25 +1642,33 @@ app.post(
 app.post(
   "/api/forgot-password",
   async (req, res) => {
+
     try {
+
       const email =
         normalizeEmail(
           req.body.email
         );
 
+
       if (!email) {
+
         return res
           .status(400)
           .json({
+
             message:
               "メールアドレスを入力してください。"
+
           });
+
       }
 
+
       /*
-       * 同じメールアドレスで複数アカウントが存在するため、
-       * パスワードリセット時は該当アカウントをすべて
-       * リセットできるようにする。
+       * 同じメールアドレスで複数アカウントが
+       * 存在するため、ここでは全アカウントに対して
+       * リセット処理を行います。
        */
 
       const result =
@@ -1097,23 +1680,40 @@ app.post(
             name
           FROM users
           WHERE email = $1
-          ORDER BY id ASC
+          ORDER BY created_at ASC
           `,
-          [email]
+          [
+            email
+          ]
         );
+
+
+      /*
+       * アカウントが存在しなくても同じメッセージを返す
+       */
 
       if (
         result.rows.length === 0
       ) {
+
         return res.json({
+
           message:
             "パスワード再設定の案内を送信しました。"
+
         });
+
       }
 
+
+      const users =
+        result.rows;
+
+
       for (
-        const user of result.rows
+        const user of users
       ) {
+
         await pool.query(
           `
           UPDATE password_reset_tokens
@@ -1121,14 +1721,21 @@ app.post(
           WHERE user_id = $1
             AND used = FALSE
           `,
-          [user.id]
+          [
+            user.id
+          ]
         );
+
 
         const token =
           generateResetToken();
 
+
         const tokenHash =
-          hashToken(token);
+          hashToken(
+            token
+          );
+
 
         await pool.query(
           `
@@ -1149,12 +1756,15 @@ app.post(
           ]
         );
 
+
         const baseUrl =
           process.env.BASE_URL ||
           `http://localhost:${PORT}`;
 
+
         const resetUrl =
           `${baseUrl}/reset-password.html?token=${token}`;
+
 
         console.log(
           "=========================================="
@@ -1165,7 +1775,10 @@ app.post(
         );
 
         console.log(
-          user.name,
+          `Account: ${user.name}`
+        );
+
+        console.log(
           resetUrl
         );
 
@@ -1173,13 +1786,16 @@ app.post(
           "=========================================="
         );
 
+
         if (
           process.env.SMTP_HOST &&
           process.env.SMTP_USER &&
           process.env.SMTP_PASS
         ) {
+
           const transporter =
             nodemailer.createTransport({
+
               host:
                 process.env.SMTP_HOST,
 
@@ -1195,15 +1811,20 @@ app.post(
                 ) === "true",
 
               auth: {
+
                 user:
                   process.env.SMTP_USER,
 
                 pass:
                   process.env.SMTP_PASS
+
               }
+
             });
 
+
           await transporter.sendMail({
+
             from:
               process.env.MAIL_FROM ||
               process.env.SMTP_USER,
@@ -1226,15 +1847,23 @@ app.post(
                 "",
                 "このリンクは30分間有効です。"
               ].join("\n")
+
           });
+
         }
+
       }
 
+
       return res.json({
+
         message:
           "パスワード再設定の案内を送信しました。"
+
       });
+
     } catch (error) {
+
       console.error(
         "/api/forgot-password error:",
         error
@@ -1243,12 +1872,17 @@ app.post(
       return res
         .status(500)
         .json({
+
           message:
             "パスワード再設定の処理に失敗しました。"
+
         });
+
     }
+
   }
 );
+
 
 // ==================================================
 // パスワード再設定API
@@ -1257,7 +1891,9 @@ app.post(
 app.post(
   "/api/reset-password",
   async (req, res) => {
+
     try {
+
       const token =
         String(
           req.body.token || ""
@@ -1268,26 +1904,40 @@ app.post(
           req.body.password || ""
         );
 
+
       if (!token) {
+
         return res
           .status(400)
           .json({
+
             message:
               "リセットトークンがありません。"
+
           });
+
       }
 
+
       if (password.length < 8) {
+
         return res
           .status(400)
           .json({
+
             message:
               "パスワードは8文字以上にしてください。"
+
           });
+
       }
 
+
       const tokenHash =
-        hashToken(token);
+        hashToken(
+          token
+        );
+
 
       const result =
         await pool.query(
@@ -1301,28 +1951,38 @@ app.post(
             AND expires_at > NOW()
           LIMIT 1
           `,
-          [tokenHash]
+          [
+            tokenHash
+          ]
         );
+
 
       if (
         result.rows.length === 0
       ) {
+
         return res
           .status(400)
           .json({
+
             message:
               "このリセットリンクは無効または期限切れです。"
+
           });
+
       }
+
 
       const resetToken =
         result.rows[0];
+
 
       const passwordHash =
         await bcrypt.hash(
           password,
           12
         );
+
 
       await pool.query(
         `
@@ -1336,21 +1996,31 @@ app.post(
         ]
       );
 
+
       await pool.query(
         `
         UPDATE password_reset_tokens
         SET used = TRUE
         WHERE id = $1
         `,
-        [resetToken.id]
+        [
+          resetToken.id
+        ]
       );
 
+
       return res.json({
-        success: true,
+
+        success:
+          true,
+
         message:
           "パスワードを変更しました。"
+
       });
+
     } catch (error) {
+
       console.error(
         "/api/reset-password error:",
         error
@@ -1359,12 +2029,17 @@ app.post(
       return res
         .status(500)
         .json({
+
           message:
             "パスワードの変更に失敗しました。"
+
         });
+
     }
+
   }
 );
+
 
 // ==================================================
 // Socket.IO 認証
@@ -1372,42 +2047,83 @@ app.post(
 
 io.use(
   (socket, next) => {
+
     const currentSession =
       socket.request.session;
+
+
+    console.log(
+      "Socket session:",
+      currentSession
+        ? {
+            id:
+              currentSession.id,
+
+            userId:
+              currentSession.userId
+          }
+        : null
+    );
+
 
     if (
       !currentSession ||
       !currentSession.userId
     ) {
+
+      console.log(
+        "Socket.IO authentication failed."
+      );
+
       return next(
         new Error(
           "UNAUTHORIZED"
         )
       );
+
     }
+
 
     const userId =
       Number(
         currentSession.userId
       );
 
+
     if (
       !Number.isInteger(userId) ||
       userId <= 0
     ) {
+
+      console.log(
+        "Socket.IO invalid userId:",
+        currentSession.userId
+      );
+
       return next(
         new Error(
           "UNAUTHORIZED"
         )
       );
+
     }
+
 
     socket.userId =
       userId;
 
+
+    console.log(
+      "Socket.IO authentication successful:",
+      socket.userId
+    );
+
+
     next();
+
   }
 );
+
 
 // ==================================================
 // Socket.IO
@@ -1416,6 +2132,7 @@ io.use(
 io.on(
   "connection",
   async (socket) => {
+
     console.log(
       "Socket connected:",
       socket.id,
@@ -1423,9 +2140,12 @@ io.on(
       socket.userId
     );
 
+
     let userResult;
 
+
     try {
+
       userResult =
         await pool.query(
           `
@@ -1436,9 +2156,13 @@ io.on(
           FROM users
           WHERE id = $1
           `,
-          [socket.userId]
+          [
+            socket.userId
+          ]
         );
+
     } catch (error) {
+
       console.error(
         "Socket user query error:",
         error
@@ -1447,22 +2171,39 @@ io.on(
       socket.disconnect();
 
       return;
+
     }
+
 
     if (
       userResult.rows.length === 0
     ) {
+
       socket.disconnect();
 
       return;
+
     }
+
 
     const user =
       userResult.rows[0];
 
+
+    console.log(
+      "Socket user authenticated:",
+      user.name
+    );
+
+
+    // ==================================================
+    // 雑談へ参加
+    // ==================================================
+
     await joinCasual(
       socket
     );
+
 
     // ==================================================
     // 雑談
@@ -1471,11 +2212,14 @@ io.on(
     socket.on(
       "join casual",
       async () => {
+
         await joinCasual(
           socket
         );
+
       }
     );
+
 
     // ==================================================
     // メッセージ送信
@@ -1484,7 +2228,9 @@ io.on(
     socket.on(
       "chat message",
       async (data) => {
+
         try {
+
           const room =
             String(
               data?.room || ""
@@ -1495,52 +2241,74 @@ io.on(
               data?.text || ""
             ).trim();
 
+
           if (!room || !text) {
+
             return;
+
           }
+
 
           if (
             text.length > 5000
           ) {
+
             socket.emit(
               "message send error",
               {
+
                 message:
                   "メッセージが長すぎます。"
+
               }
             );
 
             return;
+
           }
+
 
           const socketRooms =
             Array.from(
               socket.rooms
             );
 
+
           if (
             !socketRooms.includes(
               room
             )
           ) {
+
             socket.emit(
               "message send error",
               {
+
                 message:
                   "この部屋には参加していません。"
+
               }
             );
 
             return;
+
           }
 
-          let replyToId = null;
-          let replyToUsername = null;
-          let replyToText = null;
+
+          let replyToId =
+            null;
+
+          let replyToUsername =
+            null;
+
+          let replyToText =
+            null;
+
 
           if (
             data?.replyToId
           ) {
+
             const replyResult =
               await pool.query(
                 `
@@ -1552,15 +2320,19 @@ io.on(
                 WHERE id = $1
                 LIMIT 1
                 `,
-                [data.replyToId]
+                [
+                  data.replyToId
+                ]
               );
 
+
             if (
-              replyResult.rows.length >
-              0
+              replyResult.rows.length > 0
             ) {
+
               const reply =
                 replyResult.rows[0];
+
 
               replyToId =
                 reply.id;
@@ -1570,8 +2342,11 @@ io.on(
 
               replyToText =
                 reply.text;
+
             }
+
           }
+
 
           const result =
             await pool.query(
@@ -1617,10 +2392,12 @@ io.on(
               ]
             );
 
+
           const message =
             formatMessage(
               result.rows[0]
             );
+
 
           io
             .to(room)
@@ -1628,22 +2405,31 @@ io.on(
               "chat message",
               message
             );
+
+
         } catch (error) {
+
           console.error(
             "chat message error:",
             error
           );
 
+
           socket.emit(
             "message send error",
             {
+
               message:
                 "メッセージを送信できませんでした。"
+
             }
           );
+
         }
+
       }
     );
+
 
     // ==================================================
     // 部屋作成
@@ -1652,37 +2438,48 @@ io.on(
     socket.on(
       "create room",
       async (data) => {
+
         try {
+
           const name =
             String(
               data?.name || ""
             ).trim();
 
+
           if (!name) {
+
             socket.emit(
               "create room error",
               {
+
                 message:
                   "部屋の名前を入力してください。"
+
               }
             );
 
             return;
+
           }
 
-          if (
-            name.length > 100
-          ) {
+
+          if (name.length > 100) {
+
             socket.emit(
               "create room error",
               {
+
                 message:
                   "部屋の名前は100文字以内にしてください。"
+
               }
             );
 
             return;
+
           }
+
 
           const id =
             generateRoomId();
@@ -1690,27 +2487,36 @@ io.on(
           let inviteCode =
             generateInviteCode();
 
-          for (;;) {
+
+          while (true) {
+
             const exists =
               await pool.query(
                 `
                 SELECT id
                 FROM rooms
                 WHERE invite_code = $1
-                LIMIT 1
                 `,
-                [inviteCode]
+                [
+                  inviteCode
+                ]
               );
+
 
             if (
               exists.rows.length === 0
             ) {
+
               break;
+
             }
+
 
             inviteCode =
               generateInviteCode();
+
           }
+
 
           const result =
             await pool.query(
@@ -1741,20 +2547,25 @@ io.on(
               ]
             );
 
+
           const room =
             result.rows[0];
+
 
           leaveCurrentRooms(
             socket
           );
 
+
           await socket.join(
             room.id
           );
 
+
           socket.emit(
             "room created",
             {
+
               id:
                 room.id,
 
@@ -1763,29 +2574,40 @@ io.on(
 
               inviteCode:
                 room.invite_code
+
             }
           );
+
 
           await sendPreviousMessages(
             socket,
             room.id
           );
+
+
         } catch (error) {
+
           console.error(
             "create room error:",
             error
           );
 
+
           socket.emit(
             "create room error",
             {
+
               message:
                 "部屋を作成できませんでした。"
+
             }
           );
+
         }
+
       }
     );
+
 
     // ==================================================
     // 部屋参加
@@ -1794,7 +2616,9 @@ io.on(
     socket.on(
       "join room",
       async (data) => {
+
         try {
+
           const code =
             String(
               data?.code || ""
@@ -1802,17 +2626,23 @@ io.on(
               .trim()
               .toUpperCase();
 
+
           if (!code) {
+
             socket.emit(
               "join room error",
               {
+
                 message:
                   "招待コードを入力してください。"
+
               }
             );
 
             return;
+
           }
+
 
           const result =
             await pool.query(
@@ -1825,37 +2655,49 @@ io.on(
               WHERE invite_code = $1
               LIMIT 1
               `,
-              [code]
+              [
+                code
+              ]
             );
+
 
           if (
             result.rows.length === 0
           ) {
+
             socket.emit(
               "join room error",
               {
+
                 message:
                   "部屋が見つかりません。"
+
               }
             );
 
             return;
+
           }
+
 
           const room =
             result.rows[0];
+
 
           leaveCurrentRooms(
             socket
           );
 
+
           await socket.join(
             room.id
           );
 
+
           socket.emit(
             "room joined",
             {
+
               id:
                 room.id,
 
@@ -1864,29 +2706,40 @@ io.on(
 
               inviteCode:
                 room.invite_code
+
             }
           );
+
 
           await sendPreviousMessages(
             socket,
             room.id
           );
+
+
         } catch (error) {
+
           console.error(
             "join room error:",
             error
           );
 
+
           socket.emit(
             "join room error",
             {
+
               message:
                 "部屋に参加できませんでした。"
+
             }
           );
+
         }
+
       }
     );
+
 
     // ==================================================
     // 編集
@@ -1895,7 +2748,9 @@ io.on(
     socket.on(
       "edit message",
       async (data) => {
+
         try {
+
           const id =
             Number(
               data?.id
@@ -1906,26 +2761,35 @@ io.on(
               data?.text || ""
             ).trim();
 
+
           if (
             !Number.isInteger(id) ||
             !text
           ) {
+
             return;
+
           }
+
 
           if (
             text.length > 5000
           ) {
+
             socket.emit(
               "message edit error",
               {
+
                 message:
                   "メッセージが長すぎます。"
+
               }
             );
 
             return;
+
           }
+
 
           const result =
             await pool.query(
@@ -1955,24 +2819,31 @@ io.on(
               ]
             );
 
+
           if (
             result.rows.length === 0
           ) {
+
             socket.emit(
               "message edit error",
               {
+
                 message:
                   "このコメントを編集できません。"
+
               }
             );
 
             return;
+
           }
+
 
           const message =
             formatMessage(
               result.rows[0]
             );
+
 
           io
             .to(message.room)
@@ -1980,22 +2851,31 @@ io.on(
               "message edited",
               message
             );
+
+
         } catch (error) {
+
           console.error(
             "edit message error:",
             error
           );
 
+
           socket.emit(
             "message edit error",
             {
+
               message:
                 "コメントを編集できませんでした。"
+
             }
           );
+
         }
+
       }
     );
+
 
     // ==================================================
     // 削除
@@ -2004,17 +2884,23 @@ io.on(
     socket.on(
       "delete message",
       async (data) => {
+
         try {
+
           const id =
             Number(
               data?.id
             );
 
+
           if (
             !Number.isInteger(id)
           ) {
+
             return;
+
           }
+
 
           const result =
             await pool.query(
@@ -2032,51 +2918,69 @@ io.on(
               ]
             );
 
+
           if (
             result.rows.length === 0
           ) {
+
             socket.emit(
               "message delete error",
               {
+
                 message:
                   "このコメントを削除できません。"
+
               }
             );
 
             return;
+
           }
+
 
           const message =
             result.rows[0];
+
 
           io
             .to(message.room)
             .emit(
               "message deleted",
               {
+
                 id:
                   message.id,
 
                 room:
                   message.room
+
               }
             );
+
+
         } catch (error) {
+
           console.error(
             "delete message error:",
             error
           );
 
+
           socket.emit(
             "message delete error",
             {
+
               message:
                 "コメントを削除できませんでした。"
+
             }
           );
+
         }
+
       }
     );
+
 
     // ==================================================
     // 切断
@@ -2085,15 +2989,19 @@ io.on(
     socket.on(
       "disconnect",
       (reason) => {
+
         console.log(
           "Socket disconnected:",
           socket.id,
           reason
         );
+
       }
     );
+
   }
 );
+
 
 // ==================================================
 // Socket 関数
@@ -2102,52 +3010,71 @@ io.on(
 async function joinCasual(
   socket
 ) {
+
   try {
+
     leaveCurrentRooms(
       socket
     );
+
 
     await socket.join(
       "casual"
     );
 
+
     socket.emit(
       "casual joined"
     );
+
 
     await sendPreviousMessages(
       socket,
       "casual"
     );
+
   } catch (error) {
+
     console.error(
       "joinCasual error:",
       error
     );
+
   }
+
 }
+
 
 function leaveCurrentRooms(
   socket
 ) {
+
   for (
     const room of socket.rooms
   ) {
+
     if (
       room !== socket.id
     ) {
+
       socket.leave(
         room
       );
+
     }
+
   }
+
 }
+
 
 async function sendPreviousMessages(
   socket,
   room
 ) {
+
   try {
+
     const result =
       await pool.query(
         `
@@ -2168,8 +3095,11 @@ async function sendPreviousMessages(
         ORDER BY created_at ASC
         LIMIT 1000
         `,
-        [room]
+        [
+          room
+        ]
       );
+
 
     socket.emit(
       "previous messages",
@@ -2177,23 +3107,31 @@ async function sendPreviousMessages(
         formatMessage
       )
     );
+
   } catch (error) {
+
     console.error(
       "previous messages error:",
       error
     );
 
+
     socket.emit(
       "previous messages",
       []
     );
+
   }
+
 }
+
 
 function formatMessage(
   row
 ) {
+
   return {
+
     id:
       row.id,
 
@@ -2223,43 +3161,58 @@ function formatMessage(
 
     createdAt:
       row.created_at
+
   };
+
 }
+
 
 // ==================================================
 // 24時間以上経過したメッセージ削除
 // ==================================================
 
 async function cleanupOldMessages() {
+
   try {
+
     const result =
       await pool.query(
         `
         DELETE FROM messages
-        WHERE created_at <
-          NOW() - INTERVAL '24 hours'
+        WHERE created_at < NOW() - INTERVAL '24 hours'
         `
       );
+
 
     if (
       result.rowCount > 0
     ) {
+
       console.log(
         `古いメッセージを ${result.rowCount} 件削除しました。`
       );
+
     }
+
   } catch (error) {
+
     console.error(
       "cleanupOldMessages error:",
       error
     );
+
   }
+
 }
+
 
 setInterval(
   cleanupOldMessages,
-  10 * 60 * 1000
+  10 *
+  60 *
+  1000
 );
+
 
 // ==================================================
 // Health Check
@@ -2268,26 +3221,43 @@ setInterval(
 app.get(
   "/health",
   async (req, res) => {
+
     try {
+
       await pool.query(
         "SELECT 1"
       );
 
+
       res.json({
-        status: "ok",
-        database: "connected"
+
+        status:
+          "ok",
+
+        database:
+          "connected"
+
       });
+
     } catch (error) {
+
       res
         .status(500)
         .json({
-          status: "error",
+
+          status:
+            "error",
+
           database:
             "disconnected"
+
         });
+
     }
+
   }
 );
+
 
 // ==================================================
 // SPA fallback
@@ -2296,6 +3266,7 @@ app.get(
 app.get(
   "*",
   (req, res) => {
+
     res.sendFile(
       path.join(
         __dirname,
@@ -2303,23 +3274,29 @@ app.get(
         "index.html"
       )
     );
+
   }
 );
+
 
 // ==================================================
 // 起動
 // ==================================================
 
 async function start() {
+
   try {
+
     await initDatabase();
 
     await cleanupOldMessages();
+
 
     server.listen(
       PORT,
       "0.0.0.0",
       () => {
+
         console.log(
           "=========================================="
         );
@@ -2335,16 +3312,22 @@ async function start() {
         console.log(
           "=========================================="
         );
+
       }
     );
+
   } catch (error) {
+
     console.error(
       "Server startup failed:",
       error
     );
 
     process.exit(1);
+
   }
+
 }
+
 
 start();
