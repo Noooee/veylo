@@ -1,53 +1,63 @@
 /* ==================================================
    Veylo
    style.css
+   Design Edition
+================================================== */
+
+
+/* ==================================================
+   Variables
 ================================================== */
 
 :root {
 
-  --bg:
-    #f5f7fb;
+  --bg: #f5f7fb;
 
-  --surface:
-    #ffffff;
+  --surface: #ffffff;
 
-  --surface-soft:
-    #f8f9fc;
+  --surface-soft: #f8f9fc;
 
-  --border:
-    #e5e8ef;
+  --surface-hover: #f3f5fa;
 
-  --text:
-    #20242c;
+  --border: #e5e8ef;
 
-  --text-soft:
-    #737987;
+  --border-strong: #d9deea;
 
-  --primary:
-    #667eea;
+  --text: #20242c;
 
-  --primary-dark:
-    #5568d9;
+  --text-soft: #737987;
 
-  --primary-light:
-    #eef0ff;
+  --text-muted: #9ba1ad;
 
-  --danger:
-    #e05252;
+  --primary: #667eea;
+
+  --primary-dark: #5568d9;
+
+  --primary-light: #eef0ff;
+
+  --primary-glow:
+    rgba(102, 126, 234, .18);
+
+  --danger: #e05252;
+
+  --success: #45b86b;
+
+  --shadow-sm:
+    0 2px 8px rgba(31, 41, 55, .04);
 
   --shadow:
-    0 10px 35px rgba(
-      31,
-      41,
-      55,
-      0.08
-    );
+    0 10px 35px rgba(31, 41, 55, .08);
 
-  --radius:
-    14px;
+  --shadow-lg:
+    0 20px 60px rgba(31, 41, 55, .14);
 
-  --sidebar-width:
-    280px;
+  --radius-sm: 8px;
+
+  --radius: 12px;
+
+  --radius-lg: 18px;
+
+  --sidebar-width: 280px;
 
 }
 
@@ -63,11 +73,12 @@
 
 html,
 body {
-  margin: 0;
-  padding: 0;
 
   width: 100%;
   height: 100%;
+
+  margin: 0;
+  padding: 0;
 
   font-family:
     -apple-system,
@@ -78,24 +89,44 @@ body {
     "Yu Gothic",
     sans-serif;
 
-  color:
-    var(--text);
+  color: var(--text);
 
-  background:
-    var(--bg);
+  background: var(--bg);
+
+  -webkit-font-smoothing: antialiased;
+
 }
 
 
 button,
 input,
 select {
-  font-family:
-    inherit;
+
+  font-family: inherit;
+
 }
 
 
 button {
+
   cursor: pointer;
+
+  -webkit-tap-highlight-color:
+    transparent;
+
+}
+
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+
+  outline:
+    3px solid
+    rgba(102, 126, 234, .18);
+
+  outline-offset: 2px;
+
 }
 
 
@@ -109,28 +140,33 @@ button {
 ================================================== */
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+
+  width: 7px;
+  height: 7px;
+
 }
 
 
 ::-webkit-scrollbar-track {
+
   background: transparent;
+
 }
 
 
 ::-webkit-scrollbar-thumb {
-  background:
-    #cfd4df;
 
-  border-radius:
-    999px;
+  background: #d2d6df;
+
+  border-radius: 999px;
+
 }
 
 
 ::-webkit-scrollbar-thumb:hover {
-  background:
-    #b8becb;
+
+  background: #b9bfcc;
+
 }
 
 
@@ -139,8 +175,10 @@ button {
 ================================================== */
 
 .screen {
+
   width: 100%;
   height: 100vh;
+
 }
 
 
@@ -149,6 +187,7 @@ button {
 ================================================== */
 
 #authScreen {
+
   display: flex;
 
   align-items: center;
@@ -159,77 +198,145 @@ button {
   padding: 24px;
 
   background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(102,126,234,.10),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 85% 80%,
+      rgba(118,75,162,.07),
+      transparent 30%
+    ),
     linear-gradient(
       135deg,
-      #f4f6ff 0%,
-      #ffffff 50%,
-      #f5f7fb 100%
+      #f3f5ff 0%,
+      #ffffff 48%,
+      #f6f8fc 100%
     );
+
 }
 
 
 .auth-container {
+
   width: 100%;
-  max-width: 430px;
+
+  max-width: 420px;
+
+  animation:
+    authEnter .45s ease;
+
 }
 
 
+@keyframes authEnter {
+
+  from {
+
+    opacity: 0;
+
+    transform:
+      translateY(16px)
+      scale(.985);
+
+  }
+
+  to {
+
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+
+  }
+
+}
+
+
+/* ==================================================
+   Auth Logo
+================================================== */
+
 .logo-area {
+
   text-align: center;
 
-  margin-bottom: 30px;
+  margin-bottom: 28px;
+
 }
 
 
 .logo-area h1 {
+
   margin: 0;
 
-  font-size: 42px;
-  font-weight: 800;
+  color: var(--primary);
 
-  letter-spacing:
-    -1.5px;
+  font-size: 44px;
 
-  color:
-    var(--primary);
+  font-weight: 850;
+
+  letter-spacing: -2px;
+
+  text-shadow:
+    0 8px 25px
+    rgba(102,126,234,.18);
+
 }
 
 
 .logo-area p {
+
   margin:
-    8px 0 0;
+    7px 0 0;
 
-  color:
-    var(--text-soft);
+  color: var(--text-soft);
 
-  font-size: 14px;
+  font-size: 13px;
+
 }
 
 
+/* ==================================================
+   Auth Panel
+================================================== */
+
 .auth-panel {
-  padding: 32px;
+
+  padding: 34px;
 
   background:
-    var(--surface);
+    rgba(255,255,255,.92);
 
   border:
-    1px solid var(--border);
+    1px solid
+    rgba(229,232,239,.9);
 
-  border-radius:
-    20px;
+  border-radius: 22px;
 
   box-shadow:
-    var(--shadow);
+    0 20px 55px
+    rgba(31,41,55,.09);
+
+  backdrop-filter:
+    blur(12px);
+
 }
 
 
 .auth-panel h2 {
+
   margin:
-    0 0 25px;
+    0 0 26px;
 
   text-align: center;
 
-  font-size: 24px;
+  font-size: 23px;
+
+  font-weight: 800;
+
 }
 
 
@@ -238,27 +345,32 @@ button {
 ================================================== */
 
 .input-group {
+
   margin-bottom: 18px;
+
 }
 
 
 .input-group label,
 .settings-group > label {
+
   display: block;
 
   margin-bottom: 8px;
 
-  font-size: 13px;
-  font-weight: 700;
+  color: #505665;
 
-  color:
-    #505665;
+  font-size: 12px;
+
+  font-weight: 750;
+
 }
 
 
 .input-group input,
 .settings-group input,
 .settings-group select {
+
   width: 100%;
 
   height: 46px;
@@ -269,65 +381,80 @@ button {
   border:
     1px solid var(--border);
 
-  border-radius:
-    10px;
+  border-radius: 10px;
 
   outline: none;
 
-  background:
-    #fff;
+  background: #fff;
 
-  color:
-    var(--text);
+  color: var(--text);
 
   font-size: 14px;
 
   transition:
-    border-color .2s,
-    box-shadow .2s;
+    border-color .2s ease,
+    box-shadow .2s ease,
+    background .2s ease;
+
+}
+
+
+.input-group input:hover,
+.settings-group input:hover,
+.settings-group select:hover {
+
+  border-color:
+    var(--border-strong);
+
 }
 
 
 .input-group input:focus,
 .settings-group input:focus,
 .settings-group select:focus {
+
   border-color:
     var(--primary);
 
   box-shadow:
-    0 0 0 3px
-    rgba(
-      102,
-      126,
-      234,
-      .12
-    );
+    0 0 0 4px
+    rgba(102,126,234,.10);
+
+}
+
+
+.input-group input::placeholder {
+
+  color: #aab0bc;
+
 }
 
 
 .form-error {
+
   min-height: 20px;
 
   margin:
-    4px 0 12px;
+    4px 0 10px;
 
-  color:
-    var(--danger);
+  color: var(--danger);
 
-  font-size: 13px;
+  font-size: 12px;
+
 }
 
 
 .form-message {
+
   min-height: 20px;
 
   margin:
     5px 0 12px;
 
-  color:
-    var(--primary);
+  color: var(--primary);
 
-  font-size: 13px;
+  font-size: 12px;
+
 }
 
 
@@ -338,152 +465,186 @@ button {
 .primary-button,
 .secondary-button,
 .danger-button {
+
   min-height: 44px;
 
   padding:
     0 18px;
 
-  border-radius:
-    10px;
+  border-radius: 10px;
 
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13px;
+
+  font-weight: 750;
 
   transition:
-    .2s ease;
+    background .18s ease,
+    border-color .18s ease,
+    color .18s ease,
+    transform .18s ease,
+    box-shadow .18s ease;
+
 }
 
 
 .primary-button {
+
   border:
     1px solid var(--primary);
 
   background:
-    var(--primary);
+    linear-gradient(
+      135deg,
+      #7187f0,
+      var(--primary)
+    );
 
-  color:
-    #fff;
+  color: #fff;
+
+  box-shadow:
+    0 5px 15px
+    rgba(102,126,234,.20);
+
 }
 
 
 .primary-button:hover {
-  background:
-    var(--primary-dark);
 
-  border-color:
-    var(--primary-dark);
+  background:
+    linear-gradient(
+      135deg,
+      #647bea,
+      var(--primary-dark)
+    );
+
+  box-shadow:
+    0 7px 20px
+    rgba(102,126,234,.28);
 
   transform:
     translateY(-1px);
+
+}
+
+
+.primary-button:active {
+
+  transform:
+    translateY(1px);
+
 }
 
 
 .secondary-button {
+
   border:
     1px solid var(--border);
 
   background:
     #fff;
 
-  color:
-    var(--text);
+  color: var(--text);
+
 }
 
 
 .secondary-button:hover {
+
+  border-color:
+    var(--border-strong);
+
   background:
     var(--surface-soft);
+
 }
 
 
 .danger-button {
+
   border:
-    1px solid rgba(
-      224,
-      82,
-      82,
-      .2
-    );
+    1px solid
+    rgba(224,82,82,.18);
 
   background:
-    rgba(
-      224,
-      82,
-      82,
-      .08
-    );
+    rgba(224,82,82,.07);
 
-  color:
-    var(--danger);
+  color: var(--danger);
+
 }
 
 
 .danger-button:hover {
+
   background:
-    rgba(
-      224,
-      82,
-      82,
-      .14
-    );
+    rgba(224,82,82,.12);
+
 }
 
 
 .auth-panel form .primary-button {
+
   width: 100%;
+
 }
 
 
 .text-button {
+
   display: block;
 
   width: 100%;
 
-  margin-top: 16px;
+  margin-top: 15px;
 
-  padding:
-    8px;
+  padding: 8px;
 
-  border:
-    0;
+  border: 0;
 
-  background:
-    transparent;
+  background: transparent;
 
-  color:
-    var(--primary);
+  color: var(--primary);
 
-  font-size: 13px;
+  font-size: 12px;
+
 }
 
 
 .text-button:hover {
+
   text-decoration:
     underline;
+
 }
 
 
 .auth-panel > .secondary-button {
+
   width: 100%;
 
   margin-top: 8px;
+
 }
 
 
 /* ==================================================
-   App layout
+   App Layout
 ================================================== */
 
 #appScreen {
+
   overflow: hidden;
+
 }
 
 
 .app-layout {
+
   display: flex;
 
   width: 100%;
+
   height: 100vh;
+
 }
 
 
@@ -492,6 +653,7 @@ button {
 ================================================== */
 
 .sidebar {
+
   display: flex;
 
   flex-direction: column;
@@ -505,173 +667,239 @@ button {
   height: 100%;
 
   background:
-    var(--surface);
+    rgba(255,255,255,.96);
 
   border-right:
     1px solid var(--border);
+
+  box-shadow:
+    3px 0 18px
+    rgba(31,41,55,.025);
+
 }
 
 
 /* ==================================================
-   Sidebar header
+   Sidebar Header
 ================================================== */
 
 .sidebar-header {
+
   display: flex;
 
   align-items: center;
+
   justify-content: space-between;
 
   height: 72px;
 
   padding:
-    0 18px;
+    0 17px;
 
   border-bottom:
     1px solid var(--border);
+
 }
 
 
 .brand {
+
   display: flex;
 
   align-items: center;
 
   gap: 10px;
+
 }
 
 
 .brand-mark {
+
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
-  width: 34px;
-  height: 34px;
+  width: 35px;
+  height: 35px;
 
-  border-radius:
-    10px;
+  border-radius: 10px;
 
   background:
-    var(--primary);
+    linear-gradient(
+      135deg,
+      #778cf0,
+      var(--primary)
+    );
 
-  color:
-    #fff;
+  color: #fff;
 
-  font-weight: 800;
+  font-size: 15px;
+
+  font-weight: 850;
+
+  box-shadow:
+    0 5px 14px
+    rgba(102,126,234,.20);
+
 }
 
 
 .brand-name {
-  font-size: 20px;
-  font-weight: 800;
 
-  letter-spacing:
-    -.5px;
+  font-size: 19px;
+
+  font-weight: 850;
+
+  letter-spacing: -.6px;
+
 }
 
 
 .icon-button {
+
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
-  width: 38px;
-  height: 38px;
+  width: 37px;
+  height: 37px;
 
-  border:
-    0;
+  border: 0;
 
-  border-radius:
-    10px;
+  border-radius: 10px;
 
-  background:
-    transparent;
+  background: transparent;
 
-  color:
-    var(--text-soft);
+  color: var(--text-soft);
 
-  font-size: 19px;
+  font-size: 18px;
+
+  transition:
+    background .18s ease,
+    color .18s ease,
+    transform .18s ease;
+
 }
 
 
 .icon-button:hover {
+
   background:
     var(--surface-soft);
 
-  color:
-    var(--text);
+  color: var(--text);
+
+  transform:
+    rotate(8deg);
+
 }
 
 
 /* ==================================================
-   User card
+   User Card
 ================================================== */
 
 .user-card {
+
   display: flex;
 
   align-items: center;
 
-  gap: 12px;
+  gap: 11px;
 
   margin:
-    16px;
+    15px 15px 18px;
 
   padding:
-    12px;
+    11px;
 
   border:
     1px solid var(--border);
 
-  border-radius:
-    12px;
+  border-radius: 13px;
 
   background:
-    var(--surface-soft);
+    linear-gradient(
+      135deg,
+      #fafbfe,
+      #f6f8fc
+    );
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease;
+
+}
+
+
+.user-card:hover {
+
+  border-color:
+    rgba(102,126,234,.20);
+
+  box-shadow:
+    var(--shadow-sm);
+
 }
 
 
 .user-avatar {
+
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
-  width: 38px;
-  height: 38px;
+  width: 39px;
+  height: 39px;
 
-  min-width: 38px;
+  min-width: 39px;
 
-  border-radius:
-    50%;
+  border-radius: 50%;
 
   background:
-    var(--primary-light);
+    linear-gradient(
+      135deg,
+      #eef0ff,
+      #e7eaff
+    );
 
-  color:
-    var(--primary);
+  color: var(--primary);
+
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(102,126,234,.08);
+
 }
 
 
 .user-info {
+
   min-width: 0;
+
 }
 
 
 .user-label {
+
   margin-bottom: 2px;
 
-  color:
-    var(--text-soft);
+  color: var(--text-muted);
 
-  font-size: 10px;
+  font-size: 9px;
+
+  font-weight: 600;
+
 }
 
 
 .username-display {
+
   width: 100%;
 
   padding: 0;
@@ -680,63 +908,69 @@ button {
 
   outline: none;
 
-  background:
-    transparent;
+  background: transparent;
 
-  color:
-    var(--text);
+  color: var(--text);
 
   font-size: 13px;
-  font-weight: 700;
+
+  font-weight: 750;
+
+  text-overflow: ellipsis;
+
 }
 
 
 /* ==================================================
-   Room section
+   Room Section
 ================================================== */
 
 .room-section {
+
   flex: 1;
 
   min-height: 0;
 
   padding:
-    0 12px;
+    0 11px;
 
   overflow-y: auto;
+
 }
 
 
 .section-title {
+
   display: flex;
 
   align-items: center;
 
   padding:
-    4px 8px 10px;
+    2px 8px 9px;
 
-  color:
-    var(--text-soft);
+  color: var(--text-muted);
 
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 10px;
 
-  letter-spacing:
-    .5px;
+  font-weight: 850;
+
+  letter-spacing: .7px;
+
 }
 
 
 .room-button,
 .room-action-button {
+
   display: flex;
 
   align-items: center;
 
   width: 100%;
 
-  min-height: 44px;
+  min-height: 43px;
 
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 
   padding:
     0 11px;
@@ -744,117 +978,146 @@ button {
   border:
     1px solid transparent;
 
-  border-radius:
-    10px;
+  border-radius: 10px;
 
-  background:
-    transparent;
+  background: transparent;
 
-  color:
-    var(--text);
+  color: var(--text);
 
   text-align: left;
 
   font-size: 13px;
 
   transition:
-    .2s ease;
+    background .18s ease,
+    color .18s ease,
+    transform .18s ease;
+
 }
 
 
 .room-button:hover,
 .room-action-button:hover {
+
   background:
-    var(--surface-soft);
+    var(--surface-hover);
+
+  transform:
+    translateX(2px);
+
 }
 
 
 .room-button.active {
+
   background:
     var(--primary-light);
 
   color:
     var(--primary);
 
-  font-weight: 700;
+  font-weight: 750;
+
+  box-shadow:
+    inset 3px 0 0
+    var(--primary);
+
 }
 
 
 .room-icon {
+
   width: 28px;
 
-  font-size: 17px;
+  font-size: 16px;
+
 }
 
 
 .room-button-text {
+
   overflow: hidden;
 
   text-overflow: ellipsis;
 
   white-space: nowrap;
+
 }
 
 
 .room-action-button {
+
   color:
     var(--text-soft);
+
 }
 
 
 .room-action-button span:first-child {
+
   width: 28px;
 
   color:
     var(--primary);
 
   font-size: 18px;
+
 }
 
 
 /* ==================================================
-   Joined rooms
+   Joined Rooms
 ================================================== */
 
 .joined-room-section {
-  margin-top: 16px;
+
+  margin-top: 15px;
 
   padding-top: 14px;
 
   border-top:
     1px solid var(--border);
+
 }
 
 
 .joined-room-title {
+
   padding:
-    0 8px 9px;
+    0 8px 8px;
 
   color:
-    var(--text-soft);
+    var(--text-muted);
 
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 10px;
+
+  font-weight: 850;
+
+  letter-spacing: .5px;
+
 }
 
 
 .joined-rooms {
+
   display: flex;
 
   flex-direction: column;
 
-  gap: 4px;
+  gap: 3px;
+
 }
 
 
 .joined-room {
+
   display: flex;
 
   align-items: center;
 
   width: 100%;
 
-  min-height: 42px;
+  min-height: 41px;
 
   padding:
     0 10px;
@@ -862,103 +1125,115 @@ button {
   border:
     1px solid transparent;
 
-  border-radius:
-    10px;
+  border-radius: 10px;
 
-  background:
-    transparent;
+  background: transparent;
 
-  color:
-    var(--text);
+  color: var(--text);
 
   text-align: left;
 
   font-size: 13px;
 
-  cursor: pointer;
-
   transition:
-    .2s ease;
+    background .18s ease,
+    color .18s ease,
+    transform .18s ease;
+
 }
 
 
 .joined-room:hover {
+
   background:
-    var(--surface-soft);
+    var(--surface-hover);
+
+  transform:
+    translateX(2px);
+
 }
 
 
 .joined-room.active {
+
   background:
     var(--primary-light);
 
   border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .12
-    );
+    rgba(102,126,234,.10);
 
   color:
     var(--primary);
 
-  font-weight: 700;
+  font-weight: 750;
+
+  box-shadow:
+    inset 3px 0 0
+    var(--primary);
+
 }
 
 
 .joined-room-icon {
+
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   width: 28px;
 
   margin-right: 3px;
 
-  font-size: 15px;
+  font-size: 14px;
+
 }
 
 
 .joined-room-name {
+
+  flex: 1;
+
   overflow: hidden;
 
   text-overflow: ellipsis;
 
   white-space: nowrap;
 
-  flex: 1;
 }
 
 
 .joined-room-empty {
-  padding:
-    8px;
 
-  color:
-    #9aa0ad;
+  padding: 8px;
+
+  color: var(--text-muted);
 
   font-size: 11px;
 
   line-height: 1.5;
+
 }
 
 
 /* ==================================================
-   Sidebar footer
+   Sidebar Footer
 ================================================== */
 
 .sidebar-footer {
+
   padding:
-    14px 16px;
+    13px 16px;
 
   border-top:
     1px solid var(--border);
+
 }
 
 
 .connection-status {
+
   display: flex;
 
   align-items: center;
@@ -966,29 +1241,36 @@ button {
   gap: 7px;
 
   color:
-    var(--text-soft);
+    var(--text-muted);
 
-  font-size: 11px;
+  font-size: 10px;
+
 }
 
 
 .connection-dot {
+
   width: 7px;
   height: 7px;
 
-  border-radius:
-    50%;
+  border-radius: 50%;
 
   background:
-    #4caf50;
+    var(--success);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(69,184,107,.10);
+
 }
 
 
 /* ==================================================
-   Chat area
+   Chat Area
 ================================================== */
 
 .chat-area {
+
   position: relative;
 
   display: flex;
@@ -1003,33 +1285,45 @@ button {
 
   background:
     var(--bg);
+
 }
 
 
 /* ==================================================
-   Chat header
+   Chat Header
 ================================================== */
 
 .chat-header {
+
   display: flex;
 
   align-items: center;
+
   justify-content: space-between;
 
   min-height: 72px;
 
   padding:
-    0 24px;
+    0 25px;
 
   background:
-    var(--surface);
+    rgba(255,255,255,.96);
 
   border-bottom:
     1px solid var(--border);
+
+  box-shadow:
+    0 2px 12px
+    rgba(31,41,55,.025);
+
+  backdrop-filter:
+    blur(10px);
+
 }
 
 
 .chat-room-info {
+
   display: flex;
 
   align-items: center;
@@ -1037,29 +1331,37 @@ button {
   gap: 12px;
 
   min-width: 0;
+
 }
 
 
 .chat-room-icon {
+
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   width: 42px;
   height: 42px;
 
-  border-radius:
-    12px;
+  border-radius: 12px;
 
   background:
     var(--primary-light);
 
-  font-size: 20px;
+  font-size: 19px;
+
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(102,126,234,.05);
+
 }
 
 
 .chat-room-info h2 {
+
   margin: 0;
 
   overflow: hidden;
@@ -1068,21 +1370,31 @@ button {
 
   white-space: nowrap;
 
-  font-size: 18px;
+  font-size: 17px;
+
+  font-weight: 800;
+
 }
 
 
 .room-subtitle {
+
   margin-top: 3px;
 
   color:
     var(--text-soft);
 
-  font-size: 11px;
+  font-size: 10px;
+
 }
 
 
+/* ==================================================
+   Invite
+================================================== */
+
 .invite-area {
+
   display: flex;
 
   align-items: center;
@@ -1095,39 +1407,53 @@ button {
   border:
     1px solid var(--border);
 
-  border-radius:
-    9px;
+  border-radius: 9px;
 
   background:
     var(--surface-soft);
+
 }
 
 
 .invite-label {
-  color:
-    var(--text-soft);
 
-  font-size: 10px;
+  color:
+    var(--text-muted);
+
+  font-size: 9px;
+
 }
 
 
 .invite-code {
-  border:
-    0;
 
-  background:
-    transparent;
+  padding: 3px 5px;
+
+  border: 0;
+
+  border-radius: 5px;
+
+  background: transparent;
 
   color:
     var(--primary);
 
-  font-family:
-    monospace;
+  font-family: monospace;
+
+  font-size: 11px;
 
   font-weight: 800;
 
-  letter-spacing:
-    1px;
+  letter-spacing: 1px;
+
+}
+
+
+.invite-code:hover {
+
+  background:
+    var(--primary-light);
+
 }
 
 
@@ -1136,6 +1462,7 @@ button {
 ================================================== */
 
 .messages {
+
   position: relative;
 
   flex: 1;
@@ -1145,157 +1472,240 @@ button {
   overflow-y: auto;
 
   padding:
-    24px 24px 120px;
+    25px 25px 125px;
+
 }
 
 
 .message {
+
+  position: relative;
+
   max-width: 850px;
 
   margin:
-    0 auto 18px;
+    0 auto 12px;
 
   padding:
-    13px 15px;
+    14px 16px;
 
   border:
     1px solid var(--border);
 
-  border-radius:
-    13px;
+  border-radius: 14px;
 
   background:
     var(--surface);
 
   box-shadow:
-    0 2px 7px
-    rgba(
-      31,
-      41,
-      55,
-      .025
-    );
+    var(--shadow-sm);
 
   transition:
-    background .2s,
-    box-shadow .2s;
+    box-shadow .2s ease,
+    border-color .2s ease,
+    transform .2s ease;
+
+  animation:
+    messageIn .22s ease;
+
+}
+
+
+@keyframes messageIn {
+
+  from {
+
+    opacity: 0;
+
+    transform:
+      translateY(5px);
+
+  }
+
+  to {
+
+    opacity: 1;
+
+    transform:
+      translateY(0);
+
+  }
+
 }
 
 
 .message:hover {
+
+  border-color:
+    #dfe3eb;
+
   box-shadow:
-    0 4px 13px
-    rgba(
-      31,
-      41,
-      55,
-      .05
-    );
+    0 5px 18px
+    rgba(31,41,55,.065);
+
 }
 
 
 .message-header {
+
   display: flex;
 
   align-items: center;
 
   gap: 8px;
 
-  margin-bottom:
-    7px;
+  margin-bottom: 7px;
+
 }
 
 
 .message-user {
+
+  color:
+    var(--text);
+
   font-size: 13px;
+
   font-weight: 800;
+
 }
 
 
 .message-time {
+
   color:
-    var(--text-soft);
+    var(--text-muted);
 
   font-size: 10px;
+
 }
 
 
 .message-content {
+
   color:
     var(--text);
 
   font-size: 14px;
 
-  line-height:
-    1.65;
+  line-height: 1.65;
 
   word-break:
     break-word;
+
 }
 
 
 .message-text {
+
   white-space:
     pre-wrap;
+
 }
 
 
 .edited-label {
+
   display: inline-block;
 
-  margin-left: 7px;
+  margin-left: 6px;
+
+  color:
+    var(--text-muted);
+
+  font-size: 9px;
+
+}
+
+
+/* ==================================================
+   Own Message
+   JS側で .own-message が付いた場合
+================================================== */
+
+.message.own-message {
+
+  border-color:
+    rgba(102,126,234,.16);
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff,
+      #f8f9ff
+    );
+
+}
+
+
+/* ==================================================
+   Message Actions
+================================================== */
+
+.message-actions {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 4px;
+
+  margin-top: 9px;
+
+  opacity: .55;
+
+  transition:
+    opacity .2s ease;
+
+}
+
+
+.message:hover .message-actions {
+
+  opacity: 1;
+
+}
+
+
+.message-actions button {
+
+  padding:
+    4px 8px;
+
+  border: 0;
+
+  border-radius: 7px;
+
+  background: transparent;
 
   color:
     var(--text-soft);
 
   font-size: 10px;
-}
 
+  transition:
+    background .15s ease,
+    color .15s ease;
 
-.message-actions {
-  display: flex;
-
-  align-items: center;
-
-  gap: 5px;
-
-  margin-top:
-    10px;
-}
-
-
-.message-actions button {
-  padding:
-    4px 8px;
-
-  border:
-    0;
-
-  border-radius:
-    7px;
-
-  background:
-    transparent;
-
-  color:
-    var(--text-soft);
-
-  font-size: 11px;
 }
 
 
 .message-actions button:hover {
+
   background:
     var(--surface-soft);
 
   color:
     var(--text);
+
 }
 
 
 .message-actions .delete-action:hover {
+
   color:
     var(--danger);
+
 }
 
 
@@ -1304,8 +1714,8 @@ button {
 ================================================== */
 
 .message-reply-info {
-  margin-bottom:
-    8px;
+
+  margin-bottom: 8px;
 
   padding:
     7px 9px;
@@ -1313,8 +1723,7 @@ button {
   border-left:
     3px solid var(--primary);
 
-  border-radius:
-    5px;
+  border-radius: 5px;
 
   background:
     var(--primary-light);
@@ -1322,7 +1731,7 @@ button {
   color:
     var(--primary);
 
-  font-size: 11px;
+  font-size: 10px;
 
   cursor: pointer;
 
@@ -1331,48 +1740,67 @@ button {
   text-overflow: ellipsis;
 
   white-space: nowrap;
+
+  transition:
+    background .18s ease;
+
+}
+
+
+.message-reply-info:hover {
+
+  background:
+    rgba(102,126,234,.18);
+
 }
 
 
 .message-highlight {
+
   animation:
     messageHighlight 1.8s ease;
+
 }
 
 
 @keyframes messageHighlight {
 
   0% {
+
     background:
-      rgba(
-        102,
-        126,
-        234,
-        .3
-      );
+      rgba(102,126,234,.28);
+
   }
 
   100% {
+
     background:
       var(--surface);
+
   }
 
 }
 
 
+/* ==================================================
+   Reply Preview
+================================================== */
+
 .reply-preview {
+
   position: absolute;
 
-  left: 24px;
-  right: 24px;
+  left: 25px;
+  right: 25px;
 
-  bottom: 72px;
+  bottom: 76px;
 
   z-index: 5;
 
   display: flex;
 
   align-items: center;
+
   justify-content: space-between;
 
   gap: 12px;
@@ -1386,15 +1814,10 @@ button {
     9px 12px;
 
   border:
-    1px solid rgba(
-      102,
-      126,
-      234,
-      .2
-    );
+    1px solid
+    rgba(102,126,234,.18);
 
-  border-radius:
-    10px;
+  border-radius: 10px;
 
   background:
     var(--primary-light);
@@ -1402,42 +1825,26 @@ button {
   color:
     var(--primary);
 
-  font-size: 11px;
-}
+  font-size: 10px;
 
+  box-shadow:
+    0 4px 16px
+    rgba(102,126,234,.08);
 
-.reply-preview button {
-  width: 25px;
-  height: 25px;
-
-  border:
-    0;
-
-  border-radius:
-    50%;
-
-  background:
-    rgba(
-      102,
-      126,
-      234,
-      .12
-    );
-
-  color:
-    var(--primary);
 }
 
 
 /* ==================================================
-   New message
+   New Message
 ================================================== */
 
 .new-message-button {
+
   position: absolute;
 
-  right: 24px;
-  bottom: 85px;
+  right: 25px;
+
+  bottom: 91px;
 
   z-index: 10;
 
@@ -1445,15 +1852,10 @@ button {
     9px 14px;
 
   border:
-    1px solid rgba(
-      102,
-      126,
-      234,
-      .2
-    );
+    1px solid
+    rgba(102,126,234,.18);
 
-  border-radius:
-    999px;
+  border-radius: 999px;
 
   background:
     var(--surface);
@@ -1462,28 +1864,43 @@ button {
     var(--primary);
 
   box-shadow:
-    0 5px 20px
-    rgba(
-      31,
-      41,
-      55,
-      .12
-    );
+    0 6px 22px
+    rgba(31,41,55,.13);
 
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 11px;
+
+  font-weight: 750;
+
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease;
+
+}
+
+
+.new-message-button:hover {
+
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 9px 26px
+    rgba(31,41,55,.17);
+
 }
 
 
 /* ==================================================
-   Scroll controls
+   Scroll Buttons
 ================================================== */
 
 .scroll-buttons {
+
   position: absolute;
 
   right: 18px;
-  bottom: 135px;
+
+  bottom: 138px;
 
   z-index: 4;
 
@@ -1492,13 +1909,16 @@ button {
   flex-direction: column;
 
   gap: 6px;
+
 }
 
 
 .scroll-button {
+
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   width: 34px;
@@ -1507,8 +1927,7 @@ button {
   border:
     1px solid var(--border);
 
-  border-radius:
-    50%;
+  border-radius: 50%;
 
   background:
     var(--surface);
@@ -1518,34 +1937,36 @@ button {
 
   box-shadow:
     0 3px 10px
-    rgba(
-      31,
-      41,
-      55,
-      .06
-    );
+    rgba(31,41,55,.06);
+
+  transition:
+    transform .18s ease,
+    color .18s ease,
+    border-color .18s ease;
+
 }
 
 
 .scroll-button:hover {
+
   color:
     var(--primary);
 
   border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .3
-    );
+    rgba(102,126,234,.28);
+
+  transform:
+    translateY(-2px);
+
 }
 
 
 /* ==================================================
-   Input area
+   Message Input
 ================================================== */
 
 .message-input-area {
+
   position: absolute;
 
   left: 0;
@@ -1555,53 +1976,69 @@ button {
   z-index: 3;
 
   padding:
-    12px 24px 18px;
+    17px 25px 20px;
 
   background:
     linear-gradient(
       to top,
-      var(--bg) 70%,
-      transparent
+      var(--bg) 68%,
+      rgba(245,247,251,.92) 82%,
+      transparent 100%
     );
+
 }
 
 
 .message-form {
+
   display: flex;
 
   align-items: center;
 
-  gap: 8px;
+  gap: 7px;
 
   max-width: 850px;
 
   margin:
     0 auto;
 
-  padding:
-    5px;
+  padding: 5px;
 
   border:
     1px solid var(--border);
 
-  border-radius:
-    13px;
+  border-radius: 14px;
 
   background:
-    var(--surface);
+    rgba(255,255,255,.98);
 
   box-shadow:
-    0 6px 25px
-    rgba(
-      31,
-      41,
-      55,
-      .07
-    );
+    0 7px 28px
+    rgba(31,41,55,.09);
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease;
+
+}
+
+
+.message-form:focus-within {
+
+  border-color:
+    rgba(102,126,234,.42);
+
+  box-shadow:
+    0 8px 30px
+    rgba(31,41,55,.10),
+    0 0 0 3px
+    rgba(102,126,234,.07);
+
 }
 
 
 .message-form input {
+
   flex: 1;
 
   min-width: 0;
@@ -1611,56 +2048,89 @@ button {
   padding:
     0 12px;
 
-  border:
-    0;
+  border: 0;
 
-  outline:
-    none;
+  outline: none;
 
-  background:
-    transparent;
+  background: transparent;
 
-  color:
-    var(--text);
+  color: var(--text);
 
   font-size: 14px;
+
+}
+
+
+.message-form input::placeholder {
+
+  color:
+    #a8aeba;
+
 }
 
 
 .send-button {
+
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   width: 42px;
   height: 42px;
 
-  border:
-    0;
+  border: 0;
 
-  border-radius:
-    10px;
+  border-radius: 11px;
 
   background:
-    var(--primary);
+    linear-gradient(
+      135deg,
+      #7589ef,
+      var(--primary)
+    );
 
-  color:
-    #fff;
+  color: #fff;
 
-  font-size: 17px;
+  font-size: 16px;
+
+  box-shadow:
+    0 4px 13px
+    rgba(102,126,234,.22);
 
   transition:
-    .2s ease;
+    transform .18s ease,
+    box-shadow .18s ease,
+    background .18s ease;
+
 }
 
 
 .send-button:hover {
+
   background:
-    var(--primary-dark);
+    linear-gradient(
+      135deg,
+      #657bea,
+      var(--primary-dark)
+    );
 
   transform:
     translateY(-1px);
+
+  box-shadow:
+    0 6px 17px
+    rgba(102,126,234,.29);
+
+}
+
+
+.send-button:active {
+
+  transform:
+    translateY(1px);
+
 }
 
 
@@ -1669,6 +2139,7 @@ button {
 ================================================== */
 
 .modal {
+
   position: fixed;
 
   inset: 0;
@@ -1678,25 +2149,40 @@ button {
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   padding: 20px;
 
   background:
-    rgba(
-      20,
-      24,
-      32,
-      .42
-    );
+    rgba(20,24,32,.42);
 
   backdrop-filter:
-    blur(4px);
+    blur(5px);
+
+  animation:
+    modalFade .18s ease;
+
+}
+
+
+@keyframes modalFade {
+
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+
 }
 
 
 .modal-content {
+
   width: 100%;
+
   max-width: 440px;
 
   overflow: hidden;
@@ -1704,107 +2190,149 @@ button {
   border:
     1px solid var(--border);
 
-  border-radius:
-    17px;
+  border-radius: 18px;
 
   background:
     var(--surface);
 
   box-shadow:
-    0 25px 70px
-    rgba(
-      0,
-      0,
-      0,
-      .18
-    );
+    var(--shadow-lg);
+
+  animation:
+    modalEnter .22s ease;
+
+}
+
+
+@keyframes modalEnter {
+
+  from {
+
+    opacity: 0;
+
+    transform:
+      translateY(10px)
+      scale(.985);
+
+  }
+
+  to {
+
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+
+  }
+
 }
 
 
 .settings-content {
+
   max-width: 500px;
+
 }
 
 
 .modal-header {
+
   display: flex;
 
   align-items: center;
+
   justify-content: space-between;
 
   padding:
-    19px 22px;
+    18px 22px;
 
   border-bottom:
     1px solid var(--border);
+
 }
 
 
 .modal-header h2 {
+
   margin: 0;
 
-  font-size: 18px;
+  font-size: 17px;
+
+  font-weight: 800;
+
 }
 
 
 .modal-close {
+
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   width: 32px;
   height: 32px;
 
-  border:
-    0;
+  border: 0;
 
-  border-radius:
-    8px;
+  border-radius: 8px;
 
-  background:
-    transparent;
+  background: transparent;
 
   color:
     var(--text-soft);
 
   font-size: 22px;
+
+  transition:
+    background .18s ease,
+    color .18s ease;
+
 }
 
 
 .modal-close:hover {
+
   background:
     var(--surface-soft);
 
   color:
     var(--text);
+
 }
 
 
 .modal-body {
+
   padding:
     22px;
+
 }
 
 
 .modal-description {
+
   margin:
     0 0 20px;
 
   color:
     var(--text-soft);
 
-  font-size: 13px;
+  font-size: 12px;
 
-  line-height:
-    1.6;
+  line-height: 1.6;
+
 }
 
 
 .modal-footer {
+
   display: flex;
 
   align-items: center;
+
   justify-content: space-between;
 
   gap: 8px;
@@ -1814,13 +2342,16 @@ button {
 
   border-top:
     1px solid var(--border);
+
 }
 
 
 .modal-footer-right {
+
   display: flex;
 
   gap: 8px;
+
 }
 
 
@@ -1829,44 +2360,66 @@ button {
 ================================================== */
 
 .settings-group {
-  margin-bottom:
-    22px;
+
+  margin-bottom: 21px;
+
+  padding-bottom: 18px;
+
+  border-bottom:
+    1px solid var(--border);
+
 }
 
 
 .settings-group:last-child {
-  margin-bottom:
-    0;
+
+  margin-bottom: 0;
+
+  padding-bottom: 0;
+
+  border-bottom: 0;
+
 }
 
 
 .setting-row {
+
   display: flex;
 
   align-items: center;
+
   justify-content: space-between;
 
   gap: 20px;
+
 }
 
 
 .setting-title {
-  font-size: 14px;
-  font-weight: 700;
+
+  font-size: 13px;
+
+  font-weight: 750;
+
 }
 
 
 .setting-description {
+
   margin-top: 3px;
 
   color:
     var(--text-soft);
 
-  font-size: 11px;
+  font-size: 10px;
+
+  line-height: 1.5;
+
 }
 
 
 .toggle-button {
+
   min-width: 58px;
 
   padding:
@@ -1875,8 +2428,7 @@ button {
   border:
     1px solid var(--border);
 
-  border-radius:
-    999px;
+  border-radius: 999px;
 
   background:
     var(--surface-soft);
@@ -1884,12 +2436,29 @@ button {
   color:
     var(--text-soft);
 
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 10px;
+
+  font-weight: 850;
+
+  transition:
+    background .18s ease,
+    color .18s ease,
+    border-color .18s ease,
+    transform .18s ease;
+
+}
+
+
+.toggle-button:hover {
+
+  transform:
+    translateY(-1px);
+
 }
 
 
 .toggle-button.active {
+
   border-color:
     var(--primary);
 
@@ -1898,66 +2467,101 @@ button {
 
   color:
     #fff;
+
+  box-shadow:
+    0 4px 12px
+    rgba(102,126,234,.18);
+
 }
 
 
 /* ==================================================
-   Dark mode
+   Dark Mode
 ================================================== */
 
 body.dark-mode {
 
-  --bg:
-    #17191f;
+  --bg: #17191f;
 
-  --surface:
-    #20232b;
+  --surface: #20232b;
 
-  --surface-soft:
-    #292c35;
+  --surface-soft: #292c35;
 
-  --border:
-    #363a45;
+  --surface-hover: #2d303a;
 
-  --text:
-    #f1f3f7;
+  --border: #363a45;
 
-  --text-soft:
-    #a2a7b3;
+  --border-strong: #464b58;
 
-  --primary:
-    #8192f5;
+  --text: #f1f3f7;
 
-  --primary-dark:
-    #7182e8;
+  --text-soft: #a2a7b3;
+
+  --text-muted: #777e8d;
+
+  --primary: #8192f5;
+
+  --primary-dark: #7182e8;
 
   --primary-light:
-    rgba(
-      129,
-      146,
-      245,
-      .14
-    );
+    rgba(129,146,245,.14);
+
+  --shadow-sm:
+    0 2px 8px rgba(0,0,0,.12);
 
   --shadow:
-    0 10px 35px
-    rgba(
-      0,
-      0,
-      0,
-      .25
-    );
+    0 10px 35px rgba(0,0,0,.25);
+
+  --shadow-lg:
+    0 20px 60px rgba(0,0,0,.40);
+
 }
 
 
 body.dark-mode #authScreen {
+
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(129,146,245,.10),
+      transparent 32%
+    ),
+    linear-gradient(
+      135deg,
+      #151820,
+      #20232b,
+      #17191f
+    );
+
+}
+
+
+body.dark-mode .auth-panel {
+
+  background:
+    rgba(32,35,43,.94);
+
+}
+
+
+body.dark-mode .sidebar,
+body.dark-mode .chat-header {
+
+  background:
+    rgba(32,35,43,.96);
+
+}
+
+
+body.dark-mode .user-card {
+
   background:
     linear-gradient(
       135deg,
-      #151820 0%,
-      #20232b 50%,
-      #17191f 100%
+      #252832,
+      #22252d
     );
+
 }
 
 
@@ -1973,60 +2577,102 @@ body.dark-mode
 
   color:
     var(--text);
+
 }
 
 
-body.dark-mode
-.secondary-button {
+body.dark-mode .secondary-button {
 
   background:
     var(--surface);
 
   color:
     var(--text);
+
 }
 
 
-body.dark-mode
-.message-form input {
+body.dark-mode .message {
+
+  background:
+    var(--surface);
+
+}
+
+
+body.dark-mode .message.own-message {
+
+  background:
+    linear-gradient(
+      135deg,
+      #20232b,
+      #242938
+    );
+
+}
+
+
+body.dark-mode .message-form {
+
+  background:
+    rgba(32,35,43,.98);
+
+}
+
+
+body.dark-mode .message-input-area {
+
+  background:
+    linear-gradient(
+      to top,
+      var(--bg) 68%,
+      rgba(23,25,31,.92) 82%,
+      transparent
+    );
+
+}
+
+
+body.dark-mode .message-form input {
 
   color:
     var(--text);
+
+}
+
+
+body.dark-mode .modal {
+
+  background:
+    rgba(0,0,0,.58);
+
 }
 
 
 /* ==================================================
-   Gray mode
+   Gray Mode
 ================================================== */
 
 body.gray-mode {
 
-  --primary:
-    #6d737d;
+  --primary: #6d737d;
 
-  --primary-dark:
-    #5d636d;
+  --primary-dark: #5d636d;
 
-  --primary-light:
-    #eceef0;
+  --primary-light: #eceef0;
+
 }
 
 
 body.dark-mode.gray-mode {
 
-  --primary:
-    #9ca3ad;
+  --primary: #9ca3ad;
 
-  --primary-dark:
-    #858c96;
+  --primary-dark: #858c96;
 
   --primary-light:
-    rgba(
-      156,
-      163,
-      173,
-      .14
-    );
+    rgba(156,163,173,.14);
+
 }
 
 
@@ -2034,1031 +2680,304 @@ body.dark-mode.gray-mode {
    Responsive
 ================================================== */
 
-@media (
-  max-width: 760px
-) {
+@media (max-width: 760px) {
 
   :root {
+
     --sidebar-width: 225px;
+
   }
 
 
   .sidebar {
+
     width:
       var(--sidebar-width);
 
     min-width:
       var(--sidebar-width);
+
   }
 
 
   .chat-header {
+
     padding:
-      0 15px;
+      0 16px;
+
   }
 
 
   .messages {
+
     padding:
-      18px 14px 115px;
+      18px 14px 118px;
+
   }
 
 
   .message-input-area {
+
     padding:
-      10px 12px 14px;
+      12px 14px 15px;
+
   }
 
 
   .reply-preview {
-    left: 12px;
-    right: 12px;
 
-    bottom: 67px;
+    left: 14px;
+    right: 14px;
+
+    bottom: 68px;
+
   }
 
 
   .invite-area {
+
     display: none;
+
   }
 
 }
 
 
-@media (
-  max-width: 560px
-) {
+@media (max-width: 560px) {
+
+  #authScreen {
+
+    padding:
+      16px;
+
+  }
+
+
+  .auth-panel {
+
+    padding:
+      25px 20px;
+
+    border-radius:
+      18px;
+
+  }
+
+
+  .logo-area h1 {
+
+    font-size:
+      38px;
+
+  }
+
 
   .app-layout {
+
     display: block;
+
   }
 
 
   .sidebar {
+
     display: none;
+
   }
 
 
   .chat-header {
-    min-height: 62px;
+
+    min-height:
+      62px;
+
+    padding:
+      0 13px;
+
   }
 
 
   .chat-room-icon {
+
     width: 36px;
     height: 36px;
+
+    border-radius:
+      10px;
+
+    font-size:
+      17px;
+
   }
 
 
   .chat-room-info h2 {
-    font-size: 16px;
+
+    font-size:
+      16px;
+
+  }
+
+
+  .room-subtitle {
+
+    font-size:
+      9px;
+
   }
 
 
   .messages {
+
     padding:
       14px 10px 110px;
+
   }
 
 
   .message {
+
+    margin-bottom:
+      9px;
+
     padding:
       11px 12px;
+
+    border-radius:
+      11px;
+
+  }
+
+
+  .message-content {
+
+    font-size:
+      13px;
+
+  }
+
+
+  .message-actions {
+
+    opacity:
+      1;
+
+  }
+
+
+  .message-input-area {
+
+    padding:
+      10px 10px 13px;
+
+  }
+
+
+  .message-form {
+
+    border-radius:
+      12px;
+
+  }
+
+
+  .message-form input {
+
+    height:
+      40px;
+
+    font-size:
+      13px;
+
+  }
+
+
+  .send-button {
+
+    width:
+      40px;
+
+    height:
+      40px;
+
+  }
+
+
+  .scroll-buttons {
+
+    right:
+      10px;
+
+    bottom:
+      122px;
+
+  }
+
+
+  .scroll-button {
+
+    width:
+      31px;
+
+    height:
+      31px;
+
+  }
+
+
+  .new-message-button {
+
+    right:
+      12px;
+
+    bottom:
+      76px;
+
   }
 
 
   .modal {
+
     padding:
       12px;
+
   }
 
 
   .modal-content {
+
     max-height:
       calc(100vh - 24px);
 
     overflow-y:
       auto;
+
+    border-radius:
+      15px;
+
   }
 
 
   .modal-footer {
+
     flex-wrap:
       wrap;
+
   }
 
 
   .modal-footer-right {
+
     margin-left:
       auto;
-  }
 
-
-  .auth-panel {
-    padding:
-      24px 20px;
-  }
-
-}
-
-/* ==================================================
-   Veylo - Design Enhancement
-   ※既存デザインを崩さず、下に追加してください
-================================================== */
-
-
-/* ==================================================
-   全体の滑らかさ
-================================================== */
-
-html {
-  scroll-behavior: smooth;
-}
-
-
-button,
-input,
-select {
-  -webkit-tap-highlight-color: transparent;
-}
-
-
-/* ==================================================
-   フォーカス表示
-================================================== */
-
-button:focus-visible,
-input:focus-visible,
-select:focus-visible {
-  outline:
-    2px solid var(--primary);
-
-  outline-offset:
-    2px;
-}
-
-
-/* ==================================================
-   Auth - 少しだけリッチに
-================================================== */
-
-.auth-container {
-  animation:
-    authFadeIn .35s ease;
-}
-
-
-@keyframes authFadeIn {
-
-  from {
-    opacity: 0;
-
-    transform:
-      translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-
-    transform:
-      translateY(0);
-  }
-
-}
-
-
-.logo-area h1 {
-  text-shadow:
-    0 4px 18px
-    rgba(
-      102,
-      126,
-      234,
-      .15
-    );
-}
-
-
-.auth-panel {
-  transition:
-    transform .25s ease,
-    box-shadow .25s ease;
-}
-
-
-.auth-panel:hover {
-  box-shadow:
-    0 14px 40px
-    rgba(
-      31,
-      41,
-      55,
-      .10
-    );
-}
-
-
-/* ==================================================
-   入力欄
-================================================== */
-
-.input-group input:hover,
-.settings-group input:hover,
-.settings-group select:hover {
-  border-color:
-    #d3d8e3;
-}
-
-
-.input-group input::placeholder {
-  color:
-    #aeb4c0;
-}
-
-
-body.dark-mode
-.input-group input::placeholder {
-  color:
-    #777e8d;
-}
-
-
-/* ==================================================
-   ボタンの押し込み感
-================================================== */
-
-.primary-button:active,
-.secondary-button:active,
-.danger-button:active,
-.send-button:active,
-.room-button:active,
-.room-action-button:active,
-.joined-room:active,
-.icon-button:active,
-.scroll-button:active {
-  transform:
-    translateY(1px);
-}
-
-
-.primary-button,
-.secondary-button,
-.danger-button {
-  user-select:
-    none;
-}
-
-
-/* ==================================================
-   Sidebar - 少しだけ高級感
-================================================== */
-
-.sidebar {
-  box-shadow:
-    4px 0 18px
-    rgba(
-      31,
-      41,
-      55,
-      .025
-    );
-}
-
-
-.brand-mark {
-  box-shadow:
-    0 5px 14px
-    rgba(
-      102,
-      126,
-      234,
-      .20
-    );
-
-  transition:
-    transform .2s ease,
-    box-shadow .2s ease;
-}
-
-
-.brand-mark:hover {
-  transform:
-    translateY(-1px);
-
-  box-shadow:
-    0 7px 18px
-    rgba(
-      102,
-      126,
-      234,
-      .27
-    );
-}
-
-
-/* ==================================================
-   User Card
-================================================== */
-
-.user-card {
-  transition:
-    border-color .2s ease,
-    background .2s ease,
-    transform .2s ease;
-}
-
-
-.user-card:hover {
-  border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .18
-    );
-
-  transform:
-    translateY(-1px);
-}
-
-
-.user-avatar {
-  box-shadow:
-    inset 0 0 0 1px
-    rgba(
-      102,
-      126,
-      234,
-      .08
-    );
-}
-
-
-/* ==================================================
-   Room buttons
-================================================== */
-
-.room-button.active,
-.joined-room.active {
-  box-shadow:
-    inset 3px 0 0
-    var(--primary);
-}
-
-
-.room-button:hover,
-.room-action-button:hover,
-.joined-room:hover {
-  transform:
-    translateX(2px);
-}
-
-
-.room-button,
-.room-action-button,
-.joined-room {
-  will-change:
-    transform;
-}
-
-
-/* ==================================================
-   接続状態
-================================================== */
-
-.connection-dot {
-  box-shadow:
-    0 0 0 3px
-    rgba(
-      76,
-      175,
-      80,
-      .10
-    );
-
-  animation:
-    connectionPulse 2.2s infinite;
-}
-
-
-@keyframes connectionPulse {
-
-  0%,
-  100% {
-    box-shadow:
-      0 0 0 3px
-      rgba(
-        76,
-        175,
-        80,
-        .10
-      );
-  }
-
-  50% {
-    box-shadow:
-      0 0 0 5px
-      rgba(
-        76,
-        175,
-        80,
-        .03
-      );
   }
 
 }
 
 
 /* ==================================================
-   Chat Header
-================================================== */
-
-.chat-header {
-  box-shadow:
-    0 2px 10px
-    rgba(
-      31,
-      41,
-      55,
-      .025
-    );
-}
-
-
-.chat-room-icon {
-  transition:
-    transform .2s ease,
-    box-shadow .2s ease;
-}
-
-
-.chat-room-icon:hover {
-  transform:
-    scale(1.04);
-}
-
-
-/* ==================================================
-   Messages
-================================================== */
-
-.message {
-  animation:
-    messageAppear .25s ease;
-}
-
-
-@keyframes messageAppear {
-
-  from {
-    opacity: 0;
-
-    transform:
-      translateY(5px);
-  }
-
-  to {
-    opacity: 1;
-
-    transform:
-      translateY(0);
-  }
-
-}
-
-
-.message-user {
-  color:
-    var(--text);
-}
-
-
-.message-time {
-  opacity:
-    .85;
-}
-
-
-.message-content {
-  letter-spacing:
-    .01em;
-}
-
-
-/* 自分のメッセージをJS側で
-   .own-message を付けた場合にも対応 */
-
-.message.own-message {
-  border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .18
-    );
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--surface),
-      var(--primary-light)
-    );
-}
-
-
-/* ==================================================
-   Message actions
-================================================== */
-
-.message-actions {
-  opacity:
-    .72;
-
-  transition:
-    opacity .2s ease;
-}
-
-
-.message:hover .message-actions {
-  opacity:
-    1;
-}
-
-
-.message-actions button {
-  transition:
-    background .15s ease,
-    color .15s ease,
-    transform .15s ease;
-}
-
-
-.message-actions button:hover {
-  transform:
-    translateY(-1px);
-}
-
-
-/* ==================================================
-   Reply
-================================================== */
-
-.message-reply-info {
-  transition:
-    background .2s ease,
-    transform .2s ease;
-}
-
-
-.message-reply-info:hover {
-  background:
-    rgba(
-      102,
-      126,
-      234,
-      .18
-    );
-
-  transform:
-    translateX(2px);
-}
-
-
-.reply-preview {
-  box-shadow:
-    0 5px 20px
-    rgba(
-      102,
-      126,
-      234,
-      .08
-    );
-
-  animation:
-    replySlideUp .2s ease;
-}
-
-
-@keyframes replySlideUp {
-
-  from {
-    opacity: 0;
-
-    transform:
-      translateY(6px);
-  }
-
-  to {
-    opacity: 1;
-
-    transform:
-      translateY(0);
-  }
-
-}
-
-
-/* ==================================================
-   New Message
-================================================== */
-
-.new-message-button {
-  transition:
-    transform .2s ease,
-    box-shadow .2s ease,
-    background .2s ease;
-}
-
-
-.new-message-button:hover {
-  transform:
-    translateY(-2px);
-
-  box-shadow:
-    0 8px 25px
-    rgba(
-      31,
-      41,
-      55,
-      .16
-    );
-}
-
-
-/* ==================================================
-   Scroll Buttons
-================================================== */
-
-.scroll-button {
-  transition:
-    transform .2s ease,
-    color .2s ease,
-    border-color .2s ease,
-    box-shadow .2s ease;
-}
-
-
-.scroll-button:hover {
-  transform:
-    translateY(-2px);
-
-  box-shadow:
-    0 6px 16px
-    rgba(
-      31,
-      41,
-      55,
-      .10
-    );
-}
-
-
-/* ==================================================
-   Message Input
-================================================== */
-
-.message-input-area {
-  padding-top:
-    18px;
-}
-
-
-.message-form {
-  transition:
-    border-color .2s ease,
-    box-shadow .2s ease,
-    transform .2s ease;
-}
-
-
-.message-form:focus-within {
-  border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .45
-    );
-
-  box-shadow:
-    0 8px 30px
-    rgba(
-      31,
-      41,
-      55,
-      .10
-    ),
-    0 0 0 3px
-    rgba(
-      102,
-      126,
-      234,
-      .08
-    );
-}
-
-
-.message-form input::placeholder {
-  color:
-    #a4aab6;
-}
-
-
-.send-button {
-  box-shadow:
-    0 4px 12px
-    rgba(
-      102,
-      126,
-      234,
-      .20
-    );
-}
-
-
-.send-button:hover {
-  box-shadow:
-    0 6px 16px
-    rgba(
-      102,
-      126,
-      234,
-      .28
-    );
-}
-
-
-/* ==================================================
-   Invite Code
-================================================== */
-
-.invite-code {
-  padding:
-    4px 6px;
-
-  border-radius:
-    6px;
-
-  transition:
-    background .2s ease;
-}
-
-
-.invite-code:hover {
-  background:
-    var(--primary-light);
-}
-
-
-/* ==================================================
-   Modal
-================================================== */
-
-.modal {
-  animation:
-    modalBackgroundIn .2s ease;
-}
-
-
-@keyframes modalBackgroundIn {
-
-  from {
-    opacity:
-      0;
-  }
-
-  to {
-    opacity:
-      1;
-  }
-
-}
-
-
-.modal-content {
-  animation:
-    modalContentIn .25s ease;
-
-  transform-origin:
-    center;
-}
-
-
-@keyframes modalContentIn {
-
-  from {
-    opacity:
-      0;
-
-    transform:
-      translateY(8px)
-      scale(.98);
-  }
-
-  to {
-    opacity:
-      1;
-
-    transform:
-      translateY(0)
-      scale(1);
-  }
-
-}
-
-
-.modal-close {
-  transition:
-    background .2s ease,
-    color .2s ease,
-    transform .2s ease;
-}
-
-
-.modal-close:hover {
-  transform:
-    rotate(4deg);
-}
-
-
-/* ==================================================
-   Settings
-================================================== */
-
-.settings-group {
-  padding-bottom:
-    18px;
-
-  border-bottom:
-    1px solid var(--border);
-}
-
-
-.settings-group:last-child {
-  padding-bottom:
-    0;
-
-  border-bottom:
-    0;
-}
-
-
-.setting-row {
-  min-height:
-    42px;
-}
-
-
-.toggle-button {
-  transition:
-    background .2s ease,
-    border-color .2s ease,
-    color .2s ease,
-    transform .2s ease;
-}
-
-
-.toggle-button:hover {
-  transform:
-    translateY(-1px);
-}
-
-
-/* ==================================================
-   Dark mode 微調整
-================================================== */
-
-body.dark-mode .sidebar {
-  box-shadow:
-    4px 0 18px
-    rgba(
-      0,
-      0,
-      0,
-      .12
-    );
-}
-
-
-body.dark-mode .message {
-  box-shadow:
-    0 2px 8px
-    rgba(
-      0,
-      0,
-      0,
-      .10
-    );
-}
-
-
-body.dark-mode .message:hover {
-  box-shadow:
-    0 5px 16px
-    rgba(
-      0,
-      0,
-      0,
-      .16
-    );
-}
-
-
-body.dark-mode .message-form {
-  box-shadow:
-    0 6px 25px
-    rgba(
-      0,
-      0,
-      0,
-      .18
-    );
-}
-
-
-body.dark-mode .message-form:focus-within {
-  box-shadow:
-    0 8px 30px
-    rgba(
-      0,
-      0,
-      0,
-      .22
-    ),
-    0 0 0 3px
-    rgba(
-      129,
-      146,
-      245,
-      .10
-    );
-}
-
-
-/* ==================================================
-   Mobile
-================================================== */
-
-@media (max-width: 560px) {
-
-  .message {
-    border-radius:
-      11px;
-  }
-
-
-  .message-actions {
-    opacity:
-      1;
-  }
-
-
-  .send-button {
-    width:
-      40px;
-
-    height:
-      40px;
-  }
-
-
-  .message-form input {
-    height:
-      40px;
-  }
-
-
-  .scroll-buttons {
-    right:
-      10px;
-
-    bottom:
-      125px;
-  }
-
-
-  .scroll-button {
-    width:
-      32px;
-
-    height:
-      32px;
-  }
-
-
-  .new-message-button {
-    right:
-      12px;
-
-    bottom:
-      78px;
-  }
-
-}
-
-
-/* ==================================================
-   Reduced Motion
+   Accessibility
 ================================================== */
 
 @media (prefers-reduced-motion: reduce) {
@@ -3066,6 +2985,7 @@ body.dark-mode .message-form:focus-within {
   *,
   *::before,
   *::after {
+
     animation-duration:
       .01ms !important;
 
@@ -3077,6 +2997,7 @@ body.dark-mode .message-form:focus-within {
 
     scroll-behavior:
       auto !important;
+
   }
 
 }
