@@ -2,7 +2,6 @@
 <html lang="ja">
 
 <head>
-
   <meta charset="UTF-8">
 
   <meta
@@ -17,36 +16,48 @@
     href="/style.css"
   >
 
-</head>
+  <script
+    src="/socket.io/socket.io.js"
+    defer
+  ></script>
 
+  <script
+    src="/app.js"
+    defer
+  ></script>
+</head>
 
 <body>
 
   <!-- ==================================================
        認証画面
-  ================================================== -->
+       ================================================== -->
 
-  <div
+  <main
     id="authScreen"
-    class="screen"
+    class="screen auth-screen"
   >
 
-    <div class="auth-container">
+    <div class="auth-card">
 
-      <div class="logo">
-        Veylo
+      <div class="logo-area">
+
+        <div class="logo">
+          Veylo
+        </div>
+
+        <p class="logo-subtitle">
+          シンプルに話そう。
+        </p>
+
       </div>
 
-      <p class="subtitle">
-        みんなで話そう。
-      </p>
 
+      <!-- =========================
+           Login
+           ========================= -->
 
-      <!-- ==================================================
-           ログイン
-      ================================================== -->
-
-      <div
+      <section
         id="loginPanel"
         class="auth-panel"
       >
@@ -55,8 +66,14 @@
           ログイン
         </h1>
 
+        <p class="panel-description">
+          Veyloにログインしてください。
+        </p>
 
-        <form id="loginForm">
+
+        <form
+          id="loginForm"
+        >
 
           <label>
             名前
@@ -67,6 +84,7 @@
             type="text"
             autocomplete="username"
             placeholder="名前"
+            maxlength="100"
             required
           >
 
@@ -79,15 +97,15 @@
             id="loginPassword"
             type="password"
             autocomplete="current-password"
-            placeholder="8文字以上"
+            placeholder="パスワード"
             required
           >
 
 
-          <div
+          <p
             id="loginError"
-            class="error"
-          ></div>
+            class="form-error"
+          ></p>
 
 
           <button
@@ -101,30 +119,35 @@
 
 
         <button
-          id="showRegisterButton"
-          class="link-button"
-          type="button"
-        >
-          新規登録
-        </button>
-
-
-        <button
           id="forgotPasswordButton"
-          class="link-button"
           type="button"
+          class="text-button"
         >
           パスワードを忘れた
         </button>
 
-      </div>
+
+        <div class="auth-divider">
+          <span>または</span>
+        </div>
 
 
-      <!-- ==================================================
-           登録
-      ================================================== -->
+        <button
+          id="showRegisterButton"
+          type="button"
+          class="secondary-button"
+        >
+          新規登録
+        </button>
 
-      <div
+      </section>
+
+
+      <!-- =========================
+           Register
+           ========================= -->
+
+      <section
         id="registerPanel"
         class="auth-panel hidden"
       >
@@ -133,12 +156,24 @@
           新規登録
         </h1>
 
-        <p class="small-text">
-          同じメールアドレスでも最大5個までアカウントを作成できます。
+        <p class="panel-description">
+          Veyloのアカウントを作成します。
         </p>
 
 
-        <form id="registerForm">
+        <div class="info-box">
+          <strong>メールアドレスについて</strong>
+
+          <p>
+            同じメールアドレスでも
+            最大5個までアカウントを作成できます。
+          </p>
+        </div>
+
+
+        <form
+          id="registerForm"
+        >
 
           <label>
             メールアドレス
@@ -162,6 +197,7 @@
             type="text"
             autocomplete="username"
             placeholder="名前"
+            maxlength="100"
             required
           >
 
@@ -180,10 +216,10 @@
           >
 
 
-          <div
+          <p
             id="registerError"
-            class="error"
-          ></div>
+            class="form-error"
+          ></p>
 
 
           <button
@@ -198,20 +234,20 @@
 
         <button
           id="showLoginButton"
-          class="link-button"
           type="button"
+          class="text-button"
         >
           ログインに戻る
         </button>
 
-      </div>
+      </section>
 
 
-      <!-- ==================================================
-           パスワード忘れ
-      ================================================== -->
+      <!-- =========================
+           Forgot
+           ========================= -->
 
-      <div
+      <section
         id="forgotPanel"
         class="auth-panel hidden"
       >
@@ -220,8 +256,14 @@
           パスワード再設定
         </h1>
 
+        <p class="panel-description">
+          登録したメールアドレスを入力してください。
+        </p>
 
-        <form id="forgotForm">
+
+        <form
+          id="forgotForm"
+        >
 
           <label>
             メールアドレス
@@ -231,21 +273,22 @@
             id="forgotEmail"
             type="email"
             autocomplete="email"
+            placeholder="example@example.com"
             required
           >
 
 
-          <div
+          <p
             id="forgotMessage"
-            class="message-info"
-          ></div>
+            class="form-message"
+          ></p>
 
 
           <button
             type="submit"
             class="primary-button"
           >
-            再設定メールを送る
+            再設定メールを送信
           </button>
 
         </form>
@@ -253,115 +296,156 @@
 
         <button
           id="backToLoginButton"
-          class="link-button"
           type="button"
+          class="text-button"
         >
           ログインに戻る
         </button>
 
-      </div>
+      </section>
 
     </div>
 
-  </div>
+  </main>
 
 
   <!-- ==================================================
        アプリ画面
-  ================================================== -->
+       ================================================== -->
 
-  <div
+  <main
     id="appScreen"
-    class="screen hidden"
+    class="screen app-screen hidden"
   >
 
-    <header class="topbar">
+    <!-- =========================
+         Header
+         ========================= -->
 
-      <div class="topbar-logo">
-        Veylo
+    <header class="app-header">
+
+      <div class="header-left">
+
+        <div class="app-logo">
+          Veylo
+        </div>
+
+        <div class="current-room">
+          <span class="room-label">
+            ROOM
+          </span>
+
+          <strong id="roomName">
+            雑談
+          </strong>
+        </div>
+
       </div>
 
 
-      <div class="topbar-room">
-        <span id="roomName">
-          雑談
-        </span>
+      <div class="header-right">
+
+        <button
+          id="settingsButton"
+          type="button"
+          class="icon-button"
+          title="設定"
+        >
+          ⚙️
+        </button>
+
       </div>
-
-
-      <button
-        id="settingsButton"
-        class="icon-button"
-        type="button"
-      >
-        ⚙️
-      </button>
 
     </header>
 
 
+    <!-- =========================
+         Layout
+         ========================= -->
+
     <div class="app-layout">
 
 
-      <!-- ==================================================
-           サイドバー
-      ================================================== -->
+      <!-- =========================
+           Sidebar
+           ========================= -->
 
       <aside class="sidebar">
 
-        <button
-          id="casualRoomButton"
-          class="room-button active"
-          type="button"
-        >
-          💬 雑談
-        </button>
+        <div class="sidebar-section">
+
+          <h2>
+            ルーム
+          </h2>
 
 
-        <div class="sidebar-title">
-          部屋
+          <button
+            id="casualRoomButton"
+            type="button"
+            class="room-button active"
+          >
+            <span>
+              💬
+            </span>
+
+            <span>
+              雑談
+            </span>
+          </button>
+
+
+          <button
+            id="createRoomButton"
+            type="button"
+            class="room-button"
+          >
+            <span>
+              ＋
+            </span>
+
+            <span>
+              部屋を作る
+            </span>
+          </button>
+
+
+          <button
+            id="joinRoomButton"
+            type="button"
+            class="room-button"
+          >
+            <span>
+              🔗
+            </span>
+
+            <span>
+              部屋に参加
+            </span>
+          </button>
+
         </div>
 
 
-        <button
-          id="createRoomButton"
-          class="side-button"
-          type="button"
-        >
-          ＋ 部屋を作る
-        </button>
+        <div class="sidebar-user">
 
+          <div class="sidebar-user-name">
+            <span class="online-dot"></span>
 
-        <button
-          id="joinRoomButton"
-          class="side-button"
-          type="button"
-        >
-          🔑 招待コードで参加
-        </button>
+            <span
+              id="usernameInput"
+            ></span>
+          </div>
+
+        </div>
 
       </aside>
 
 
-      <!-- ==================================================
-           チャット
-      ================================================== -->
+      <!-- =========================
+           Chat
+           ========================= -->
 
-      <main class="chat-area">
-
-        <div
-          id="inviteArea"
-          class="invite-area hidden"
-        >
-
-          招待コード：
-
-          <strong id="inviteCode">
-            -
-          </strong>
-
-        </div>
-
+      <section class="chat-area">
 
         <div
           id="messages"
@@ -371,18 +455,21 @@
 
         <button
           id="newMessageButton"
-          class="new-message-button hidden"
           type="button"
+          class="new-message-button hidden"
         >
           ↓ 新しいメッセージ
         </button>
 
 
-        <div class="scroll-buttons">
+        <!-- Scroll controls -->
+
+        <div class="scroll-controls">
 
           <button
             id="scrollTopButton"
             type="button"
+            title="上へ"
           >
             ↑
           </button>
@@ -390,6 +477,7 @@
           <button
             id="scrollBottomButton"
             type="button"
+            title="下へ"
           >
             ↓
           </button>
@@ -397,7 +485,7 @@
         </div>
 
 
-        <!-- 返信プレビュー -->
+        <!-- Reply -->
 
         <div
           id="replyPreview"
@@ -405,406 +493,412 @@
         ></div>
 
 
-        <!-- メッセージ入力 -->
+        <!-- Message form -->
 
         <form
           id="messageForm"
           class="message-form"
         >
 
-          <input
-            id="usernameInput"
-            type="hidden"
-          >
-
-          <input
+          <textarea
             id="messageInput"
-            type="text"
+            rows="1"
             maxlength="5000"
-            autocomplete="off"
             placeholder="メッセージを入力..."
-          >
+          ></textarea>
+
 
           <button
             type="submit"
             class="send-button"
+            title="送信"
           >
-            送信
+            ➤
           </button>
 
         </form>
 
-      </main>
+      </section>
 
     </div>
 
-  </div>
 
+    <!-- ==================================================
+         Invite Area
+         ================================================== -->
 
-  <!-- ==================================================
-       部屋作成モーダル
-  ================================================== -->
+    <div
+      id="inviteArea"
+      class="invite-area hidden"
+    >
 
-  <div
-    id="createModal"
-    class="modal hidden"
-  >
-
-    <div class="modal-content">
-
-      <h2>
-        部屋を作る
-      </h2>
-
-      <input
-        id="roomNameInput"
-        type="text"
-        maxlength="100"
-        placeholder="部屋の名前"
-      >
-
-      <div class="modal-actions">
-
-        <button
-          id="cancelCreateButton"
-          type="button"
-          class="secondary-button"
-        >
-          キャンセル
-        </button>
-
-        <button
-          id="confirmCreateButton"
-          type="button"
-          class="primary-button"
-        >
-          作成
-        </button>
-
+      <div>
+        招待コード
       </div>
+
+      <strong
+        id="inviteCode"
+      ></strong>
 
     </div>
 
-  </div>
 
+    <!-- ==================================================
+         Create Room Modal
+         ================================================== -->
 
-  <!-- ==================================================
-       部屋参加モーダル
-  ================================================== -->
+    <div
+      id="createModal"
+      class="modal hidden"
+    >
 
-  <div
-    id="joinModal"
-    class="modal hidden"
-  >
-
-    <div class="modal-content">
-
-      <h2>
-        部屋に参加
-      </h2>
-
-      <input
-        id="inviteCodeInput"
-        type="text"
-        maxlength="20"
-        placeholder="招待コード"
-      >
-
-      <div
-        id="joinError"
-        class="error"
-      ></div>
-
-      <div class="modal-actions">
+      <div class="modal-card">
 
         <button
-          id="cancelJoinButton"
           type="button"
-          class="secondary-button"
+          class="modal-close"
+          onclick="document.getElementById('createModal').classList.add('hidden')"
         >
-          キャンセル
+          ×
         </button>
 
-        <button
-          id="confirmJoinButton"
-          type="button"
-          class="primary-button"
-        >
-          参加
-        </button>
 
-      </div>
+        <h2>
+          部屋を作る
+        </h2>
 
-    </div>
-
-  </div>
-
-
-  <!-- ==================================================
-       設定モーダル
-  ================================================== -->
-
-  <div
-    id="settingsModal"
-    class="modal hidden"
-  >
-
-    <div class="modal-content settings-content">
-
-      <h2>
-        設定
-      </h2>
-
-
-      <label>
-        現在の名前
-      </label>
-
-      <input
-        id="settingsUsernameInput"
-        type="text"
-        disabled
-      >
-
-
-      <label>
-        言語
-      </label>
-
-      <select id="languageSelect">
-
-        <option value="ja">
-          日本語
-        </option>
-
-        <option value="en">
-          English
-        </option>
-
-      </select>
-
-
-      <div class="setting-row">
-
-        <span>
-          ダークモード
-        </span>
-
-        <button
-          id="themeToggleButton"
-          type="button"
-        >
-          OFF
-        </button>
-
-      </div>
-
-
-      <div class="setting-row">
-
-        <span>
-          グレーモード
-        </span>
-
-        <button
-          id="grayToggleButton"
-          type="button"
-        >
-          OFF
-        </button>
-
-      </div>
-
-
-      <div class="account-settings">
-
-        <h3>
-          アカウント
-        </h3>
-
-        <p class="small-text">
-          同じメールアドレスのアカウントを最大5個まで作成できます。
+        <p>
+          新しいチャットルームを作成します。
         </p>
 
-        <button
-          id="manageAccountsButton"
-          type="button"
-          class="secondary-button full-button"
+
+        <label>
+          部屋の名前
+        </label>
+
+        <input
+          id="roomNameInput"
+          type="text"
+          maxlength="100"
+          placeholder="例：ゲーム部"
         >
-          アカウントを管理
-        </button>
+
+
+        <div class="modal-actions">
+
+          <button
+            id="cancelCreateButton"
+            type="button"
+            class="secondary-button"
+          >
+            キャンセル
+          </button>
+
+          <button
+            id="confirmCreateButton"
+            type="button"
+            class="primary-button"
+          >
+            作成
+          </button>
+
+        </div>
 
       </div>
 
+    </div>
 
-      <div class="modal-actions">
+
+    <!-- ==================================================
+         Join Room Modal
+         ================================================== -->
+
+    <div
+      id="joinModal"
+      class="modal hidden"
+    >
+
+      <div class="modal-card">
+
+        <button
+          type="button"
+          class="modal-close"
+          onclick="document.getElementById('joinModal').classList.add('hidden')"
+        >
+          ×
+        </button>
+
+
+        <h2>
+          部屋に参加
+        </h2>
+
+        <p>
+          招待コードを入力してください。
+        </p>
+
+
+        <label>
+          招待コード
+        </label>
+
+        <input
+          id="inviteCodeInput"
+          type="text"
+          maxlength="20"
+          placeholder="例：A1B2C3D4"
+        >
+
+
+        <p
+          id="joinError"
+          class="form-error"
+        ></p>
+
+
+        <div class="modal-actions">
+
+          <button
+            id="cancelJoinButton"
+            type="button"
+            class="secondary-button"
+          >
+            キャンセル
+          </button>
+
+          <button
+            id="confirmJoinButton"
+            type="button"
+            class="primary-button"
+          >
+            参加
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         Settings Modal
+         ================================================== -->
+
+    <div
+      id="settingsModal"
+      class="modal hidden"
+    >
+
+      <div class="modal-card settings-card">
 
         <button
           id="closeSettingsButton"
           type="button"
-          class="secondary-button"
+          class="modal-close"
         >
-          閉じる
+          ×
         </button>
 
-        <button
-          id="saveSettingsButton"
-          type="button"
-          class="primary-button"
-        >
-          保存
-        </button>
+
+        <h2>
+          設定
+        </h2>
+
+
+        <!-- Account -->
+
+        <div class="settings-section">
+
+          <h3>
+            アカウント
+          </h3>
+
+
+          <label>
+            名前
+          </label>
+
+          <input
+            id="settingsUsernameInput"
+            type="text"
+            maxlength="100"
+          >
+
+
+          <button
+            id="saveSettingsButton"
+            type="button"
+            class="primary-button"
+          >
+            保存
+          </button>
+
+        </div>
+
+
+        <!-- Appearance -->
+
+        <div class="settings-section">
+
+          <h3>
+            外観
+          </h3>
+
+
+          <div class="setting-row">
+
+            <span>
+              ダークモード
+            </span>
+
+            <button
+              id="themeToggleButton"
+              type="button"
+              class="toggle-button"
+            >
+              OFF
+            </button>
+
+          </div>
+
+
+          <div class="setting-row">
+
+            <span>
+              グレーモード
+            </span>
+
+            <button
+              id="grayToggleButton"
+              type="button"
+              class="toggle-button"
+            >
+              OFF
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- Language -->
+
+        <div class="settings-section">
+
+          <h3>
+            言語
+          </h3>
+
+          <select
+            id="languageSelect"
+          >
+            <option value="ja">
+              日本語
+            </option>
+
+            <option value="en">
+              English
+            </option>
+          </select>
+
+        </div>
+
+
+        <!-- Accounts -->
+
+        <div class="settings-section">
+
+          <div class="section-title-row">
+
+            <h3>
+              アカウント管理
+            </h3>
+
+            <span
+              id="accountCountLabel"
+              class="account-count"
+            >
+              0 / 5
+            </span>
+
+          </div>
+
+
+          <p class="settings-help">
+            同じメールアドレスでは最大5個までアカウントを作成できます。
+          </p>
+
+
+          <div
+            id="accountList"
+            class="account-list"
+          ></div>
+
+
+          <div class="delete-account-box">
+
+            <h4>
+              アカウントを削除
+            </h4>
+
+            <p>
+              削除するアカウントを選択し、現在のパスワードを入力してください。
+            </p>
+
+
+            <select
+              id="deleteAccountSelect"
+            >
+            </select>
+
+
+            <input
+              id="deleteAccountPassword"
+              type="password"
+              placeholder="現在のパスワード"
+              autocomplete="current-password"
+            >
+
+
+            <p
+              id="deleteAccountMessage"
+              class="form-error"
+            ></p>
+
+
+            <button
+              id="deleteAccountButton"
+              type="button"
+              class="danger-button"
+            >
+              アカウントを削除
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- Logout -->
+
+        <div class="settings-section">
+
+          <button
+            id="logoutButton"
+            type="button"
+            class="logout-button"
+          >
+            ログアウト
+          </button>
+
+        </div>
 
       </div>
 
-
-      <button
-        id="logoutButton"
-        type="button"
-        class="logout-button"
-      >
-        ログアウト
-      </button>
-
     </div>
 
-  </div>
-
-
-  <!-- ==================================================
-       アカウント管理モーダル
-  ================================================== -->
-
-  <div
-    id="accountsModal"
-    class="modal hidden"
-  >
-
-    <div class="modal-content">
-
-      <h2>
-        アカウント管理
-      </h2>
-
-      <p class="small-text">
-        同じメールアドレスで作成したアカウントです。
-      </p>
-
-
-      <div
-        id="accountList"
-        class="account-list"
-      ></div>
-
-
-      <div
-        id="accountManageMessage"
-        class="error"
-      ></div>
-
-
-      <div class="modal-actions">
-
-        <button
-          id="closeAccountsButton"
-          type="button"
-          class="secondary-button"
-        >
-          閉じる
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- ==================================================
-       アカウント削除確認モーダル
-  ================================================== -->
-
-  <div
-    id="deleteAccountModal"
-    class="modal hidden"
-  >
-
-    <div class="modal-content">
-
-      <h2>
-        アカウントを削除
-      </h2>
-
-      <p id="deleteAccountDescription">
-        このアカウントを削除しますか？
-      </p>
-
-
-      <input
-        id="deleteAccountEmail"
-        type="hidden"
-      >
-
-      <input
-        id="deleteAccountName"
-        type="hidden"
-      >
-
-
-      <label>
-        パスワード
-      </label>
-
-      <input
-        id="deleteAccountPassword"
-        type="password"
-        autocomplete="current-password"
-        placeholder="削除するアカウントのパスワード"
-      >
-
-
-      <div
-        id="deleteAccountError"
-        class="error"
-      ></div>
-
-
-      <div class="modal-actions">
-
-        <button
-          id="cancelDeleteAccountButton"
-          type="button"
-          class="secondary-button"
-        >
-          キャンセル
-        </button>
-
-        <button
-          id="confirmDeleteAccountButton"
-          type="button"
-          class="danger-button"
-        >
-          削除する
-        </button>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- ==================================================
-       Socket.IO
-  ================================================== -->
-
-  <script
-    src="/socket.io/socket.io.js"
-  ></script>
-
-  <script
-    src="/app.js"
-  ></script>
+  </main>
 
 </body>
 
