@@ -1,6 +1,12 @@
 /* ==================================================
    Veylo
    style.css
+   Discord風デザイン / Veyloカラー
+================================================== */
+
+
+/* ==================================================
+   Variables
 ================================================== */
 
 :root {
@@ -14,6 +20,9 @@
   --surface-soft:
     #f8f9fc;
 
+  --surface-hover:
+    #f0f2f7;
+
   --border:
     #e5e8ef;
 
@@ -22,6 +31,9 @@
 
   --text-soft:
     #737987;
+
+  --text-muted:
+    #9aa0ad;
 
   --primary:
     #667eea;
@@ -46,6 +58,14 @@
       0.08
     );
 
+  --shadow-soft:
+    0 3px 12px rgba(
+      31,
+      41,
+      55,
+      0.06
+    );
+
   --radius:
     14px;
 
@@ -67,11 +87,17 @@
 
 html,
 body {
-  width: 100%;
-  height: 100%;
+  width:
+    100%;
 
-  margin: 0;
-  padding: 0;
+  height:
+    100%;
+
+  margin:
+    0;
+
+  padding:
+    0;
 
   font-family:
     -apple-system,
@@ -87,9 +113,6 @@ body {
 
   background:
     var(--bg);
-
-  -webkit-font-smoothing:
-    antialiased;
 }
 
 
@@ -294,14 +317,14 @@ select {
   margin-bottom:
     8px;
 
+  color:
+    #505665;
+
   font-size:
     13px;
 
   font-weight:
     700;
-
-  color:
-    #505665;
 }
 
 
@@ -323,9 +346,6 @@ select {
   border-radius:
     10px;
 
-  outline:
-    none;
-
   background:
     #fff;
 
@@ -336,9 +356,9 @@ select {
     14px;
 
   transition:
-    border-color .2s ease,
-    box-shadow .2s ease,
-    background .2s ease;
+    border-color .2s,
+    box-shadow .2s,
+    background .2s;
 }
 
 
@@ -412,9 +432,9 @@ select {
     700;
 
   transition:
-    transform .2s ease,
     background .2s ease,
     border-color .2s ease,
+    transform .2s ease,
     box-shadow .2s ease;
 }
 
@@ -430,7 +450,7 @@ select {
     #fff;
 
   box-shadow:
-    0 4px 12px
+    0 3px 10px
     rgba(
       102,
       126,
@@ -451,19 +471,13 @@ select {
     translateY(-1px);
 
   box-shadow:
-    0 6px 16px
+    0 5px 15px
     rgba(
       102,
       126,
       234,
       .22
     );
-}
-
-
-.primary-button:active {
-  transform:
-    translateY(0);
 }
 
 
@@ -484,7 +498,7 @@ select {
     var(--surface-soft);
 
   border-color:
-    #d8dce5;
+    #d7dbe4;
 }
 
 
@@ -616,6 +630,9 @@ select {
 
   border-right:
     1px solid var(--border);
+
+  overflow:
+    hidden;
 }
 
 
@@ -634,6 +651,9 @@ select {
     space-between;
 
   height:
+    72px;
+
+  min-height:
     72px;
 
   padding:
@@ -667,26 +687,29 @@ select {
     center;
 
   width:
-    34px;
+    36px;
 
   height:
-    34px;
+    36px;
 
   border-radius:
-    10px;
+    11px;
 
   background:
     linear-gradient(
       135deg,
       var(--primary),
-      #7c8cf0
+      #7b8df1
     );
 
   color:
     #fff;
 
+  font-size:
+    16px;
+
   font-weight:
-    800;
+    900;
 
   box-shadow:
     0 4px 12px
@@ -743,21 +766,19 @@ select {
     19px;
 
   transition:
-    background .2s ease,
-    color .2s ease,
-    transform .2s ease;
+    .2s ease;
 }
 
 
 .icon-button:hover {
   background:
-    var(--surface-soft);
+    var(--surface-hover);
 
   color:
     var(--text);
 
   transform:
-    rotate(8deg);
+    rotate(15deg);
 }
 
 
@@ -785,38 +806,20 @@ select {
     1px solid var(--border);
 
   border-radius:
-    12px;
+    13px;
 
   background:
     var(--surface-soft);
 
-  transition:
-    border-color .2s ease,
-    box-shadow .2s ease;
-}
-
-
-.user-card:hover {
-  border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .22
-    );
-
   box-shadow:
-    0 4px 14px
-    rgba(
-      31,
-      41,
-      55,
-      .04
-    );
+    var(--shadow-soft);
 }
 
 
 .user-avatar {
+  position:
+    relative;
+
   display:
     flex;
 
@@ -827,13 +830,13 @@ select {
     center;
 
   width:
-    38px;
+    40px;
 
   height:
-    38px;
+    40px;
 
   min-width:
-    38px;
+    40px;
 
   border-radius:
     50%;
@@ -844,20 +847,47 @@ select {
   color:
     var(--primary);
 
-  box-shadow:
-    inset 0 0 0 1px
-    rgba(
-      102,
-      126,
-      234,
-      .08
-    );
+  font-size:
+    15px;
+}
+
+
+.user-avatar::after {
+  content:
+    "";
+
+  position:
+    absolute;
+
+  right:
+    0;
+
+  bottom:
+    1px;
+
+  width:
+    10px;
+
+  height:
+    10px;
+
+  border:
+    2px solid var(--surface-soft);
+
+  border-radius:
+    50%;
+
+  background:
+    var(--success);
 }
 
 
 .user-info {
   min-width:
     0;
+
+  flex:
+    1;
 }
 
 
@@ -866,10 +896,13 @@ select {
     2px;
 
   color:
-    var(--text-soft);
+    var(--text-muted);
 
   font-size:
     10px;
+
+  font-weight:
+    600;
 }
 
 
@@ -898,8 +931,14 @@ select {
   font-weight:
     700;
 
+  overflow:
+    hidden;
+
   text-overflow:
     ellipsis;
+
+  white-space:
+    nowrap;
 }
 
 
@@ -915,7 +954,7 @@ select {
     0;
 
   padding:
-    0 12px;
+    0 12px 12px;
 
   overflow-y:
     auto;
@@ -930,7 +969,7 @@ select {
     center;
 
   padding:
-    4px 8px 10px;
+    6px 8px 9px;
 
   color:
     var(--text-soft);
@@ -942,7 +981,10 @@ select {
     800;
 
   letter-spacing:
-    .5px;
+    .6px;
+
+  text-transform:
+    uppercase;
 }
 
 
@@ -950,8 +992,10 @@ select {
    Main room button
 ================================================== */
 
-.room-button,
-.room-action-button {
+.room-button {
+  position:
+    relative;
+
   display:
     flex;
 
@@ -962,10 +1006,10 @@ select {
     100%;
 
   min-height:
-    44px;
+    46px;
 
   margin-bottom:
-    5px;
+    6px;
 
   padding:
     0 11px;
@@ -974,13 +1018,13 @@ select {
     1px solid transparent;
 
   border-radius:
-    10px;
+    11px;
 
   background:
     transparent;
 
   color:
-    var(--text);
+    var(--text-soft);
 
   text-align:
     left;
@@ -989,27 +1033,22 @@ select {
     13px;
 
   transition:
-    background .2s ease,
-    border-color .2s ease,
-    color .2s ease,
-    transform .15s ease;
+    background .18s ease,
+    color .18s ease,
+    border-color .18s ease,
+    transform .18s ease;
 }
 
 
-.room-button:hover,
-.room-action-button:hover {
+.room-button:hover {
   background:
-    var(--surface-soft);
+    var(--surface-hover);
 
-  border-color:
-    var(--border);
-}
+  color:
+    var(--text);
 
-
-.room-button:active,
-.room-action-button:active {
   transform:
-    scale(.985);
+    translateX(2px);
 }
 
 
@@ -1032,7 +1071,36 @@ select {
     700;
 
   box-shadow:
-    inset 3px 0 0
+    0 3px 10px
+    rgba(
+      102,
+      126,
+      234,
+      .06
+    );
+}
+
+
+.room-button.active::before {
+  content:
+    "";
+
+  position:
+    absolute;
+
+  left:
+    -12px;
+
+  width:
+    4px;
+
+  height:
+    24px;
+
+  border-radius:
+    0 5px 5px 0;
+
+  background:
     var(--primary);
 }
 
@@ -1048,13 +1116,38 @@ select {
     center;
 
   width:
-    28px;
+    30px;
 
-  min-width:
-    28px;
+  height:
+    30px;
+
+  margin-right:
+    7px;
+
+  border-radius:
+    8px;
+
+  background:
+    rgba(
+      102,
+      126,
+      234,
+      .08
+    );
 
   font-size:
-    17px;
+    16px;
+}
+
+
+.room-button.active .room-icon {
+  background:
+    rgba(
+      102,
+      126,
+      234,
+      .12
+    );
 }
 
 
@@ -1070,9 +1163,61 @@ select {
 }
 
 
+/* ==================================================
+   Room action buttons
+================================================== */
+
 .room-action-button {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  width:
+    100%;
+
+  min-height:
+    42px;
+
+  margin-bottom:
+    5px;
+
+  padding:
+    0 11px;
+
+  border:
+    1px solid transparent;
+
+  border-radius:
+    10px;
+
+  background:
+    transparent;
+
   color:
     var(--text-soft);
+
+  text-align:
+    left;
+
+  font-size:
+    13px;
+
+  transition:
+    .18s ease;
+}
+
+
+.room-action-button:hover {
+  background:
+    var(--surface-hover);
+
+  color:
+    var(--text);
+
+  border-color:
+    var(--border);
 }
 
 
@@ -1087,30 +1232,41 @@ select {
     center;
 
   width:
-    28px;
+    30px;
 
-  min-width:
-    28px;
+  height:
+    30px;
+
+  margin-right:
+    7px;
+
+  border-radius:
+    8px;
+
+  background:
+    var(--primary-light);
 
   color:
     var(--primary);
 
   font-size:
-    18px;
+    17px;
+
+  font-weight:
+    700;
 }
 
 
 /* ==================================================
    Joined rooms
-   参加中の部屋
 ================================================== */
 
 .joined-room-section {
   margin-top:
-    18px;
+    17px;
 
   padding-top:
-    16px;
+    15px;
 
   border-top:
     1px solid var(--border);
@@ -1128,7 +1284,7 @@ select {
     space-between;
 
   padding:
-    0 8px 10px;
+    0 8px 9px;
 
   color:
     var(--text-soft);
@@ -1144,12 +1300,29 @@ select {
 }
 
 
-/*
-  参加中の部屋一覧
+.joined-room-title::after {
+  content:
+    "ROOMS";
 
-  JSから追加される .joined-room を
-  ちゃんと「ルームボタン」に見せる
-*/
+  padding:
+    3px 6px;
+
+  border-radius:
+    5px;
+
+  background:
+    var(--surface-soft);
+
+  color:
+    var(--text-muted);
+
+  font-size:
+    8px;
+
+  letter-spacing:
+    .5px;
+}
+
 
 .joined-rooms {
   display:
@@ -1159,10 +1332,7 @@ select {
     column;
 
   gap:
-    6px;
-
-  padding:
-    0 2px 8px;
+    5px;
 }
 
 
@@ -1187,19 +1357,19 @@ select {
     48px;
 
   padding:
-    6px 9px;
+    0 10px;
 
   border:
     1px solid transparent;
 
   border-radius:
-    12px;
+    11px;
 
   background:
     transparent;
 
   color:
-    var(--text);
+    var(--text-soft);
 
   text-align:
     left;
@@ -1211,77 +1381,28 @@ select {
     pointer;
 
   transition:
-    background .2s ease,
-    border-color .2s ease,
-    box-shadow .2s ease,
-    transform .15s ease;
-}
-
-
-/*
-  左側にうっすら光るライン
-*/
-
-.joined-room::before {
-  content:
-    "";
-
-  position:
-    absolute;
-
-  left:
-    0;
-
-  top:
-    10px;
-
-  bottom:
-    10px;
-
-  width:
-    3px;
-
-  border-radius:
-    999px;
-
-  background:
-    transparent;
-
-  transition:
-    background .2s ease;
+    background .18s ease,
+    color .18s ease,
+    border-color .18s ease,
+    transform .18s ease,
+    box-shadow .18s ease;
 }
 
 
 .joined-room:hover {
   background:
-    var(--surface-soft);
+    var(--surface-hover);
+
+  color:
+    var(--text);
 
   border-color:
     var(--border);
 
-  box-shadow:
-    0 3px 10px
-    rgba(
-      31,
-      41,
-      55,
-      .045
-    );
-
   transform:
-    translateX(1px);
+    translateX(2px);
 }
 
-
-.joined-room:active {
-  transform:
-    scale(.985);
-}
-
-
-/*
-  選択中の部屋
-*/
 
 .joined-room.active {
   background:
@@ -1292,24 +1413,45 @@ select {
       102,
       126,
       234,
-      .16
+      .14
     );
 
   color:
     var(--primary);
 
+  font-weight:
+    700;
+
   box-shadow:
-    0 4px 13px
+    0 3px 10px
     rgba(
       102,
       126,
       234,
-      .08
+      .06
     );
 }
 
 
 .joined-room.active::before {
+  content:
+    "";
+
+  position:
+    absolute;
+
+  left:
+    -12px;
+
+  width:
+    4px;
+
+  height:
+    24px;
+
+  border-radius:
+    0 5px 5px 0;
+
   background:
     var(--primary);
 }
@@ -1339,7 +1481,7 @@ select {
     34px;
 
   margin-right:
-    9px;
+    8px;
 
   border-radius:
     9px;
@@ -1357,37 +1499,36 @@ select {
     15px;
 
   transition:
-    background .2s ease,
-    border-color .2s ease,
-    color .2s ease,
-    transform .2s ease;
+    .18s ease;
 }
 
 
-.joined-room:hover .joined-room-icon {
+.joined-room:hover
+.joined-room-icon {
+  background:
+    #ffffff;
+
+  color:
+    var(--primary);
+
   border-color:
     rgba(
       102,
       126,
       234,
-      .18
+      .15
     );
-
-  color:
-    var(--primary);
-
-  transform:
-    scale(1.04);
 }
 
 
-.joined-room.active .joined-room-icon {
+.joined-room.active
+.joined-room-icon {
   background:
     rgba(
       102,
       126,
       234,
-      .13
+      .12
     );
 
   border-color:
@@ -1395,17 +1536,13 @@ select {
       102,
       126,
       234,
-      .18
+      .16
     );
 
   color:
     var(--primary);
 }
 
-
-/* ==================================================
-   Joined room name
-================================================== */
 
 .joined-room-name {
   flex:
@@ -1423,25 +1560,32 @@ select {
   white-space:
     nowrap;
 
-  font-size:
-    13px;
-
-  font-weight:
-    600;
-
   line-height:
-    1.4;
+    1.3;
 }
 
 
-.joined-room.active .joined-room-name {
+.joined-room-name::before {
+  content:
+    "# ";
+
+  color:
+    var(--text-muted);
+
   font-weight:
-    750;
+    600;
+}
+
+
+.joined-room.active
+.joined-room-name::before {
+  color:
+    var(--primary);
 }
 
 
 /* ==================================================
-   Empty joined room
+   Empty joined rooms
 ================================================== */
 
 .joined-room-empty {
@@ -1449,7 +1593,7 @@ select {
     3px 2px;
 
   padding:
-    13px 10px;
+    12px 10px;
 
   border:
     1px dashed var(--border);
@@ -1461,13 +1605,13 @@ select {
     var(--surface-soft);
 
   color:
-    #9aa0ad;
+    var(--text-muted);
 
   font-size:
     11px;
 
   line-height:
-    1.6;
+    1.5;
 
   text-align:
     center;
@@ -1480,7 +1624,7 @@ select {
 
 .sidebar-footer {
   padding:
-    14px 16px;
+    13px 16px;
 
   border-top:
     1px solid var(--border);
@@ -1628,6 +1772,17 @@ select {
   height:
     42px;
 
+  min-width:
+    42px;
+
+  border:
+    1px solid rgba(
+      102,
+      126,
+      234,
+      .12
+    );
+
   border-radius:
     12px;
 
@@ -1638,12 +1793,12 @@ select {
     20px;
 
   box-shadow:
-    inset 0 0 0 1px
+    0 3px 10px
     rgba(
       102,
       126,
       234,
-      .08
+      .06
     );
 }
 
@@ -1663,6 +1818,9 @@ select {
 
   font-size:
     18px;
+
+  font-weight:
+    800;
 }
 
 
@@ -1677,6 +1835,10 @@ select {
     11px;
 }
 
+
+/* ==================================================
+   Invite code
+================================================== */
 
 .invite-area {
   display:
@@ -1712,8 +1874,14 @@ select {
 
 
 .invite-code {
+  padding:
+    4px 6px;
+
   border:
     0;
+
+  border-radius:
+    6px;
 
   background:
     transparent;
@@ -1729,11 +1897,20 @@ select {
 
   letter-spacing:
     1px;
+
+  transition:
+    .18s ease;
+}
+
+
+.invite-code:hover {
+  background:
+    var(--primary-light);
 }
 
 
 /* ==================================================
-   Messages
+   Messages area
 ================================================== */
 
 .messages {
@@ -1755,9 +1932,7 @@ select {
 
 
 /* ==================================================
-   Message
-   コメントを「ボタン/インタラクティブカード」
-   っぽく見せる
+   Message / Comment Card
 ================================================== */
 
 .message {
@@ -1777,63 +1952,33 @@ select {
     1px solid var(--border);
 
   border-radius:
-    14px;
+    13px;
 
   background:
     var(--surface);
 
   box-shadow:
-    0 2px 8px
+    0 2px 7px
     rgba(
       31,
       41,
       55,
-      .035
+      .025
     );
 
   transition:
-    background .2s ease,
-    border-color .2s ease,
-    box-shadow .2s ease,
-    transform .15s ease;
+    background .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease,
+    transform .18s ease;
 }
 
 
-/*
-  左端のアクセント
-*/
-
-.message::before {
-  content:
-    "";
-
-  position:
-    absolute;
-
-  left:
-    -1px;
-
-  top:
-    12px;
-
-  bottom:
-    12px;
-
-  width:
-    3px;
-
-  border-radius:
-    999px;
-
-  background:
-    transparent;
-
-  transition:
-    background .2s ease;
-}
-
-
+/* コメントをボタンっぽく見せる */
 .message:hover {
+  background:
+    var(--surface);
+
   border-color:
     rgba(
       102,
@@ -1842,11 +1987,8 @@ select {
       .18
     );
 
-  background:
-    var(--surface);
-
   box-shadow:
-    0 6px 18px
+    0 5px 16px
     rgba(
       31,
       41,
@@ -1859,24 +2001,40 @@ select {
 }
 
 
-.message:hover::before {
+/* 左側アクセント */
+.message::before {
+  content:
+    "";
+
+  position:
+    absolute;
+
+  left:
+    0;
+
+  top:
+    14px;
+
+  bottom:
+    14px;
+
+  width:
+    3px;
+
+  border-radius:
+    0 4px 4px 0;
+
   background:
-    rgba(
-      102,
-      126,
-      234,
-      .55
-    );
+    transparent;
+
+  transition:
+    background .18s ease;
 }
 
 
-/*
-  クリック感
-*/
-
-.message:active {
-  transform:
-    translateY(0);
+.message:hover::before {
+  background:
+    var(--primary);
 }
 
 
@@ -1900,29 +2058,11 @@ select {
 
 
 .message-user {
-  display:
-    inline-flex;
-
-  align-items:
-    center;
-
-  min-height:
-    24px;
-
-  padding:
-    3px 8px;
-
-  border-radius:
-    7px;
-
-  background:
-    var(--primary-light);
-
   color:
-    var(--primary);
+    var(--text);
 
   font-size:
-    12px;
+    13px;
 
   font-weight:
     800;
@@ -1931,7 +2071,7 @@ select {
 
 .message-time {
   color:
-    var(--text-soft);
+    var(--text-muted);
 
   font-size:
     10px;
@@ -1963,6 +2103,10 @@ select {
 }
 
 
+/* ==================================================
+   Edited
+================================================== */
+
 .edited-label {
   display:
     inline-block;
@@ -1971,7 +2115,7 @@ select {
     7px;
 
   color:
-    var(--text-soft);
+    var(--text-muted);
 
   font-size:
     10px;
@@ -1993,56 +2137,31 @@ select {
     5px;
 
   margin-top:
-    10px;
+    11px;
 
   padding-top:
-    8px;
+    9px;
 
   border-top:
-    1px solid transparent;
-
-  opacity:
-    .75;
-
-  transition:
-    opacity .2s ease,
-    border-color .2s ease;
-}
-
-
-.message:hover .message-actions {
-  opacity:
-    1;
-
-  border-top-color:
-    var(--border);
+    1px solid var(--border);
 }
 
 
 .message-actions button {
-  display:
-    inline-flex;
-
-  align-items:
-    center;
-
-  justify-content:
-    center;
-
   min-height:
-    28px;
+    30px;
 
   padding:
-    4px 9px;
+    0 9px;
 
   border:
     1px solid transparent;
 
   border-radius:
-    8px;
+    7px;
 
   background:
-    var(--surface-soft);
+    transparent;
 
   color:
     var(--text-soft);
@@ -2051,60 +2170,49 @@ select {
     11px;
 
   transition:
-    background .2s ease,
-    border-color .2s ease,
-    color .2s ease,
-    transform .15s ease;
+    .18s ease;
 }
 
 
 .message-actions button:hover {
   background:
-    var(--primary-light);
+    var(--surface-soft);
 
   border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .14
-    );
+    var(--border);
 
   color:
     var(--primary);
-}
 
-
-.message-actions button:active {
   transform:
-    scale(.96);
+    translateY(-1px);
 }
 
 
 .message-actions .delete-action:hover {
+  color:
+    var(--danger);
+
+  border-color:
+    rgba(
+      224,
+      82,
+      82,
+      .15
+    );
+
   background:
     rgba(
       224,
       82,
       82,
-      .08
+      .05
     );
-
-  border-color:
-    rgba(
-      224,
-      82,
-      82,
-      .14
-    );
-
-  color:
-    var(--danger);
 }
 
 
 /* ==================================================
-   Reply
+   Reply information
 ================================================== */
 
 .message-reply-info {
@@ -2112,13 +2220,21 @@ select {
     8px;
 
   padding:
-    7px 9px;
+    8px 10px;
+
+  border:
+    1px solid rgba(
+      102,
+      126,
+      234,
+      .12
+    );
 
   border-left:
     3px solid var(--primary);
 
   border-radius:
-    5px;
+    7px;
 
   background:
     var(--primary-light);
@@ -2142,7 +2258,7 @@ select {
     nowrap;
 
   transition:
-    background .2s ease;
+    .18s ease;
 }
 
 
@@ -2156,6 +2272,10 @@ select {
     );
 }
 
+
+/* ==================================================
+   Message highlight
+================================================== */
 
 .message-highlight {
   animation:
@@ -2171,13 +2291,24 @@ select {
         102,
         126,
         234,
-        .3
+        .25
+      );
+
+    border-color:
+      rgba(
+        102,
+        126,
+        234,
+        .4
       );
   }
 
   100% {
     background:
       var(--surface);
+
+    border-color:
+      var(--border);
   }
 
 }
@@ -2245,12 +2376,12 @@ select {
     11px;
 
   box-shadow:
-    0 4px 14px
+    0 4px 15px
     rgba(
       31,
       41,
       55,
-      .06
+      .05
     );
 }
 
@@ -2287,11 +2418,28 @@ select {
 
   color:
     var(--primary);
+
+  transition:
+    .18s ease;
+}
+
+
+.reply-preview button:hover {
+  background:
+    rgba(
+      102,
+      126,
+      234,
+      .2
+    );
+
+  transform:
+    rotate(90deg);
 }
 
 
 /* ==================================================
-   New message
+   New message button
 ================================================== */
 
 .new-message-button {
@@ -2343,23 +2491,16 @@ select {
     700;
 
   transition:
-    transform .2s ease,
-    box-shadow .2s ease;
+    .18s ease;
 }
 
 
 .new-message-button:hover {
+  background:
+    var(--primary-light);
+
   transform:
     translateY(-2px);
-
-  box-shadow:
-    0 7px 24px
-    rgba(
-      31,
-      41,
-      55,
-      .16
-    );
 }
 
 
@@ -2429,9 +2570,7 @@ select {
     );
 
   transition:
-    color .2s ease,
-    border-color .2s ease,
-    transform .15s ease;
+    .18s ease;
 }
 
 
@@ -2522,8 +2661,8 @@ select {
     );
 
   transition:
-    border-color .2s ease,
-    box-shadow .2s ease;
+    border-color .18s ease,
+    box-shadow .18s ease;
 }
 
 
@@ -2533,15 +2672,15 @@ select {
       102,
       126,
       234,
-      .35
+      .4
     );
 
   box-shadow:
-    0 7px 27px
+    0 7px 28px
     rgba(
-      31,
-      41,
-      55,
+      102,
+      126,
+      234,
       .1
     );
 }
@@ -2577,6 +2716,16 @@ select {
 }
 
 
+.message-form input::placeholder {
+  color:
+    var(--text-muted);
+}
+
+
+/* ==================================================
+   Send button
+================================================== */
+
 .send-button {
   display:
     flex;
@@ -2609,9 +2758,7 @@ select {
     17px;
 
   transition:
-    background .2s ease,
-    transform .15s ease,
-    box-shadow .2s ease;
+    .18s ease;
 }
 
 
@@ -2628,14 +2775,8 @@ select {
       102,
       126,
       234,
-      .22
+      .25
     );
-}
-
-
-.send-button:active {
-  transform:
-    scale(.95);
 }
 
 
@@ -2707,19 +2848,18 @@ select {
     );
 
   animation:
-    modalIn .18s ease;
+    modalOpen .18s ease;
 }
 
 
-@keyframes modalIn {
+@keyframes modalOpen {
 
   from {
     opacity:
       0;
 
     transform:
-      translateY(8px)
-      scale(.985);
+      translateY(8px) scale(.98);
   }
 
   to {
@@ -2727,8 +2867,7 @@ select {
       1;
 
     transform:
-      translateY(0)
-      scale(1);
+      translateY(0) scale(1);
   }
 
 }
@@ -2799,8 +2938,7 @@ select {
     22px;
 
   transition:
-    background .2s ease,
-    color .2s ease;
+    .18s ease;
 }
 
 
@@ -2810,6 +2948,9 @@ select {
 
   color:
     var(--text);
+
+  transform:
+    rotate(90deg);
 }
 
 
@@ -2942,9 +3083,18 @@ select {
     800;
 
   transition:
-    background .2s ease,
-    border-color .2s ease,
-    color .2s ease;
+    .18s ease;
+}
+
+
+.toggle-button:hover {
+  border-color:
+    rgba(
+      102,
+      126,
+      234,
+      .25
+    );
 }
 
 
@@ -2957,6 +3107,15 @@ select {
 
   color:
     #fff;
+
+  box-shadow:
+    0 3px 10px
+    rgba(
+      102,
+      126,
+      234,
+      .18
+    );
 }
 
 
@@ -2975,6 +3134,9 @@ body.dark-mode {
   --surface-soft:
     #292c35;
 
+  --surface-hover:
+    #30343e;
+
   --border:
     #363a45;
 
@@ -2983,6 +3145,9 @@ body.dark-mode {
 
   --text-soft:
     #a2a7b3;
+
+  --text-muted:
+    #777e8c;
 
   --primary:
     #8192f5;
@@ -3005,6 +3170,15 @@ body.dark-mode {
       0,
       0,
       .25
+    );
+
+  --shadow-soft:
+    0 3px 12px
+    rgba(
+      0,
+      0,
+      0,
+      .18
     );
 }
 
@@ -3051,6 +3225,15 @@ body.dark-mode
 
   color:
     var(--text);
+}
+
+
+body.dark-mode
+.joined-room:hover
+.joined-room-icon {
+
+  background:
+    var(--surface);
 }
 
 
@@ -3147,8 +3330,30 @@ body.dark-mode.gray-mode {
       none;
   }
 
+
+  .joined-room {
+    min-height:
+      45px;
+  }
+
+
+  .joined-room-icon {
+    width:
+      31px;
+
+    height:
+      31px;
+
+    min-width:
+      31px;
+  }
+
 }
 
+
+/* ==================================================
+   Mobile
+================================================== */
 
 @media (
   max-width: 560px
@@ -3178,6 +3383,9 @@ body.dark-mode.gray-mode {
 
     height:
       36px;
+
+    min-width:
+      36px;
   }
 
 
@@ -3197,29 +3405,20 @@ body.dark-mode.gray-mode {
     padding:
       12px 13px;
 
-    margin-bottom:
-      10px;
-  }
-
-
-  .message-user {
-    font-size:
+    border-radius:
       11px;
   }
 
 
-  .message-content {
-    font-size:
-      13px;
+  .message-actions {
+    gap:
+      3px;
   }
 
 
   .message-actions button {
-    min-height:
-      27px;
-
     padding:
-      4px 8px;
+      0 7px;
   }
 
 
@@ -3253,6 +3452,18 @@ body.dark-mode.gray-mode {
   .auth-panel {
     padding:
       24px 20px;
+  }
+
+
+  .message-input-area {
+    padding:
+      9px 10px 12px;
+  }
+
+
+  .message-form {
+    border-radius:
+      12px;
   }
 
 }
