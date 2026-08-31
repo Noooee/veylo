@@ -272,20 +272,179 @@ async function initDatabase() {
 
 
   // ==================================================
-  // Rooms
-  // ==================================================
+// Rooms
+// ==================================================
 
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS rooms (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      invite_code TEXT NOT NULL UNIQUE,
-      owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `);
+await pool.query(`
+  CREATE TABLE IF NOT EXISTS rooms (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    invite_code TEXT NOT NULL UNIQUE,
+    owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  )
+`);
 
 
+// ==================================================
+// 既存 rooms テーブルとの互換対応
+// ==================================================
+//
+// 以前のVeyloでは
+//
+//   owner
+//
+// というカラムを使っていた可能性があります。
+//
+// 現在のVeyloでは
+//
+//   owner_id
+//
+// を使用するため、既存DBにowner_idが無い場合は
+// 自動的に追加します。
+// ==================================================
+
+await pool.query(`
+  ALTER TABLE rooms
+  ADD COLUMN IF NOT EXISTS owner_id INTEGER
+`);
+
+
+// ==================================================
+// owner カラムが存在する場合の移行
+// ==================================================
+//
+// PostgreSQLのDOブロックで、
+// ownerカラムが存在するときだけ移行します。
+// ==================================================
+
+await pool.query(`
+  DO $$
+  BEGIN
+
+    IF EXISTS (
+      SELECT 1
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'rooms'
+        AND column_name = 'owner'
+    ) THEN
+
+      /*
+       * ownerがINTEGERの場合
+       */
+      IF (
+        SELECT data_type
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'rooms'
+          AND column_name = 'owner'
+      ) = 'integer' THEN
+
+        UPDATE rooms
+        SET owner_id = owner
+        WHERE owner_id IS NULL
+          AND owner IS NOT NULL;
+
+      ELSE
+
+        /*
+         * ownerがTEXT等の場合。
+         * 数字として解釈できる値だけ移行する。
+         */
+        UPDATE rooms
+        SET owner_id = owner::integer
+        WHERE owner_id IS NULL
+          AND owner IS NOT NULL
+          AND owner::text ~ '^[0-9]+$';
+
+      END IF;
+
+    END IF;
+
+  END
+  $$;
+`);
+
+
+// ==================================================
+// owner_id の外部キーを確認
+// ==================================================
+
+await pool.query(`
+  DO $$
+  BEGIN
+
+    IF NOT EXISTS (
+      SELECT 1
+      FROM information_schema.table_constraints
+      WHERE constraint_schema = 'public'
+        AND table_name = 'rooms'
+        AND constraint_name = 'rooms_owner_id_fkey'
+    ) THEN
+
+      ALTER TABLE rooms
+      ADD CONSTRAINT rooms_owner_id_fkey
+      FOREIGN KEY (owner_id)
+      REFERENCES users(id)
+      ON DELETE CASCADE;
+
+    END IF;
+
+  END
+  $$;
+`);
+
+
+// ==================================================
+// Room Members
+// ==================================================
+
+await pool.query(`
+  CREATE TABLE IF NOT EXISTS room_members (
+    room_id TEXT NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (room_id, user_id)
+  )
+`);
+
+
+// ==================================================
+// Index
+// ==================================================
+
+await pool.query(`
+  CREATE INDEX IF NOT EXISTS room_members_user_idx
+  ON room_members(user_id)
+`);
+
+await pool.query(`
+  CREATE INDEX IF NOT EXISTS room_members_room_idx
+  ON room_members(room_id)
+`);
+
+
+// ==================================================
+// 既存の部屋の所有者をメンバーに追加
+// ==================================================
+
+await pool.query(`
+  INSERT INTO room_members (
+    room_id,
+    user_id
+  )
+  SELECT
+    id,
+    owner_id
+  FROM rooms
+  WHERE owner_id IS NOT NULL
+  ON CONFLICT (
+    room_id,
+    user_id
+  )
+  DO NOTHING
+`);
   // ==================================================
   // Room Members
   // ==================================================
