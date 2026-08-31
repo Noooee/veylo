@@ -14,6 +14,9 @@
   --surface-soft:
     #f8f9fc;
 
+  --surface-hover:
+    #f1f3f8;
+
   --border:
     #e5e8ef;
 
@@ -22,6 +25,9 @@
 
   --text-soft:
     #737987;
+
+  --text-muted:
+    #9aa0ad;
 
   --primary:
     #667eea;
@@ -32,15 +38,33 @@
   --primary-light:
     #eef0ff;
 
+  --primary-border:
+    rgba(
+      102,
+      126,
+      234,
+      .18
+    );
+
   --danger:
     #e05252;
 
   --shadow:
-    0 10px 35px rgba(
+    0 10px 35px
+    rgba(
       31,
       41,
       55,
       0.08
+    );
+
+  --shadow-soft:
+    0 3px 12px
+    rgba(
+      31,
+      41,
+      55,
+      .05
     );
 
   --radius:
@@ -57,17 +81,24 @@
 ================================================== */
 
 * {
-  box-sizing: border-box;
+  box-sizing:
+    border-box;
 }
 
 
 html,
 body {
-  margin: 0;
-  padding: 0;
+  margin:
+    0;
 
-  width: 100%;
-  height: 100%;
+  padding:
+    0;
+
+  width:
+    100%;
+
+  height:
+    100%;
 
   font-family:
     -apple-system,
@@ -83,6 +114,9 @@ body {
 
   background:
     var(--bg);
+
+  -webkit-font-smoothing:
+    antialiased;
 }
 
 
@@ -95,12 +129,22 @@ select {
 
 
 button {
-  cursor: pointer;
+  cursor:
+    pointer;
+}
+
+
+button,
+input,
+select {
+  outline:
+    none;
 }
 
 
 .hidden {
-  display: none !important;
+  display:
+    none !important;
 }
 
 
@@ -109,8 +153,11 @@ button {
 ================================================== */
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width:
+    8px;
+
+  height:
+    8px;
 }
 
 
@@ -140,8 +187,11 @@ button {
 ================================================== */
 
 .screen {
-  width: 100%;
-  height: 100vh;
+  width:
+    100%;
+
+  height:
+    100vh;
 }
 
 
@@ -150,14 +200,20 @@ button {
 ================================================== */
 
 #authScreen {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: center;
+  align-items:
+    center;
 
-  min-height: 100vh;
+  justify-content:
+    center;
 
-  padding: 24px;
+  min-height:
+    100vh;
+
+  padding:
+    24px;
 
   background:
     linear-gradient(
@@ -170,23 +226,32 @@ button {
 
 
 .auth-container {
-  width: 100%;
-  max-width: 430px;
+  width:
+    100%;
+
+  max-width:
+    430px;
 }
 
 
 .logo-area {
-  text-align: center;
+  text-align:
+    center;
 
-  margin-bottom: 30px;
+  margin-bottom:
+    30px;
 }
 
 
 .logo-area h1 {
-  margin: 0;
+  margin:
+    0;
 
-  font-size: 42px;
-  font-weight: 800;
+  font-size:
+    42px;
+
+  font-weight:
+    800;
 
   letter-spacing:
     -1.5px;
@@ -203,12 +268,14 @@ button {
   color:
     var(--text-soft);
 
-  font-size: 14px;
+  font-size:
+    14px;
 }
 
 
 .auth-panel {
-  padding: 32px;
+  padding:
+    32px;
 
   background:
     var(--surface);
@@ -228,9 +295,11 @@ button {
   margin:
     0 0 25px;
 
-  text-align: center;
+  text-align:
+    center;
 
-  font-size: 24px;
+  font-size:
+    24px;
 }
 
 
@@ -239,18 +308,24 @@ button {
 ================================================== */
 
 .input-group {
-  margin-bottom: 18px;
+  margin-bottom:
+    18px;
 }
 
 
 .input-group label,
 .settings-group > label {
-  display: block;
+  display:
+    block;
 
-  margin-bottom: 8px;
+  margin-bottom:
+    8px;
 
-  font-size: 13px;
-  font-weight: 700;
+  font-size:
+    13px;
+
+  font-weight:
+    700;
 
   color:
     #505665;
@@ -260,9 +335,11 @@ button {
 .input-group input,
 .settings-group input,
 .settings-group select {
-  width: 100%;
+  width:
+    100%;
 
-  height: 46px;
+  height:
+    46px;
 
   padding:
     0 14px;
@@ -273,7 +350,8 @@ button {
   border-radius:
     10px;
 
-  outline: none;
+  outline:
+    none;
 
   background:
     #fff;
@@ -281,12 +359,21 @@ button {
   color:
     var(--text);
 
-  font-size: 14px;
+  font-size:
+    14px;
 
   transition:
-    border-color .2s,
-    box-shadow .2s,
-    background .2s;
+    border-color .2s ease,
+    box-shadow .2s ease,
+    background .2s ease;
+}
+
+
+.input-group input:hover,
+.settings-group input:hover,
+.settings-group select:hover {
+  border-color:
+    #d4d8e2;
 }
 
 
@@ -308,7 +395,8 @@ button {
 
 
 .form-error {
-  min-height: 20px;
+  min-height:
+    20px;
 
   margin:
     4px 0 12px;
@@ -316,12 +404,14 @@ button {
   color:
     var(--danger);
 
-  font-size: 13px;
+  font-size:
+    13px;
 }
 
 
 .form-message {
-  min-height: 20px;
+  min-height:
+    20px;
 
   margin:
     5px 0 12px;
@@ -329,7 +419,8 @@ button {
   color:
     var(--primary);
 
-  font-size: 13px;
+  font-size:
+    13px;
 }
 
 
@@ -340,7 +431,8 @@ button {
 .primary-button,
 .secondary-button,
 .danger-button {
-  min-height: 44px;
+  min-height:
+    44px;
 
   padding:
     0 18px;
@@ -348,8 +440,11 @@ button {
   border-radius:
     10px;
 
-  font-size: 14px;
-  font-weight: 700;
+  font-size:
+    14px;
+
+  font-weight:
+    700;
 
   transition:
     background .2s ease,
@@ -369,6 +464,15 @@ button {
 
   color:
     #fff;
+
+  box-shadow:
+    0 3px 8px
+    rgba(
+      102,
+      126,
+      234,
+      .15
+    );
 }
 
 
@@ -383,13 +487,19 @@ button {
     translateY(-1px);
 
   box-shadow:
-    0 5px 15px
+    0 5px 14px
     rgba(
       102,
       126,
       234,
-      .18
+      .2
     );
+}
+
+
+.primary-button:active {
+  transform:
+    translateY(0);
 }
 
 
@@ -408,6 +518,9 @@ button {
 .secondary-button:hover {
   background:
     var(--surface-soft);
+
+  border-color:
+    #d9dde6;
 }
 
 
@@ -445,16 +558,20 @@ button {
 
 
 .auth-panel form .primary-button {
-  width: 100%;
+  width:
+    100%;
 }
 
 
 .text-button {
-  display: block;
+  display:
+    block;
 
-  width: 100%;
+  width:
+    100%;
 
-  margin-top: 16px;
+  margin-top:
+    16px;
 
   padding:
     8px;
@@ -468,7 +585,8 @@ button {
   color:
     var(--primary);
 
-  font-size: 13px;
+  font-size:
+    13px;
 }
 
 
@@ -479,9 +597,11 @@ button {
 
 
 .auth-panel > .secondary-button {
-  width: 100%;
+  width:
+    100%;
 
-  margin-top: 8px;
+  margin-top:
+    8px;
 }
 
 
@@ -490,15 +610,20 @@ button {
 ================================================== */
 
 #appScreen {
-  overflow: hidden;
+  overflow:
+    hidden;
 }
 
 
 .app-layout {
-  display: flex;
+  display:
+    flex;
 
-  width: 100%;
-  height: 100vh;
+  width:
+    100%;
+
+  height:
+    100vh;
 }
 
 
@@ -507,9 +632,11 @@ button {
 ================================================== */
 
 .sidebar {
-  display: flex;
+  display:
+    flex;
 
-  flex-direction: column;
+  flex-direction:
+    column;
 
   width:
     var(--sidebar-width);
@@ -517,7 +644,8 @@ button {
   min-width:
     var(--sidebar-width);
 
-  height: 100%;
+  height:
+    100%;
 
   background:
     var(--surface);
@@ -532,12 +660,17 @@ button {
 ================================================== */
 
 .sidebar-header {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: space-between;
+  align-items:
+    center;
 
-  height: 72px;
+  justify-content:
+    space-between;
+
+  height:
+    72px;
 
   padding:
     0 18px;
@@ -548,22 +681,32 @@ button {
 
 
 .brand {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  gap: 10px;
+  gap:
+    10px;
 }
 
 
 .brand-mark {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: center;
+  align-items:
+    center;
 
-  width: 34px;
-  height: 34px;
+  justify-content:
+    center;
+
+  width:
+    34px;
+
+  height:
+    34px;
 
   border-radius:
     10px;
@@ -574,10 +717,11 @@ button {
   color:
     #fff;
 
-  font-weight: 800;
+  font-weight:
+    800;
 
   box-shadow:
-    0 4px 10px
+    0 3px 9px
     rgba(
       102,
       126,
@@ -588,8 +732,11 @@ button {
 
 
 .brand-name {
-  font-size: 20px;
-  font-weight: 800;
+  font-size:
+    20px;
+
+  font-weight:
+    800;
 
   letter-spacing:
     -.5px;
@@ -597,13 +744,20 @@ button {
 
 
 .icon-button {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: center;
+  align-items:
+    center;
 
-  width: 38px;
-  height: 38px;
+  justify-content:
+    center;
+
+  width:
+    38px;
+
+  height:
+    38px;
 
   border:
     0;
@@ -617,10 +771,12 @@ button {
   color:
     var(--text-soft);
 
-  font-size: 19px;
+  font-size:
+    19px;
 
   transition:
-    .2s ease;
+    background .2s ease,
+    color .2s ease;
 }
 
 
@@ -638,11 +794,14 @@ button {
 ================================================== */
 
 .user-card {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  gap: 12px;
+  gap:
+    12px;
 
   margin:
     16px;
@@ -658,19 +817,40 @@ button {
 
   background:
     var(--surface-soft);
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+
+.user-card:hover {
+  border-color:
+    #dce0e8;
+
+  box-shadow:
+    var(--shadow-soft);
 }
 
 
 .user-avatar {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: center;
+  align-items:
+    center;
 
-  width: 38px;
-  height: 38px;
+  justify-content:
+    center;
 
-  min-width: 38px;
+  width:
+    38px;
+
+  height:
+    38px;
+
+  min-width:
+    38px;
 
   border-radius:
     50%;
@@ -684,30 +864,38 @@ button {
 
 
 .user-info {
-  min-width: 0;
+  min-width:
+    0;
 
-  flex: 1;
+  flex:
+    1;
 }
 
 
 .user-label {
-  margin-bottom: 2px;
+  margin-bottom:
+    2px;
 
   color:
     var(--text-soft);
 
-  font-size: 10px;
+  font-size:
+    10px;
 }
 
 
 .username-display {
-  width: 100%;
+  width:
+    100%;
 
-  padding: 0;
+  padding:
+    0;
 
-  border: 0;
+  border:
+    0;
 
-  outline: none;
+  outline:
+    none;
 
   background:
     transparent;
@@ -715,8 +903,11 @@ button {
   color:
     var(--text);
 
-  font-size: 13px;
-  font-weight: 700;
+  font-size:
+    13px;
+
+  font-weight:
+    700;
 
   overflow:
     hidden;
@@ -734,21 +925,26 @@ button {
 ================================================== */
 
 .room-section {
-  flex: 1;
+  flex:
+    1;
 
-  min-height: 0;
+  min-height:
+    0;
 
   padding:
     0 12px;
 
-  overflow-y: auto;
+  overflow-y:
+    auto;
 }
 
 
 .section-title {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
   padding:
     4px 8px 10px;
@@ -756,25 +952,37 @@ button {
   color:
     var(--text-soft);
 
-  font-size: 11px;
-  font-weight: 800;
+  font-size:
+    11px;
+
+  font-weight:
+    800;
 
   letter-spacing:
     .5px;
 }
 
 
+/* ==================================================
+   Main room button
+================================================== */
+
 .room-button,
 .room-action-button {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  width: 100%;
+  width:
+    100%;
 
-  min-height: 44px;
+  min-height:
+    44px;
 
-  margin-bottom: 5px;
+  margin-bottom:
+    5px;
 
   padding:
     0 11px;
@@ -791,15 +999,17 @@ button {
   color:
     var(--text);
 
-  text-align: left;
+  text-align:
+    left;
 
-  font-size: 13px;
+  font-size:
+    13px;
 
   transition:
     background .2s ease,
     border-color .2s ease,
     color .2s ease,
-    transform .2s ease;
+    transform .15s ease;
 }
 
 
@@ -810,30 +1020,58 @@ button {
 }
 
 
+.room-button:active,
+.room-action-button:active {
+  transform:
+    scale(.99);
+}
+
+
 .room-button.active {
   background:
     var(--primary-light);
 
+  border-color:
+    var(--primary-border);
+
   color:
     var(--primary);
 
-  font-weight: 700;
+  font-weight:
+    700;
 }
 
 
 .room-icon {
-  width: 28px;
+  display:
+    flex;
 
-  font-size: 17px;
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  width:
+    28px;
+
+  min-width:
+    28px;
+
+  font-size:
+    17px;
 }
 
 
 .room-button-text {
-  overflow: hidden;
+  overflow:
+    hidden;
 
-  text-overflow: ellipsis;
+  text-overflow:
+    ellipsis;
 
-  white-space: nowrap;
+  white-space:
+    nowrap;
 }
 
 
@@ -844,12 +1082,26 @@ button {
 
 
 .room-action-button span:first-child {
-  width: 28px;
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  width:
+    28px;
+
+  min-width:
+    28px;
 
   color:
     var(--primary);
 
-  font-size: 18px;
+  font-size:
+    18px;
 }
 
 
@@ -859,9 +1111,11 @@ button {
 ================================================== */
 
 .joined-room-section {
-  margin-top: 18px;
+  margin-top:
+    16px;
 
-  padding-top: 15px;
+  padding-top:
+    14px;
 
   border-top:
     1px solid var(--border);
@@ -869,18 +1123,23 @@ button {
 
 
 .joined-room-title {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
   padding:
-    0 9px 9px;
+    0 8px 9px;
 
   color:
     var(--text-soft);
 
-  font-size: 11px;
-  font-weight: 800;
+  font-size:
+    11px;
+
+  font-weight:
+    800;
 
   letter-spacing:
     .2px;
@@ -888,38 +1147,41 @@ button {
 
 
 .joined-rooms {
-  display: flex;
+  display:
+    flex;
 
-  flex-direction: column;
+  flex-direction:
+    column;
 
-  gap: 5px;
+  gap:
+    5px;
 }
 
 
 /*
-  参加中の部屋
-
-  ここをかなり変更しています。
-
-  ・文字だけに見えない
-  ・カード型
-  ・Discord風の控えめな部屋一覧
-  ・余計な絵文字を見せない
+   参加中の部屋を
+   「ただの文字」ではなく
+   ちゃんとした選択ボタンにする
 */
 
 .joined-room {
-  position: relative;
+  position:
+    relative;
 
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  width: 100%;
+  width:
+    100%;
 
-  min-height: 44px;
+  min-height:
+    43px;
 
   padding:
-    0 12px;
+    0 11px;
 
   border:
     1px solid transparent;
@@ -931,7 +1193,7 @@ button {
     transparent;
 
   color:
-    var(--text-soft);
+    var(--text);
 
   text-align:
     left;
@@ -946,45 +1208,35 @@ button {
     pointer;
 
   transition:
-    background .18s ease,
-    border-color .18s ease,
-    color .18s ease,
-    transform .18s ease,
-    box-shadow .18s ease;
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease,
+    box-shadow .2s ease,
+    transform .15s ease;
 }
 
 
-/*
-  左側に細いアクセントを入れる。
-  普段は見えない。
-*/
-
 .joined-room::before {
-  content: "";
+  content:
+    "";
 
-  position: absolute;
+  width:
+    3px;
 
-  left: 0;
+  height:
+    0;
 
-  top: 50%;
-
-  width: 3px;
-  height: 0;
+  margin-right:
+    8px;
 
   border-radius:
-    0 4px 4px 0;
+    999px;
 
   background:
     var(--primary);
 
-  transform:
-    translateY(-50%);
-
-  opacity: 0;
-
   transition:
-    height .18s ease,
-    opacity .18s ease;
+    height .2s ease;
 }
 
 
@@ -992,19 +1244,35 @@ button {
   background:
     var(--surface-soft);
 
-  color:
-    var(--text);
-
   border-color:
     var(--border);
 
+  color:
+    var(--text);
+
+  box-shadow:
+    0 2px 8px
+    rgba(
+      31,
+      41,
+      55,
+      .035
+    );
+}
+
+
+.joined-room:active {
   transform:
-    translateX(2px);
+    scale(.99);
 }
 
 
 /*
-  選択中の部屋
+   選択中の部屋
+
+   Discordっぽい
+   「現在ここにいる」
+   という分かりやすい状態
 */
 
 .joined-room.active {
@@ -1012,12 +1280,7 @@ button {
     var(--primary-light);
 
   border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .16
-    );
+    var(--primary-border);
 
   color:
     var(--primary);
@@ -1026,7 +1289,7 @@ button {
     700;
 
   box-shadow:
-    0 2px 7px
+    0 2px 8px
     rgba(
       102,
       126,
@@ -1038,19 +1301,14 @@ button {
 
 .joined-room.active::before {
   height:
-    20px;
-
-  opacity:
-    1;
+    18px;
 }
 
 
 /*
-  HTML側にある絵文字用の要素。
-
-  「部屋名の横に絵文字があると
-   ごちゃつく」という要望に合わせて
-  スペースを取らないようにする。
+   部屋アイコンは
+   HTML側に存在していても
+   余計な絵文字感を出さない
 */
 
 .joined-room-icon {
@@ -1060,10 +1318,7 @@ button {
 
 
 /*
-  部屋名
-
-  flex: 1 にすることで
-  長い部屋名も綺麗に省略。
+   部屋名
 */
 
 .joined-room-name {
@@ -1091,15 +1346,15 @@ button {
 
 
 /*
-  空のとき
+   空のとき
 */
 
 .joined-room-empty {
   margin:
-    2px 3px 0;
+    2px 4px;
 
   padding:
-    11px 10px;
+    10px 9px;
 
   border:
     1px dashed var(--border);
@@ -1111,7 +1366,7 @@ button {
     var(--surface-soft);
 
   color:
-    #9aa0ad;
+    var(--text-muted);
 
   font-size:
     11px;
@@ -1138,22 +1393,29 @@ button {
 
 
 .connection-status {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  gap: 7px;
+  gap:
+    7px;
 
   color:
     var(--text-soft);
 
-  font-size: 11px;
+  font-size:
+    11px;
 }
 
 
 .connection-dot {
-  width: 7px;
-  height: 7px;
+  width:
+    7px;
+
+  height:
+    7px;
 
   border-radius:
     50%;
@@ -1177,17 +1439,23 @@ button {
 ================================================== */
 
 .chat-area {
-  position: relative;
+  position:
+    relative;
 
-  display: flex;
+  display:
+    flex;
 
-  flex-direction: column;
+  flex-direction:
+    column;
 
-  flex: 1;
+  flex:
+    1;
 
-  min-width: 0;
+  min-width:
+    0;
 
-  height: 100%;
+  height:
+    100%;
 
   background:
     var(--bg);
@@ -1199,12 +1467,17 @@ button {
 ================================================== */
 
 .chat-header {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: space-between;
+  align-items:
+    center;
 
-  min-height: 72px;
+  justify-content:
+    space-between;
+
+  min-height:
+    72px;
 
   padding:
     0 24px;
@@ -1218,24 +1491,38 @@ button {
 
 
 .chat-room-info {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  gap: 12px;
+  gap:
+    12px;
 
-  min-width: 0;
+  min-width:
+    0;
 }
 
 
 .chat-room-icon {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: center;
+  align-items:
+    center;
 
-  width: 42px;
-  height: 42px;
+  justify-content:
+    center;
+
+  width:
+    42px;
+
+  height:
+    42px;
+
+  border:
+    1px solid var(--primary-border);
 
   border-radius:
     12px;
@@ -1243,39 +1530,50 @@ button {
   background:
     var(--primary-light);
 
-  font-size: 20px;
+  font-size:
+    20px;
 }
 
 
 .chat-room-info h2 {
-  margin: 0;
+  margin:
+    0;
 
-  overflow: hidden;
+  overflow:
+    hidden;
 
-  text-overflow: ellipsis;
+  text-overflow:
+    ellipsis;
 
-  white-space: nowrap;
+  white-space:
+    nowrap;
 
-  font-size: 18px;
+  font-size:
+    18px;
 }
 
 
 .room-subtitle {
-  margin-top: 3px;
+  margin-top:
+    3px;
 
   color:
     var(--text-soft);
 
-  font-size: 11px;
+  font-size:
+    11px;
 }
 
 
 .invite-area {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  gap: 8px;
+  gap:
+    8px;
 
   padding:
     7px 10px;
@@ -1295,7 +1593,8 @@ button {
   color:
     var(--text-soft);
 
-  font-size: 10px;
+  font-size:
+    10px;
 }
 
 
@@ -1325,13 +1624,17 @@ button {
 ================================================== */
 
 .messages {
-  position: relative;
+  position:
+    relative;
 
-  flex: 1;
+  flex:
+    1;
 
-  min-height: 0;
+  min-height:
+    0;
 
-  overflow-y: auto;
+  overflow-y:
+    auto;
 
   padding:
     24px 24px 120px;
@@ -1339,56 +1642,86 @@ button {
 
 
 /*
-  ==================================================
-  コメント本体
+   コメント本体
 
-  元のカード感を残しつつ、
-  LINEのトークのように
-  「コメントそのものが囲まれている」
-  デザインに調整。
-  ==================================================
+   LINEのトーク画面のように
+   「コメントごとに1枚のまとまり」
+   として見えるようにする
 */
 
 .message {
-  position: relative;
+  position:
+    relative;
 
-  max-width: 850px;
+  max-width:
+    850px;
 
   margin:
-    0 auto 12px;
+    0 auto 14px;
 
   padding:
-    13px 15px 12px;
+    14px 16px;
 
   border:
     1px solid var(--border);
 
   border-radius:
-    13px;
+    14px;
 
   background:
     var(--surface);
 
   box-shadow:
-    0 2px 7px
+    0 2px 8px
     rgba(
       31,
       41,
       55,
-      .025
+      .035
     );
 
   transition:
     background .2s ease,
     border-color .2s ease,
     box-shadow .2s ease,
-    transform .2s ease;
+    transform .15s ease;
 }
 
 
 /*
-  コメントを囲むカード感
+   コメントの左側に
+   ごく薄いアクセント
 */
+
+.message::before {
+  content:
+    "";
+
+  position:
+    absolute;
+
+  left:
+    -1px;
+
+  top:
+    14px;
+
+  width:
+    3px;
+
+  height:
+    0;
+
+  border-radius:
+    0 999px 999px 0;
+
+  background:
+    var(--primary);
+
+  transition:
+    height .2s ease;
+}
+
 
 .message:hover {
   border-color:
@@ -1405,61 +1738,37 @@ button {
 }
 
 
-/*
-  自分のコメントに
-  JS側で .own-message 等を付けている場合にも
-  綺麗に見えるよう対応。
-*/
-
-.message.own-message {
-  border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .18
-    );
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(
-        238,
-        240,
-        255,
-        .8
-      ),
-      var(--surface)
-    );
+.message:hover::before {
+  height:
+    22px;
 }
 
 
-/* ==================================================
-   Message header
-================================================== */
+/*
+   メッセージヘッダー
+
+   ユーザー名 + 時刻
+*/
 
 .message-header {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  gap: 8px;
+  gap:
+    8px;
 
-  min-height: 20px;
+  min-height:
+    20px;
 
   margin-bottom:
     7px;
 }
 
 
-/*
-  ユーザー名
-*/
-
 .message-user {
-  max-width:
-    65%;
-
   overflow:
     hidden;
 
@@ -1468,6 +1777,9 @@ button {
 
   white-space:
     nowrap;
+
+  max-width:
+    60%;
 
   font-size:
     13px;
@@ -1479,10 +1791,6 @@ button {
     var(--text);
 }
 
-
-/*
-  時刻
-*/
 
 .message-time {
   color:
@@ -1496,9 +1804,31 @@ button {
 }
 
 
-/* ==================================================
-   Message content
-================================================== */
+/*
+   編集済み
+*/
+
+.edited-label {
+  display:
+    inline-block;
+
+  margin-left:
+    5px;
+
+  color:
+    var(--text-muted);
+
+  font-size:
+    10px;
+}
+
+
+/*
+   コメント本文
+
+   LINEの吹き出しのように
+   余白をしっかり取る
+*/
 
 .message-content {
   color:
@@ -1508,7 +1838,7 @@ button {
     14px;
 
   line-height:
-    1.65;
+    1.7;
 
   word-break:
     break-word;
@@ -1522,39 +1852,10 @@ button {
 
 
 /*
-  編集済み
+   コメント操作
+
+   返信 / 編集 / 削除
 */
-
-.edited-label {
-  display:
-    inline-block;
-
-  margin-left:
-    7px;
-
-  padding:
-    1px 5px;
-
-  border-radius:
-    5px;
-
-  background:
-    var(--surface-soft);
-
-  color:
-    var(--text-soft);
-
-  font-size:
-    9px;
-
-  line-height:
-    1.5;
-}
-
-
-/* ==================================================
-   Message actions
-================================================== */
 
 .message-actions {
   display:
@@ -1567,10 +1868,10 @@ button {
     5px;
 
   margin-top:
-    10px;
+    11px;
 
   padding-top:
-    8px;
+    9px;
 
   border-top:
     1px solid rgba(
@@ -1583,8 +1884,17 @@ button {
 
 
 .message-actions button {
+  display:
+    inline-flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
   min-height:
-    27px;
+    28px;
 
   padding:
     4px 9px;
@@ -1624,51 +1934,49 @@ button {
 
 
 .message-actions .delete-action:hover {
-  color:
-    var(--danger);
+  border-color:
+    rgba(
+      224,
+      82,
+      82,
+      .15
+    );
 
   background:
     rgba(
       224,
       82,
       82,
-      .06
+      .07
     );
 
-  border-color:
-    rgba(
-      224,
-      82,
-      82,
-      .12
-    );
+  color:
+    var(--danger);
 }
 
 
 /* ==================================================
-   Reply
+   Reply information
 ================================================== */
 
 .message-reply-info {
+  position:
+    relative;
+
   margin-bottom:
-    8px;
+    9px;
 
   padding:
     8px 10px;
 
   border:
-    1px solid rgba(
-      102,
-      126,
-      234,
-      .12
-    );
+    1px solid var(--primary-border);
 
   border-left:
     3px solid var(--primary);
 
   border-radius:
-    7px;
+    8px;
 
   background:
     var(--primary-light);
@@ -1692,7 +2000,8 @@ button {
     nowrap;
 
   transition:
-    background .18s ease;
+    background .2s ease,
+    border-color .2s ease;
 }
 
 
@@ -1702,7 +2011,15 @@ button {
       102,
       126,
       234,
-      .18
+      .16
+    );
+
+  border-color:
+    rgba(
+      102,
+      126,
+      234,
+      .25
     );
 }
 
@@ -1729,7 +2046,7 @@ button {
         102,
         126,
         234,
-        .35
+        .4
       );
   }
 
@@ -1749,23 +2066,35 @@ button {
 ================================================== */
 
 .reply-preview {
-  position: absolute;
+  position:
+    absolute;
 
-  left: 24px;
-  right: 24px;
+  left:
+    24px;
 
-  bottom: 72px;
+  right:
+    24px;
 
-  z-index: 5;
+  bottom:
+    72px;
 
-  display: flex;
+  z-index:
+    5;
 
-  align-items: center;
-  justify-content: space-between;
+  display:
+    flex;
 
-  gap: 12px;
+  align-items:
+    center;
 
-  max-width: 850px;
+  justify-content:
+    space-between;
+
+  gap:
+    12px;
+
+  max-width:
+    850px;
 
   margin:
     0 auto;
@@ -1792,6 +2121,15 @@ button {
 
   font-size:
     11px;
+
+  box-shadow:
+    0 4px 14px
+    rgba(
+      31,
+      41,
+      55,
+      .05
+    );
 }
 
 
@@ -1811,6 +2149,9 @@ button {
   height:
     25px;
 
+  min-width:
+    25px;
+
   border:
     0;
 
@@ -1827,6 +2168,20 @@ button {
 
   color:
     var(--primary);
+
+  transition:
+    background .2s ease;
+}
+
+
+.reply-preview button:hover {
+  background:
+    rgba(
+      102,
+      126,
+      234,
+      .2
+    );
 }
 
 
@@ -1835,12 +2190,17 @@ button {
 ================================================== */
 
 .new-message-button {
-  position: absolute;
+  position:
+    absolute;
 
-  right: 24px;
-  bottom: 85px;
+  right:
+    24px;
 
-  z-index: 10;
+  bottom:
+    85px;
+
+  z-index:
+    10;
 
   padding:
     9px 14px;
@@ -1878,22 +2238,17 @@ button {
     700;
 
   transition:
-    .2s ease;
+    background .2s ease,
+    transform .2s ease;
 }
 
 
 .new-message-button:hover {
+  background:
+    var(--primary-light);
+
   transform:
     translateY(-1px);
-
-  box-shadow:
-    0 7px 24px
-    rgba(
-      31,
-      41,
-      55,
-      .15
-    );
 }
 
 
@@ -1902,29 +2257,44 @@ button {
 ================================================== */
 
 .scroll-buttons {
-  position: absolute;
+  position:
+    absolute;
 
-  right: 18px;
-  bottom: 135px;
+  right:
+    18px;
 
-  z-index: 4;
+  bottom:
+    135px;
 
-  display: flex;
+  z-index:
+    4;
 
-  flex-direction: column;
+  display:
+    flex;
 
-  gap: 6px;
+  flex-direction:
+    column;
+
+  gap:
+    6px;
 }
 
 
 .scroll-button {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: center;
+  align-items:
+    center;
 
-  width: 34px;
-  height: 34px;
+  justify-content:
+    center;
+
+  width:
+    34px;
+
+  height:
+    34px;
 
   border:
     1px solid var(--border);
@@ -1948,7 +2318,10 @@ button {
     );
 
   transition:
-    .2s ease;
+    color .2s ease,
+    border-color .2s ease,
+    background .2s ease,
+    transform .2s ease;
 }
 
 
@@ -1964,6 +2337,9 @@ button {
       .3
     );
 
+  background:
+    var(--primary-light);
+
   transform:
     translateY(-1px);
 }
@@ -1974,13 +2350,20 @@ button {
 ================================================== */
 
 .message-input-area {
-  position: absolute;
+  position:
+    absolute;
 
-  left: 0;
-  right: 0;
-  bottom: 0;
+  left:
+    0;
 
-  z-index: 3;
+  right:
+    0;
+
+  bottom:
+    0;
+
+  z-index:
+    3;
 
   padding:
     12px 24px 18px;
@@ -1995,13 +2378,17 @@ button {
 
 
 .message-form {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  gap: 8px;
+  gap:
+    8px;
 
-  max-width: 850px;
+  max-width:
+    850px;
 
   margin:
     0 auto;
@@ -2043,29 +2430,32 @@ button {
     );
 
   box-shadow:
-    0 7px 27px
+    0 6px 25px
     rgba(
       31,
       41,
       55,
-      .09
+      .08
     ),
     0 0 0 3px
     rgba(
       102,
       126,
       234,
-      .06
+      .07
     );
 }
 
 
 .message-form input {
-  flex: 1;
+  flex:
+    1;
 
-  min-width: 0;
+  min-width:
+    0;
 
-  height: 42px;
+  height:
+    42px;
 
   padding:
     0 12px;
@@ -2088,13 +2478,20 @@ button {
 
 
 .send-button {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: center;
+  align-items:
+    center;
 
-  width: 42px;
-  height: 42px;
+  justify-content:
+    center;
+
+  width:
+    42px;
+
+  height:
+    42px;
 
   border:
     0;
@@ -2112,7 +2509,9 @@ button {
     17px;
 
   transition:
-    .2s ease;
+    background .2s ease,
+    transform .2s ease,
+    box-shadow .2s ease;
 }
 
 
@@ -2124,7 +2523,7 @@ button {
     translateY(-1px);
 
   box-shadow:
-    0 4px 12px
+    0 4px 10px
     rgba(
       102,
       126,
@@ -2134,23 +2533,37 @@ button {
 }
 
 
+.send-button:active {
+  transform:
+    translateY(0);
+}
+
+
 /* ==================================================
    Modal
 ================================================== */
 
 .modal {
-  position: fixed;
+  position:
+    fixed;
 
-  inset: 0;
+  inset:
+    0;
 
-  z-index: 100;
+  z-index:
+    100;
 
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: center;
+  align-items:
+    center;
 
-  padding: 20px;
+  justify-content:
+    center;
+
+  padding:
+    20px;
 
   background:
     rgba(
@@ -2166,10 +2579,14 @@ button {
 
 
 .modal-content {
-  width: 100%;
-  max-width: 440px;
+  width:
+    100%;
 
-  overflow: hidden;
+  max-width:
+    440px;
+
+  overflow:
+    hidden;
 
   border:
     1px solid var(--border);
@@ -2192,15 +2609,20 @@ button {
 
 
 .settings-content {
-  max-width: 500px;
+  max-width:
+    500px;
 }
 
 
 .modal-header {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: space-between;
+  align-items:
+    center;
+
+  justify-content:
+    space-between;
 
   padding:
     19px 22px;
@@ -2211,20 +2633,29 @@ button {
 
 
 .modal-header h2 {
-  margin: 0;
+  margin:
+    0;
 
-  font-size: 18px;
+  font-size:
+    18px;
 }
 
 
 .modal-close {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: center;
+  align-items:
+    center;
 
-  width: 32px;
-  height: 32px;
+  justify-content:
+    center;
+
+  width:
+    32px;
+
+  height:
+    32px;
 
   border:
     0;
@@ -2242,7 +2673,8 @@ button {
     22px;
 
   transition:
-    .18s ease;
+    background .2s ease,
+    color .2s ease;
 }
 
 
@@ -2277,12 +2709,17 @@ button {
 
 
 .modal-footer {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: space-between;
+  align-items:
+    center;
 
-  gap: 8px;
+  justify-content:
+    space-between;
+
+  gap:
+    8px;
 
   padding:
     15px 22px;
@@ -2318,12 +2755,17 @@ button {
 
 
 .setting-row {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: space-between;
+  align-items:
+    center;
 
-  gap: 20px;
+  justify-content:
+    space-between;
+
+  gap:
+    20px;
 }
 
 
@@ -2372,6 +2814,11 @@ button {
 
   font-weight:
     800;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease;
 }
 
 
@@ -2402,6 +2849,9 @@ body.dark-mode {
   --surface-soft:
     #292c35;
 
+  --surface-hover:
+    #30343e;
+
   --border:
     #363a45;
 
@@ -2410,6 +2860,9 @@ body.dark-mode {
 
   --text-soft:
     #a2a7b3;
+
+  --text-muted:
+    #777d89;
 
   --primary:
     #8192f5;
@@ -2425,6 +2878,14 @@ body.dark-mode {
       .14
     );
 
+  --primary-border:
+    rgba(
+      129,
+      146,
+      245,
+      .25
+    );
+
   --shadow:
     0 10px 35px
     rgba(
@@ -2432,6 +2893,15 @@ body.dark-mode {
       0,
       0,
       .25
+    );
+
+  --shadow-soft:
+    0 3px 12px
+    rgba(
+      0,
+      0,
+      0,
+      .18
     );
 }
 
@@ -2481,44 +2951,11 @@ body.dark-mode
 }
 
 
-/*
-  ダークモードのコメント
-*/
-
-body.dark-mode
-.message {
-
-  background:
-    var(--surface);
-
-  border-color:
-    var(--border);
-
-  box-shadow:
-    0 3px 12px
-    rgba(
-      0,
-      0,
-      0,
-      .12
-    );
-}
-
-
 body.dark-mode
 .message:hover {
 
   border-color:
-    #444955;
-
-  box-shadow:
-    0 5px 16px
-    rgba(
-      0,
-      0,
-      0,
-      .18
-    );
+    #424753;
 }
 
 
@@ -2532,6 +2969,30 @@ body.dark-mode
       69,
       .8
     );
+}
+
+
+body.dark-mode
+.joined-room:hover {
+
+  border-color:
+    #3b3f4a;
+}
+
+
+body.dark-mode
+::-webkit-scrollbar-thumb {
+
+  background:
+    #414652;
+}
+
+
+body.dark-mode
+::-webkit-scrollbar-thumb:hover {
+
+  background:
+    #505663;
 }
 
 
@@ -2549,6 +3010,14 @@ body.gray-mode {
 
   --primary-light:
     #eceef0;
+
+  --primary-border:
+    rgba(
+      109,
+      115,
+      125,
+      .18
+    );
 }
 
 
@@ -2566,6 +3035,14 @@ body.dark-mode.gray-mode {
       163,
       173,
       .14
+    );
+
+  --primary-border:
+    rgba(
+      156,
+      163,
+      173,
+      .25
     );
 }
 
@@ -2605,6 +3082,15 @@ body.dark-mode.gray-mode {
   }
 
 
+  .message {
+    margin-bottom:
+      12px;
+
+    padding:
+      13px 14px;
+  }
+
+
   .message-input-area {
     padding:
       10px 12px 14px;
@@ -2626,15 +3112,6 @@ body.dark-mode.gray-mode {
   .invite-area {
     display:
       none;
-  }
-
-
-  .joined-room {
-    min-height:
-      42px;
-
-    padding:
-      0 10px;
   }
 
 }
@@ -2668,6 +3145,9 @@ body.dark-mode.gray-mode {
 
     height:
       36px;
+
+    border-radius:
+      10px;
   }
 
 
@@ -2683,15 +3163,23 @@ body.dark-mode.gray-mode {
   }
 
 
+  /*
+     スマホではコメントを
+     画面いっぱいに近づける
+  */
+
   .message {
-    padding:
-      11px 12px;
-  }
+    max-width:
+      100%;
 
-
-  .message-header {
     margin-bottom:
-      6px;
+      10px;
+
+    padding:
+      12px 13px;
+
+    border-radius:
+      12px;
   }
 
 
@@ -2706,7 +3194,25 @@ body.dark-mode.gray-mode {
       14px;
 
     line-height:
-      1.6;
+      1.65;
+  }
+
+
+  .message-actions {
+    margin-top:
+      9px;
+
+    padding-top:
+      8px;
+  }
+
+
+  .message-actions button {
+    min-height:
+      27px;
+
+    padding:
+      4px 8px;
   }
 
 
