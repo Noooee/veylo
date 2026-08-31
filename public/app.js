@@ -1,6 +1,5 @@
 "use strict";
 
-
 // ==================================================
 // Veylo App.js
 // ==================================================
@@ -193,6 +192,26 @@ const createRoomButton =
     "createRoomButton"
   );
 
+const joinRoomButton =
+  document.getElementById(
+    "joinRoomButton"
+  );
+
+
+// ==================================================
+// 部屋一覧
+// ==================================================
+
+const roomList =
+  document.getElementById(
+    "roomList"
+  );
+
+
+// ==================================================
+// 部屋作成
+// ==================================================
+
 const createModal =
   document.getElementById(
     "createModal"
@@ -218,11 +237,6 @@ const cancelCreateButton =
 // 部屋参加
 // ==================================================
 
-const joinRoomButton =
-  document.getElementById(
-    "joinRoomButton"
-  );
-
 const joinModal =
   document.getElementById(
     "joinModal"
@@ -247,68 +261,6 @@ const joinError =
   document.getElementById(
     "joinError"
   );
-
-
-// ==================================================
-// 部屋一覧DOM
-// ==================================================
-
-let myRoomsContainer =
-  document.getElementById(
-    "myRooms"
-  );
-
-
-/*
- * HTML側にmyRoomsがまだ無い場合でも
- * JavaScriptエラーで全体が止まらないように
- * 自動生成します。
- */
-
-function ensureMyRoomsContainer() {
-
-  if (
-    myRoomsContainer
-  ) {
-
-    return;
-
-  }
-
-
-  const parent =
-    joinRoomButton
-      ? joinRoomButton.parentElement
-      : null;
-
-
-  if (!parent) {
-    return;
-  }
-
-
-  myRoomsContainer =
-    document.createElement(
-      "div"
-    );
-
-
-  myRoomsContainer.id =
-    "myRooms";
-
-
-  myRoomsContainer.className =
-    "my-rooms";
-
-
-  parent.appendChild(
-    myRoomsContainer
-  );
-
-}
-
-
-ensureMyRoomsContainer();
 
 
 // ==================================================
@@ -432,6 +384,7 @@ async function api(
 
   let data = {};
 
+
   try {
 
     data =
@@ -446,10 +399,18 @@ async function api(
 
   if (!response.ok) {
 
-    throw new Error(
-      data.message ||
-      "通信に失敗しました。"
-    );
+    const error =
+      new Error(
+        data.message ||
+        "通信に失敗しました。"
+      );
+
+
+    error.code =
+      data.code;
+
+
+    throw error;
 
   }
 
@@ -581,8 +542,7 @@ function enterApp() {
     currentUser.name;
 
 
-  renderMyRooms();
-
+  loadMyRooms();
 
   connectSocket();
 
@@ -654,10 +614,7 @@ function connectSocket() {
         socket.id
       );
 
-
-      socket.emit(
-        "get my rooms"
-      );
+      loadMyRooms();
 
     }
   );
@@ -826,6 +783,7 @@ function setupSocketEvents() {
       messages.innerHTML =
         "";
 
+
       loadLocalMessages();
 
       scrollToBottom(
@@ -834,46 +792,27 @@ function setupSocketEvents() {
 
       hideNewMessageButton();
 
-      renderMyRooms();
+      updateRoomListActive();
 
     }
   );
 
-
-  // ==================================================
-  // 自分の部屋一覧
-  // ==================================================
-
-  socket.on(
-    "my rooms",
-    (rooms) => {
-
-      if (
-        !Array.isArray(rooms)
-      ) {
-
-        return;
-
-      }
-
-
-      myRooms =
-        rooms;
-
-
-      renderMyRooms();
-
-    }
-  );
-
-
-  // ==================================================
-  // 部屋作成
-  // ==================================================
 
   socket.on(
     "room created",
     handleRoomCreated
+  );
+
+
+  socket.on(
+    "room joined",
+    handleRoomJoined
+  );
+
+
+  socket.on(
+    "room switched",
+    handleRoomSwitched
   );
 
 
@@ -890,16 +829,6 @@ function setupSocketEvents() {
   );
 
 
-  // ==================================================
-  // 部屋参加
-  // ==================================================
-
-  socket.on(
-    "room joined",
-    handleRoomJoined
-  );
-
-
   socket.on(
     "join room error",
     (data) => {
@@ -912,23 +841,13 @@ function setupSocketEvents() {
   );
 
 
-  // ==================================================
-  // 部屋一覧から開く
-  // ==================================================
-
   socket.on(
-    "room opened",
-    handleRoomOpened
-  );
-
-
-  socket.on(
-    "room open error",
+    "switch room error",
     (data) => {
 
       alert(
         data?.message ||
-        "部屋を開けませんでした。"
+        "部屋を移動できませんでした。"
       );
 
     }
@@ -989,24 +908,58 @@ function setupSocketEvents() {
 
 
 // ==================================================
-// 部屋一覧表示
+// 自分の部屋一覧取得
 // ==================================================
 
-function renderMyRooms() {
+async function loadMyRooms() {
 
-  ensureMyRoomsContainer();
-
-
-  if (
-    !myRoomsContainer
-  ) {
-
+  if (!currentUser) {
     return;
-
   }
 
 
-  myRoomsContainer.innerHTML =
+  try {
+
+    const data =
+      await api(
+        "/api/my-rooms"
+      );
+
+
+    myRooms =
+      Array.isArray(
+        data.rooms
+      )
+        ? data.rooms
+        : [];
+
+
+    renderRoomList();
+
+  } catch (error) {
+
+    console.error(
+      "loadMyRooms error:",
+      error
+    );
+
+  }
+
+}
+
+
+// ==================================================
+// 部屋一覧表示
+// ==================================================
+
+function renderRoomList() {
+
+  if (!roomList) {
+    return;
+  }
+
+
+  roomList.innerHTML =
     "";
 
 
@@ -1025,32 +978,28 @@ function renderMyRooms() {
 
 
   casualItem.className =
-    "my-room-item";
+    "room-list-item";
 
 
-  if (
-    currentRoom ===
-    "casual"
-  ) {
-
-    casualItem.classList.add(
-      "active"
-    );
-
-  }
+  casualItem.dataset.roomId =
+    "casual";
 
 
   casualItem.textContent =
-    "💬 雑談";
+    "雑談";
 
 
   casualItem.addEventListener(
     "click",
-    returnToCasual
+    () => {
+
+      returnToCasual();
+
+    }
   );
 
 
-  myRoomsContainer.appendChild(
+  roomList.appendChild(
     casualItem
   );
 
@@ -1060,7 +1009,7 @@ function renderMyRooms() {
   // ==================================================
 
   myRooms.forEach(
-    (room) => {
+    room => {
 
       if (
         !room ||
@@ -1083,43 +1032,67 @@ function renderMyRooms() {
 
 
       item.className =
-        "my-room-item";
+        "room-list-item";
 
 
-      if (
-        String(currentRoom) ===
-        String(room.id)
-      ) {
-
-        item.classList.add(
-          "active"
-        );
-
-      }
+      item.dataset.roomId =
+        room.id;
 
 
       item.textContent =
-        `🏠 ${room.name}`;
-
-
-      item.title =
-        room.name;
+        room.name ||
+        "名前なし";
 
 
       item.addEventListener(
         "click",
         () => {
 
-          openMyRoom(
-            room.id
+          switchToRoom(
+            room
           );
 
         }
       );
 
 
-      myRoomsContainer.appendChild(
+      roomList.appendChild(
         item
+      );
+
+    }
+  );
+
+
+  updateRoomListActive();
+
+}
+
+
+// ==================================================
+// 部屋一覧の現在地表示
+// ==================================================
+
+function updateRoomListActive() {
+
+  if (!roomList) {
+    return;
+  }
+
+
+  const items =
+    roomList.querySelectorAll(
+      ".room-list-item"
+    );
+
+
+  items.forEach(
+    item => {
+
+      item.classList.toggle(
+        "active",
+        item.dataset.roomId ===
+          String(currentRoom)
       );
 
     }
@@ -1129,12 +1102,22 @@ function renderMyRooms() {
 
 
 // ==================================================
-// 部屋一覧から部屋を開く
+// 部屋移動
 // ==================================================
 
-function openMyRoom(
-  roomId
+function switchToRoom(
+  room
 ) {
+
+  if (
+    !room ||
+    !room.id
+  ) {
+
+    return;
+
+  }
+
 
   if (
     !socket ||
@@ -1151,10 +1134,11 @@ function openMyRoom(
 
 
   socket.emit(
-    "open my room",
+    "switch room",
     {
 
-      roomId
+      roomId:
+        room.id
 
     }
   );
@@ -1218,7 +1202,6 @@ loginForm.addEventListener(
 
 
       enterApp();
-
 
     } catch (error) {
 
@@ -1291,7 +1274,6 @@ registerForm.addEventListener(
 
       enterApp();
 
-
     } catch (error) {
 
       registerError.textContent =
@@ -1341,7 +1323,6 @@ forgotForm.addEventListener(
 
       forgotMessage.textContent =
         data.message;
-
 
     } catch (error) {
 
@@ -1472,7 +1453,6 @@ logoutButton.addEventListener(
 
 
       showAuth();
-
 
     } catch (error) {
 
@@ -2452,7 +2432,7 @@ function handleMessageEdited(
   if (
     !data ||
     data.room !==
-    currentRoom
+      currentRoom
   ) {
 
     return;
@@ -2559,7 +2539,7 @@ function handleMessageDeleted(
   if (
     !data ||
     data.room !==
-    currentRoom
+      currentRoom
   ) {
 
     return;
@@ -2765,7 +2745,7 @@ messageForm.addEventListener(
 
 
 // ==================================================
-// 雑談へ戻る
+// 雑談
 // ==================================================
 
 function returnToCasual() {
@@ -2791,8 +2771,7 @@ function returnToCasual() {
 
   hideNewMessageButton();
 
-
-  renderMyRooms();
+  updateRoomListActive();
 
 
   if (
@@ -2883,26 +2862,13 @@ confirmCreateButton.addEventListener(
     }
 
 
-    confirmCreateButton.disabled =
-      true;
-
-
     socket.emit(
       "create room",
       {
+
         name
+
       }
-    );
-
-
-    setTimeout(
-      () => {
-
-        confirmCreateButton.disabled =
-          false;
-
-      },
-      1000
     );
 
   }
@@ -2916,16 +2882,6 @@ confirmCreateButton.addEventListener(
 function handleRoomCreated(
   room
 ) {
-
-  if (
-    !room ||
-    !room.id
-  ) {
-
-    return;
-
-  }
-
 
   currentRoom =
     room.id;
@@ -2958,12 +2914,10 @@ function handleRoomCreated(
   hideNewMessageButton();
 
 
-  /*
-   * 部屋一覧はserver.jsから
-   * room created直後に送られてくる。
-   */
+  loadMyRooms();
 
-  renderMyRooms();
+
+  updateRoomListActive();
 
 
   alert(
@@ -2984,12 +2938,15 @@ joinRoomButton.addEventListener(
     inviteCodeInput.value =
       "";
 
+
     joinError.textContent =
       "";
+
 
     joinModal.classList.remove(
       "hidden"
     );
+
 
     inviteCodeInput.focus();
 
@@ -3045,7 +3002,9 @@ confirmJoinButton.addEventListener(
     socket.emit(
       "join room",
       {
+
         code
+
       }
     );
 
@@ -3060,16 +3019,6 @@ confirmJoinButton.addEventListener(
 function handleRoomJoined(
   room
 ) {
-
-  if (
-    !room ||
-    !room.id
-  ) {
-
-    return;
-
-  }
-
 
   currentRoom =
     room.id;
@@ -3102,28 +3051,20 @@ function handleRoomJoined(
   hideNewMessageButton();
 
 
-  renderMyRooms();
+  loadMyRooms();
+
+  updateRoomListActive();
 
 }
 
 
 // ==================================================
-// 部屋一覧から移動完了
+// 部屋移動完了
 // ==================================================
 
-function handleRoomOpened(
+function handleRoomSwitched(
   room
 ) {
-
-  if (
-    !room ||
-    !room.id
-  ) {
-
-    return;
-
-  }
-
 
   currentRoom =
     room.id;
@@ -3151,7 +3092,7 @@ function handleRoomOpened(
   hideNewMessageButton();
 
 
-  renderMyRooms();
+  updateRoomListActive();
 
 }
 
@@ -3167,8 +3108,10 @@ settingsButton.addEventListener(
     settingsUsernameInput.value =
       currentUser.name;
 
+
     languageSelect.value =
       language;
+
 
     settingsModal.classList.remove(
       "hidden"
@@ -3312,6 +3255,11 @@ function updateTheme() {
 ].forEach(
   (modal) => {
 
+    if (!modal) {
+      return;
+    }
+
+
     modal.addEventListener(
       "click",
       (event) => {
@@ -3435,7 +3383,9 @@ cleanupLocalMessages();
 
 setInterval(
   cleanupLocalMessages,
-  10 * 60 * 1000
+  10 *
+  60 *
+  1000
 );
 
 
