@@ -4,1717 +4,1094 @@
 // Veylo App.js
 // ==================================================
 
-let socket = null;
+document.addEventListener("DOMContentLoaded", () => {
 
-let currentUser = null;
+  // ==================================================
+  // DOM
+  // ==================================================
 
-let currentRoom = "casual";
+  const authScreen =
+    document.getElementById("authScreen");
 
-let currentRoomData = {
-  id: "casual",
-  name: "雑談",
-  inviteCode: null,
-  ownerId: null
-};
+  const appScreen =
+    document.getElementById("appScreen");
 
-let myRooms = [];
+  // ==================================================
+  // Auth
+  // ==================================================
 
-let replyToMessage = null;
+  const loginPanel =
+    document.getElementById("loginPanel");
 
-let editingMessageId = null;
+  const registerPanel =
+    document.getElementById("registerPanel");
 
-let isConnected = false;
+  const forgotPanel =
+    document.getElementById("forgotPanel");
 
-let isLoadingMessages = false;
+  const loginForm =
+    document.getElementById("loginForm");
 
+  const registerForm =
+    document.getElementById("registerForm");
 
-// ==================================================
-// DOM
-// ==================================================
+  const forgotForm =
+    document.getElementById("forgotForm");
 
-const $ = (id) => document.getElementById(id);
+  const loginError =
+    document.getElementById("loginError");
 
+  const registerError =
+    document.getElementById("registerError");
 
-// ==================================================
-// Auth
-// ==================================================
-
-const authScreen = $("authScreen");
-const appScreen = $("appScreen");
-
-const loginPanel = $("loginPanel");
-const registerPanel = $("registerPanel");
-const forgotPanel = $("forgotPanel");
-
-const loginForm = $("loginForm");
-const registerForm = $("registerForm");
-const forgotForm = $("forgotForm");
-
-const loginError = $("loginError");
-const registerError = $("registerError");
-const forgotMessage = $("forgotMessage");
-
-const loginName = $("loginName");
-const loginPassword = $("loginPassword");
-
-const registerEmail = $("registerEmail");
-const registerName = $("registerName");
-const registerPassword = $("registerPassword");
-
-const forgotEmail = $("forgotEmail");
-
-
-// ==================================================
-// App
-// ==================================================
-
-const usernameInput = $("usernameInput");
-const settingsUsernameInput = $("settingsUsernameInput");
-
-const casualRoomButton = $("casualRoomButton");
-
-const createRoomButton = $("createRoomButton");
-const joinRoomButton = $("joinRoomButton");
-
-const joinedRooms = $("joinedRooms");
-
-const roomIcon = $("roomIcon");
-const roomName = $("roomName");
-
-const inviteArea = $("inviteArea");
-const inviteCode = $("inviteCode");
-
-const messages = $("messages");
-
-const messageForm = $("messageForm");
-const messageInput = $("messageInput");
-
-const replyPreview = $("replyPreview");
-
-const newMessageButton = $("newMessageButton");
-
-const scrollTopButton = $("scrollTopButton");
-const scrollBottomButton = $("scrollBottomButton");
-
-const connectionDot = $("connectionDot");
-
-
-// ==================================================
-// Modals
-// ==================================================
-
-const createModal = $("createModal");
-
-const roomNameInput = $("roomNameInput");
-
-const confirmCreateButton =
-  $("confirmCreateButton");
-
-const cancelCreateButtons =
-  document.querySelectorAll(
-    "#cancelCreateButton"
-  );
-
-const joinModal = $("joinModal");
-
-const inviteCodeInput =
-  $("inviteCodeInput");
-
-const confirmJoinButton =
-  $("confirmJoinButton");
-
-const cancelJoinButtons =
-  document.querySelectorAll(
-    "#cancelJoinButton"
-  );
-
-const joinError = $("joinError");
-
-const settingsModal = $("settingsModal");
-
-const settingsButton =
-  $("settingsButton");
-
-const closeSettingsButtons =
-  document.querySelectorAll(
-    "#closeSettingsButton"
-  );
-
-const logoutButton =
-  $("logoutButton");
-
-const saveSettingsButton =
-  $("saveSettingsButton");
-
-const themeToggleButton =
-  $("themeToggleButton");
-
-const grayToggleButton =
-  $("grayToggleButton");
-
-const languageSelect =
-  $("languageSelect");
-
-
-// ==================================================
-// 初期化
-// ==================================================
-
-document.addEventListener(
-  "DOMContentLoaded",
-  () => {
-
-    setupAuthEvents();
-
-    setupAppEvents();
-
-    setupModalEvents();
-
-    setupSettings();
-
-    checkLogin();
-
-  }
-);
-
-
-// ==================================================
-// Authentication
-// ==================================================
-
-function setupAuthEvents() {
+  const forgotMessage =
+    document.getElementById("forgotMessage");
 
   const showRegisterButton =
-    $("showRegisterButton");
+    document.getElementById("showRegisterButton");
 
   const showLoginButton =
-    $("showLoginButton");
+    document.getElementById("showLoginButton");
 
   const forgotPasswordButton =
-    $("forgotPasswordButton");
+    document.getElementById("forgotPasswordButton");
 
   const backToLoginButton =
-    $("backToLoginButton");
+    document.getElementById("backToLoginButton");
 
+  // ==================================================
+  // User
+  // ==================================================
 
-  if (showRegisterButton) {
+  const usernameInput =
+    document.getElementById("usernameInput");
 
-    showRegisterButton.addEventListener(
-      "click",
-      () => {
+  const settingsUsernameInput =
+    document.getElementById(
+      "settingsUsernameInput"
+    );
 
-        showAuthPanel(
-          "register"
-        );
+  // ==================================================
+  // Rooms
+  // ==================================================
 
+  const casualRoomButton =
+    document.getElementById(
+      "casualRoomButton"
+    );
+
+  const createRoomButton =
+    document.getElementById(
+      "createRoomButton"
+    );
+
+  const joinRoomButton =
+    document.getElementById(
+      "joinRoomButton"
+    );
+
+  const joinedRooms =
+    document.getElementById(
+      "joinedRooms"
+    );
+
+  const roomName =
+    document.getElementById(
+      "roomName"
+    );
+
+  const roomIcon =
+    document.getElementById(
+      "roomIcon"
+    );
+
+  const inviteArea =
+    document.getElementById(
+      "inviteArea"
+    );
+
+  const inviteCode =
+    document.getElementById(
+      "inviteCode"
+    );
+
+  // ==================================================
+  // Create modal
+  // ==================================================
+
+  const createModal =
+    document.getElementById(
+      "createModal"
+    );
+
+  const roomNameInput =
+    document.getElementById(
+      "roomNameInput"
+    );
+
+  const confirmCreateButton =
+    document.getElementById(
+      "confirmCreateButton"
+    );
+
+  // HTML側に cancelCreateButton が2つあるので
+  // querySelectorAllで全部取得する
+  const cancelCreateButtons =
+    document.querySelectorAll(
+      "#cancelCreateButton"
+    );
+
+  // ==================================================
+  // Join modal
+  // ==================================================
+
+  const joinModal =
+    document.getElementById(
+      "joinModal"
+    );
+
+  const inviteCodeInput =
+    document.getElementById(
+      "inviteCodeInput"
+    );
+
+  const confirmJoinButton =
+    document.getElementById(
+      "confirmJoinButton"
+    );
+
+  const joinError =
+    document.getElementById(
+      "joinError"
+    );
+
+  const cancelJoinButtons =
+    document.querySelectorAll(
+      "#cancelJoinButton"
+    );
+
+  // ==================================================
+  // Settings
+  // ==================================================
+
+  const settingsButton =
+    document.getElementById(
+      "settingsButton"
+    );
+
+  const settingsModal =
+    document.getElementById(
+      "settingsModal"
+    );
+
+  const closeSettingsButtons =
+    document.querySelectorAll(
+      "#closeSettingsButton"
+    );
+
+  const saveSettingsButton =
+    document.getElementById(
+      "saveSettingsButton"
+    );
+
+  const logoutButton =
+    document.getElementById(
+      "logoutButton"
+    );
+
+  const themeToggleButton =
+    document.getElementById(
+      "themeToggleButton"
+    );
+
+  const grayToggleButton =
+    document.getElementById(
+      "grayToggleButton"
+    );
+
+  const languageSelect =
+    document.getElementById(
+      "languageSelect"
+    );
+
+  // ==================================================
+  // Chat
+  // ==================================================
+
+  const messages =
+    document.getElementById(
+      "messages"
+    );
+
+  const messageForm =
+    document.getElementById(
+      "messageForm"
+    );
+
+  const messageInput =
+    document.getElementById(
+      "messageInput"
+    );
+
+  const replyPreview =
+    document.getElementById(
+      "replyPreview"
+    );
+
+  const newMessageButton =
+    document.getElementById(
+      "newMessageButton"
+    );
+
+  const scrollTopButton =
+    document.getElementById(
+      "scrollTopButton"
+    );
+
+  const scrollBottomButton =
+    document.getElementById(
+      "scrollBottomButton"
+    );
+
+  const connectionDot =
+    document.getElementById(
+      "connectionDot"
+    );
+
+  // ==================================================
+  // State
+  // ==================================================
+
+  let socket = null;
+
+  let currentUser = null;
+
+  let currentRoomId = "casual";
+
+  let currentRoom = {
+    id: "casual",
+    name: "雑談",
+    inviteCode: null,
+    ownerId: null
+  };
+
+  let myRooms = [];
+
+  let replyToMessage = null;
+
+  let isLoadingMessages = false;
+
+  // ==================================================
+  // Utilities
+  // ==================================================
+
+  function escapeHtml(value) {
+
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+  function formatTime(dateValue) {
+
+    if (!dateValue) {
+      return "";
+    }
+
+    const date =
+      new Date(dateValue);
+
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
+      return "";
+    }
+
+    return date.toLocaleTimeString(
+      "ja-JP",
+      {
+        hour: "2-digit",
+        minute: "2-digit"
       }
     );
 
   }
 
+  function isNearBottom() {
 
-  if (showLoginButton) {
+    if (!messages) {
+      return true;
+    }
 
-    showLoginButton.addEventListener(
-      "click",
-      () => {
+    const distance =
+      messages.scrollHeight -
+      messages.scrollTop -
+      messages.clientHeight;
 
-        showAuthPanel(
-          "login"
-        );
+    return distance < 120;
 
-      }
+  }
+
+  function scrollToBottom(
+    smooth = true
+  ) {
+
+    if (!messages) {
+      return;
+    }
+
+    messages.scrollTo({
+      top:
+        messages.scrollHeight,
+
+      behavior:
+        smooth
+          ? "smooth"
+          : "auto"
+    });
+
+  }
+
+  function showScreen(
+    screen
+  ) {
+
+    if (screen === "app") {
+
+      authScreen?.classList.add(
+        "hidden"
+      );
+
+      appScreen?.classList.remove(
+        "hidden"
+      );
+
+    } else {
+
+      appScreen?.classList.add(
+        "hidden"
+      );
+
+      authScreen?.classList.remove(
+        "hidden"
+      );
+
+    }
+
+  }
+
+  function setConnection(
+    connected
+  ) {
+
+    if (!connectionDot) {
+      return;
+    }
+
+    if (connected) {
+
+      connectionDot.classList.add(
+        "connected"
+      );
+
+      connectionDot.classList.remove(
+        "disconnected"
+      );
+
+    } else {
+
+      connectionDot.classList.remove(
+        "connected"
+      );
+
+      connectionDot.classList.add(
+        "disconnected"
+      );
+
+    }
+
+  }
+
+  // ==================================================
+  // Auth panel
+  // ==================================================
+
+  function showAuthPanel(
+    panel
+  ) {
+
+    loginPanel?.classList.add(
+      "hidden"
+    );
+
+    registerPanel?.classList.add(
+      "hidden"
+    );
+
+    forgotPanel?.classList.add(
+      "hidden"
+    );
+
+    panel?.classList.remove(
+      "hidden"
     );
 
   }
 
-
-  if (forgotPasswordButton) {
-
-    forgotPasswordButton.addEventListener(
-      "click",
-      () => {
-
-        showAuthPanel(
-          "forgot"
-        );
-
-      }
-    );
-
-  }
-
-
-  if (backToLoginButton) {
-
-    backToLoginButton.addEventListener(
-      "click",
-      () => {
-
-        showAuthPanel(
-          "login"
-        );
-
-      }
-    );
-
-  }
-
-
-  if (loginForm) {
-
-    loginForm.addEventListener(
-      "submit",
-      async (event) => {
-
-        event.preventDefault();
-
-        clearAuthMessages();
-
-        const name =
-          loginName.value.trim();
-
-        const password =
-          loginPassword.value;
-
-        if (!name || !password) {
-
-          showError(
-            loginError,
-            "名前とパスワードを入力してください。"
-          );
-
-          return;
-
-        }
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/login",
-              {
-                method: "POST",
-
-                headers: {
-                  "Content-Type":
-                    "application/json"
-                },
-
-                body:
-                  JSON.stringify({
-                    name,
-                    password
-                  })
-              }
-            );
-
-          const data =
-            await response.json();
-
-          if (!response.ok) {
-
-            showError(
-              loginError,
-              data.message ||
-                "ログインに失敗しました。"
-            );
-
-            return;
-
-          }
-
-          currentUser =
-            data.user;
-
-          loginPassword.value = "";
-
-          showApp();
-
-        } catch (error) {
-
-          console.error(
-            "Login error:",
-            error
-          );
-
-          showError(
-            loginError,
-            "通信エラーが発生しました。"
-          );
-
-        }
-
-      }
-    );
-
-  }
-
-
-  if (registerForm) {
-
-    registerForm.addEventListener(
-      "submit",
-      async (event) => {
-
-        event.preventDefault();
-
-        clearAuthMessages();
-
-        const email =
-          registerEmail.value.trim();
-
-        const name =
-          registerName.value.trim();
-
-        const password =
-          registerPassword.value;
-
-        if (!email || !name || !password) {
-
-          showError(
-            registerError,
-            "すべて入力してください。"
-          );
-
-          return;
-
-        }
-
-        if (password.length < 8) {
-
-          showError(
-            registerError,
-            "パスワードは8文字以上にしてください。"
-          );
-
-          return;
-
-        }
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/register",
-              {
-                method: "POST",
-
-                headers: {
-                  "Content-Type":
-                    "application/json"
-                },
-
-                body:
-                  JSON.stringify({
-                    email,
-                    name,
-                    password
-                  })
-              }
-            );
-
-          const data =
-            await response.json();
-
-          if (!response.ok) {
-
-            showError(
-              registerError,
-              data.message ||
-                "登録に失敗しました。"
-            );
-
-            return;
-
-          }
-
-          currentUser =
-            data.user;
-
-          registerPassword.value = "";
-
-          showApp();
-
-        } catch (error) {
-
-          console.error(
-            "Register error:",
-            error
-          );
-
-          showError(
-            registerError,
-            "通信エラーが発生しました。"
-          );
-
-        }
-
-      }
-    );
-
-  }
-
-
-  if (forgotForm) {
-
-    forgotForm.addEventListener(
-      "submit",
-      async (event) => {
-
-        event.preventDefault();
-
-        clearAuthMessages();
-
-        const email =
-          forgotEmail.value.trim();
-
-        if (!email) {
-
-          showError(
-            forgotMessage,
-            "メールアドレスを入力してください。"
-          );
-
-          return;
-
-        }
-
-        try {
-
-          const response =
-            await fetch(
-              "/api/forgot-password",
-              {
-                method: "POST",
-
-                headers: {
-                  "Content-Type":
-                    "application/json"
-                },
-
-                body:
-                  JSON.stringify({
-                    email
-                  })
-              }
-            );
-
-          const data =
-            await response.json();
-
-          if (!response.ok) {
-
-            showError(
-              forgotMessage,
-              data.message ||
-                "処理に失敗しました。"
-            );
-
-            return;
-
-          }
-
-          forgotMessage.textContent =
-            data.message ||
-            "パスワード再設定の案内を送信しました。";
-
-          forgotMessage.classList.remove(
-            "form-error"
-          );
-
-          forgotMessage.classList.add(
-            "form-message"
-          );
-
-        } catch (error) {
-
-          console.error(
-            "Forgot password error:",
-            error
-          );
-
-          showError(
-            forgotMessage,
-            "通信エラーが発生しました。"
-          );
-
-        }
-
-      }
-    );
-
-  }
-
-}
-
-
-// ==================================================
-// Login Check
-// ==================================================
-
-async function checkLogin() {
-
-  try {
+  // ==================================================
+  // API
+  // ==================================================
+
+  async function api(
+    url,
+    options = {}
+  ) {
 
     const response =
       await fetch(
-        "/api/me",
+        url,
         {
-          credentials: "include"
+          credentials: "same-origin",
+
+          ...options,
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            ...(options.headers || {})
+          }
         }
       );
 
-    const data =
-      await response.json();
+    let data = {};
 
-    if (
-      response.ok &&
-      data.loggedIn &&
-      data.user
-    ) {
+    try {
+      data =
+        await response.json();
+    } catch {
+      data = {};
+    }
+
+    if (!response.ok) {
+
+      const error =
+        new Error(
+          data.message ||
+          "通信に失敗しました。"
+        );
+
+      error.status =
+        response.status;
+
+      error.data =
+        data;
+
+      throw error;
+
+    }
+
+    return data;
+
+  }
+
+  // ==================================================
+  // Me
+  // ==================================================
+
+  async function loadCurrentUser() {
+
+    try {
+
+      const data =
+        await api(
+          "/api/me"
+        );
+
+      if (
+        !data.loggedIn ||
+        !data.user
+      ) {
+
+        currentUser = null;
+
+        showScreen(
+          "auth"
+        );
+
+        return false;
+
+      }
 
       currentUser =
         data.user;
 
-      showApp();
+      updateUserUI();
 
-    } else {
-
-      showAuth();
-
-    }
-
-  } catch (error) {
-
-    console.error(
-      "checkLogin error:",
-      error
-    );
-
-    showAuth();
-
-  }
-
-}
-
-
-// ==================================================
-// Auth UI
-// ==================================================
-
-function showAuth() {
-
-  authScreen.classList.remove(
-    "hidden"
-  );
-
-  appScreen.classList.add(
-    "hidden"
-  );
-
-  disconnectSocket();
-
-  showAuthPanel(
-    "login"
-  );
-
-}
-
-
-function showApp() {
-
-  authScreen.classList.add(
-    "hidden"
-  );
-
-  appScreen.classList.remove(
-    "hidden"
-  );
-
-  updateUserUI();
-
-  connectSocket();
-
-}
-
-
-function showAuthPanel(panel) {
-
-  loginPanel.classList.add(
-    "hidden"
-  );
-
-  registerPanel.classList.add(
-    "hidden"
-  );
-
-  forgotPanel.classList.add(
-    "hidden"
-  );
-
-  if (panel === "login") {
-
-    loginPanel.classList.remove(
-      "hidden"
-    );
-
-  }
-
-  if (panel === "register") {
-
-    registerPanel.classList.remove(
-      "hidden"
-    );
-
-  }
-
-  if (panel === "forgot") {
-
-    forgotPanel.classList.remove(
-      "hidden"
-    );
-
-  }
-
-  clearAuthMessages();
-
-}
-
-
-function clearAuthMessages() {
-
-  if (loginError) {
-    loginError.textContent = "";
-  }
-
-  if (registerError) {
-    registerError.textContent = "";
-  }
-
-  if (forgotMessage) {
-    forgotMessage.textContent = "";
-  }
-
-}
-
-
-function showError(
-  element,
-  message
-) {
-
-  if (!element) {
-    return;
-  }
-
-  element.textContent =
-    message;
-
-}
-
-
-// ==================================================
-// User UI
-// ==================================================
-
-function updateUserUI() {
-
-  if (!currentUser) {
-    return;
-  }
-
-  if (usernameInput) {
-
-    usernameInput.value =
-      currentUser.name || "";
-
-  }
-
-  if (settingsUsernameInput) {
-
-    settingsUsernameInput.value =
-      currentUser.name || "";
-
-  }
-
-}
-
-
-// ==================================================
-// Socket.IO
-// ==================================================
-
-function connectSocket() {
-
-  if (socket) {
-
-    try {
-      socket.disconnect();
-    } catch (_) {}
-
-    socket = null;
-
-  }
-
-  socket =
-    io({
-      withCredentials: true
-    });
-
-
-  socket.on(
-    "connect",
-    () => {
-
-      isConnected = true;
-
-      updateConnectionStatus(
-        true
+      showScreen(
+        "app"
       );
 
-      console.log(
-        "Socket connected:",
-        socket.id
-      );
+      return true;
 
-      socket.emit(
-        "get my rooms"
-      );
-
-    }
-  );
-
-
-  socket.on(
-    "disconnect",
-    (reason) => {
-
-      isConnected = false;
-
-      updateConnectionStatus(
-        false
-      );
-
-      console.log(
-        "Socket disconnected:",
-        reason
-      );
-
-    }
-  );
-
-
-  socket.on(
-    "connect_error",
-    (error) => {
-
-      isConnected = false;
-
-      updateConnectionStatus(
-        false
-      );
+    } catch (error) {
 
       console.error(
-        "Socket connection error:",
+        "loadCurrentUser error:",
         error
       );
 
-    }
-  );
-
-
-  // ==================================================
-  // 自分の部屋一覧
-  // ==================================================
-
-  socket.on(
-    "my rooms",
-    (rooms) => {
-
-      if (!Array.isArray(rooms)) {
-
-        myRooms = [];
-
-      } else {
-
-        myRooms = rooms;
-
-      }
-
-      renderJoinedRooms();
-
-    }
-  );
-
-
-  // ==================================================
-  // 部屋作成
-  // ==================================================
-
-  socket.on(
-    "room created",
-    (room) => {
-
-      if (!room) {
-        return;
-      }
-
-      currentRoomData =
-        room;
-
-      currentRoom =
-        room.id;
-
-      renderCurrentRoom();
-
-      closeModal(
-        createModal
+      showScreen(
+        "auth"
       );
 
-      roomNameInput.value = "";
-
-      renderJoinedRooms();
-
-      showToast(
-        `「${room.name}」を作成しました。`
-      );
+      return false;
 
     }
-  );
 
+  }
+
+  function updateUserUI() {
+
+    if (!currentUser) {
+      return;
+    }
+
+    if (usernameInput) {
+
+      usernameInput.value =
+        currentUser.name;
+
+    }
+
+    if (settingsUsernameInput) {
+
+      settingsUsernameInput.value =
+        currentUser.name;
+
+    }
+
+  }
 
   // ==================================================
-  // 部屋参加
+  // Socket接続
   // ==================================================
 
-  socket.on(
-    "room joined",
-    (room) => {
+  function connectSocket() {
 
-      if (!room) {
-        return;
+    if (socket) {
+
+      try {
+        socket.disconnect();
+      } catch {
+        // ignore
       }
 
-      currentRoomData =
-        room;
-
-      currentRoom =
-        room.id;
-
-      renderCurrentRoom();
-
-      closeModal(
-        joinModal
-      );
-
-      inviteCodeInput.value = "";
-
-      if (joinError) {
-        joinError.textContent = "";
-      }
-
-      renderJoinedRooms();
-
-      showToast(
-        `「${room.name}」に参加しました。`
-      );
-
     }
-  );
 
+    socket =
+      io({
+        withCredentials: true
+      });
 
-  // ==================================================
-  // 部屋を開いた
-  // ==================================================
+    // ==================================================
+    // 接続
+    // ==================================================
 
-  socket.on(
-    "room opened",
-    (room) => {
+    socket.on(
+      "connect",
+      () => {
 
-      if (!room) {
-        return;
-      }
-
-      currentRoomData =
-        room;
-
-      currentRoom =
-        room.id;
-
-      renderCurrentRoom();
-
-      renderJoinedRooms();
-
-    }
-  );
-
-
-  // ==================================================
-  // 雑談
-  // ==================================================
-
-  socket.on(
-    "casual joined",
-    () => {
-
-      currentRoom =
-        "casual";
-
-      currentRoomData = {
-        id: "casual",
-        name: "雑談",
-        inviteCode: null,
-        ownerId: null
-      };
-
-      renderCurrentRoom();
-
-    }
-  );
-
-
-  // ==================================================
-  // 部屋削除
-  // ==================================================
-
-  socket.on(
-    "room deleted",
-    (data) => {
-
-      const roomId =
-        String(
-          data?.roomId || ""
+        console.log(
+          "Socket connected:",
+          socket.id
         );
 
-      if (!roomId) {
-        return;
-      }
-
-      myRooms =
-        myRooms.filter(
-          (room) =>
-            room.id !== roomId
+        setConnection(
+          true
         );
 
-      renderJoinedRooms();
+        // サーバーに最新の部屋一覧を要求
+        socket.emit(
+          "get my rooms"
+        );
 
-      if (
-        currentRoom === roomId
-      ) {
+      }
+    );
+
+    // ==================================================
+    // 切断
+    // ==================================================
+
+    socket.on(
+      "disconnect",
+      (reason) => {
+
+        console.log(
+          "Socket disconnected:",
+          reason
+        );
+
+        setConnection(
+          false
+        );
+
+      }
+    );
+
+    // ==================================================
+    // 接続エラー
+    // ==================================================
+
+    socket.on(
+      "connect_error",
+      (error) => {
+
+        console.error(
+          "Socket connection error:",
+          error
+        );
+
+        setConnection(
+          false
+        );
+
+        if (
+          error?.message ===
+          "UNAUTHORIZED"
+        ) {
+
+          showScreen(
+            "auth"
+          );
+
+        }
+
+      }
+    );
+
+    // ==================================================
+    // 自分の部屋一覧
+    // ==================================================
+
+    socket.on(
+      "my rooms",
+      (rooms) => {
+
+        console.log(
+          "my rooms:",
+          rooms
+        );
+
+        setMyRooms(
+          Array.isArray(rooms)
+            ? rooms
+            : []
+        );
+
+      }
+    );
+
+    // ==================================================
+    // 部屋作成成功
+    // ==================================================
+
+    socket.on(
+      "room created",
+      (room) => {
+
+        console.log(
+          "room created:",
+          room
+        );
+
+        if (!room) {
+          return;
+        }
 
         currentRoom =
+          room;
+
+        currentRoomId =
+          room.id;
+
+        // 部屋一覧に即追加
+        addOrUpdateMyRoom(
+          room
+        );
+
+        updateCurrentRoomUI();
+
+        closeCreateModal();
+
+      }
+    );
+
+    // ==================================================
+    // 部屋参加成功
+    // ==================================================
+
+    socket.on(
+      "room joined",
+      (room) => {
+
+        console.log(
+          "room joined:",
+          room
+        );
+
+        if (!room) {
+          return;
+        }
+
+        currentRoom =
+          room;
+
+        currentRoomId =
+          room.id;
+
+        addOrUpdateMyRoom(
+          room
+        );
+
+        updateCurrentRoomUI();
+
+        closeJoinModal();
+
+      }
+    );
+
+    // ==================================================
+    // 自分の部屋を開いた
+    // ==================================================
+
+    socket.on(
+      "room opened",
+      (room) => {
+
+        console.log(
+          "room opened:",
+          room
+        );
+
+        if (!room) {
+          return;
+        }
+
+        currentRoom =
+          room;
+
+        currentRoomId =
+          room.id;
+
+        addOrUpdateMyRoom(
+          room
+        );
+
+        updateCurrentRoomUI();
+
+      }
+    );
+
+    // ==================================================
+    // 雑談に参加
+    // ==================================================
+
+    socket.on(
+      "casual joined",
+      () => {
+
+        currentRoomId =
           "casual";
 
-        currentRoomData = {
+        currentRoom = {
           id: "casual",
           name: "雑談",
           inviteCode: null,
           ownerId: null
         };
 
-        renderCurrentRoom();
+        updateCurrentRoomUI();
 
       }
+    );
 
-      showToast(
-        "部屋が削除されました。"
-      );
+    // ==================================================
+    // 過去メッセージ
+    // ==================================================
 
-    }
-  );
+    socket.on(
+      "previous messages",
+      (list) => {
 
-
-  // ==================================================
-  // 部屋削除エラー
-  // ==================================================
-
-  socket.on(
-    "delete room error",
-    (data) => {
-
-      showToast(
-        data?.message ||
-          "部屋を削除できませんでした。",
-        true
-      );
-
-    }
-  );
-
-
-  // ==================================================
-  // 部屋参加エラー
-  // ==================================================
-
-  socket.on(
-    "join room error",
-    (data) => {
-
-      if (joinError) {
-
-        joinError.textContent =
-          data?.message ||
-          "部屋に参加できませんでした。";
-
-      }
-
-    }
-  );
-
-
-  // ==================================================
-  // 部屋作成エラー
-  // ==================================================
-
-  socket.on(
-    "create room error",
-    (data) => {
-
-      showToast(
-        data?.message ||
-          "部屋を作成できませんでした。",
-        true
-      );
-
-    }
-  );
-
-
-  // ==================================================
-  // 部屋を開くエラー
-  // ==================================================
-
-  socket.on(
-    "room open error",
-    (data) => {
-
-      showToast(
-        data?.message ||
-          "部屋を開けませんでした。",
-        true
-      );
-
-    }
-  );
-
-
-  // ==================================================
-  // 過去メッセージ
-  // ==================================================
-
-  socket.on(
-    "previous messages",
-    (messageList) => {
-
-      isLoadingMessages = true;
-
-      clearMessages();
-
-      if (Array.isArray(messageList)) {
-
-        messageList.forEach(
-          (message) => {
-
-            addMessageToUI(
-              message,
-              false
-            );
-
-          }
+        renderMessages(
+          Array.isArray(list)
+            ? list
+            : []
         );
 
       }
-
-      isLoadingMessages = false;
-
-      scrollMessagesToBottom();
-
-    }
-  );
-
-
-  // ==================================================
-  // 新着メッセージ
-  // ==================================================
-
-  socket.on(
-    "chat message",
-    (message) => {
-
-      if (!message) {
-        return;
-      }
-
-      if (
-        message.room !==
-        currentRoom
-      ) {
-
-        return;
-
-      }
-
-      const nearBottom =
-        isNearBottom();
-
-      addMessageToUI(
-        message,
-        true
-      );
-
-      if (nearBottom) {
-
-        scrollMessagesToBottom();
-
-        hideNewMessageButton();
-
-      } else {
-
-        showNewMessageButton();
-
-      }
-
-    }
-  );
-
-
-  // ==================================================
-  // メッセージ編集
-  // ==================================================
-
-  socket.on(
-    "message edited",
-    (message) => {
-
-      if (!message) {
-        return;
-      }
-
-      updateMessageUI(
-        message
-      );
-
-    }
-  );
-
-
-  // ==================================================
-  // メッセージ削除
-  // ==================================================
-
-  socket.on(
-    "message deleted",
-    (data) => {
-
-      if (!data) {
-        return;
-      }
-
-      removeMessageUI(
-        data.id
-      );
-
-    }
-  );
-
-
-  // ==================================================
-  // エラー
-  // ==================================================
-
-  socket.on(
-    "message send error",
-    (data) => {
-
-      showToast(
-        data?.message ||
-          "メッセージを送信できませんでした。",
-        true
-      );
-
-    }
-  );
-
-
-  socket.on(
-    "message edit error",
-    (data) => {
-
-      showToast(
-        data?.message ||
-          "メッセージを編集できませんでした。",
-        true
-      );
-
-    }
-  );
-
-
-  socket.on(
-    "message delete error",
-    (data) => {
-
-      showToast(
-        data?.message ||
-          "メッセージを削除できませんでした。",
-        true
-      );
-
-    }
-  );
-
-}
-
-
-// ==================================================
-// Socket Disconnect
-// ==================================================
-
-function disconnectSocket() {
-
-  if (!socket) {
-    return;
-  }
-
-  try {
-
-    socket.removeAllListeners();
-
-    socket.disconnect();
-
-  } catch (error) {
-
-    console.error(
-      "disconnectSocket error:",
-      error
     );
 
-  }
+    // ==================================================
+    // 新規メッセージ
+    // ==================================================
 
-  socket = null;
+    socket.on(
+      "chat message",
+      (message) => {
 
-  isConnected = false;
-
-  updateConnectionStatus(
-    false
-  );
-
-}
-
-
-// ==================================================
-// Connection UI
-// ==================================================
-
-function updateConnectionStatus(
-  connected
-) {
-
-  if (!connectionDot) {
-    return;
-  }
-
-  if (connected) {
-
-    connectionDot.classList.add(
-      "connected"
-    );
-
-    connectionDot.title =
-      "接続中";
-
-  } else {
-
-    connectionDot.classList.remove(
-      "connected"
-    );
-
-    connectionDot.title =
-      "未接続";
-
-  }
-
-}
-
-
-// ==================================================
-// App Events
-// ==================================================
-
-function setupAppEvents() {
-
-  // ==================================================
-  // 雑談
-  // ==================================================
-
-  if (casualRoomButton) {
-
-    casualRoomButton.addEventListener(
-      "click",
-      () => {
-
-        if (!socket) {
+        if (!message) {
           return;
         }
 
-        socket.emit(
-          "join casual"
-        );
-
-      }
-    );
-
-  }
-
-
-  // ==================================================
-  // 部屋作成
-  // ==================================================
-
-  if (createRoomButton) {
-
-    createRoomButton.addEventListener(
-      "click",
-      () => {
-
-        openModal(
-          createModal
-        );
-
-        setTimeout(
-          () => {
-
-            if (roomNameInput) {
-              roomNameInput.focus();
-            }
-
-          },
-          50
-        );
-
-      }
-    );
-
-  }
-
-
-  if (confirmCreateButton) {
-
-    confirmCreateButton.addEventListener(
-      "click",
-      createRoom
-    );
-
-  }
-
-
-  if (roomNameInput) {
-
-    roomNameInput.addEventListener(
-      "keydown",
-      (event) => {
-
         if (
-          event.key === "Enter"
-        ) {
-
-          event.preventDefault();
-
-          createRoom();
-
-        }
-
-      }
-    );
-
-  }
-
-
-  // ==================================================
-  // 部屋参加
-  // ==================================================
-
-  if (joinRoomButton) {
-
-    joinRoomButton.addEventListener(
-      "click",
-      () => {
-
-        openModal(
-          joinModal
-        );
-
-        setTimeout(
-          () => {
-
-            if (inviteCodeInput) {
-              inviteCodeInput.focus();
-            }
-
-          },
-          50
-        );
-
-      }
-    );
-
-  }
-
-
-  if (confirmJoinButton) {
-
-    confirmJoinButton.addEventListener(
-      "click",
-      joinRoom
-    );
-
-  }
-
-
-  if (inviteCodeInput) {
-
-    inviteCodeInput.addEventListener(
-      "input",
-      () => {
-
-        inviteCodeInput.value =
-          inviteCodeInput.value
-            .toUpperCase();
-
-      }
-    );
-
-
-    inviteCodeInput.addEventListener(
-      "keydown",
-      (event) => {
-
-        if (
-          event.key === "Enter"
-        ) {
-
-          event.preventDefault();
-
-          joinRoom();
-
-        }
-
-      }
-    );
-
-  }
-
-
-  // ==================================================
-  // メッセージ
-  // ==================================================
-
-  if (messageForm) {
-
-    messageForm.addEventListener(
-      "submit",
-      (event) => {
-
-        event.preventDefault();
-
-        if (
-          editingMessageId !== null
-        ) {
-
-          submitEditMessage();
-
-          return;
-
-        }
-
-        sendMessage();
-
-      }
-    );
-
-  }
-
-
-  // ==================================================
-  // Scroll
-  // ==================================================
-
-  if (scrollTopButton) {
-
-    scrollTopButton.addEventListener(
-      "click",
-      () => {
-
-        if (!messages) {
-          return;
-        }
-
-        messages.scrollTo({
-          top: 0,
-          behavior: "smooth"
-        });
-
-      }
-    );
-
-  }
-
-
-  if (scrollBottomButton) {
-
-    scrollBottomButton.addEventListener(
-      "click",
-      () => {
-
-        scrollMessagesToBottom();
-
-      }
-    );
-
-  }
-
-
-  if (newMessageButton) {
-
-    newMessageButton.addEventListener(
-      "click",
-      () => {
-
-        scrollMessagesToBottom();
-
-        hideNewMessageButton();
-
-      }
-    );
-
-  }
-
-
-  if (messages) {
-
-    messages.addEventListener(
-      "scroll",
-      () => {
-
-        if (
-          isNearBottom()
-        ) {
-
-          hideNewMessageButton();
-
-        }
-
-      }
-    );
-
-  }
-
-
-  // ==================================================
-  // 招待コードコピー
-  // ==================================================
-
-  if (inviteCode) {
-
-    inviteCode.addEventListener(
-      "click",
-      async () => {
-
-        const code =
-          inviteCode.textContent.trim();
-
-        if (
-          !code ||
-          code === "------"
+          message.room !==
+          currentRoomId
         ) {
 
           return;
 
         }
 
-        try {
+        const shouldScroll =
+          isNearBottom();
 
-          await navigator.clipboard.writeText(
-            code
-          );
+        appendMessage(
+          message
+        );
 
-          showToast(
-            "招待コードをコピーしました。"
-          );
+        if (shouldScroll) {
 
-        } catch (error) {
-
-          console.error(
-            "Copy error:",
-            error
-          );
-
-          showToast(
-            "招待コードをコピーできませんでした。",
+          scrollToBottom(
             true
           );
 
+        } else {
+
+          newMessageButton?.classList.remove(
+            "hidden"
+          );
+
         }
 
       }
     );
 
-  }
+    // ==================================================
+    // メッセージ編集
+    // ==================================================
 
-}
+    socket.on(
+      "message edited",
+      (message) => {
 
+        if (!message) {
+          return;
+        }
 
-// ==================================================
-// Modal Events
-// ==================================================
+        updateMessageElement(
+          message
+        );
 
-function setupModalEvents() {
+      }
+    );
 
-  cancelCreateButtons.forEach(
-    (button) => {
+    // ==================================================
+    // メッセージ削除
+    // ==================================================
 
-      button.addEventListener(
-        "click",
-        () => {
+    socket.on(
+      "message deleted",
+      (data) => {
 
-          closeModal(
-            createModal
+        if (!data) {
+          return;
+        }
+
+        const element =
+          document.querySelector(
+            `[data-message-id="${CSS.escape(String(data.id))}"]`
+          );
+
+        if (element) {
+
+          element.remove();
+
+        }
+
+      }
+    );
+
+    // ==================================================
+    // 部屋削除
+    // ==================================================
+
+    socket.on(
+      "room deleted",
+      (data) => {
+
+        const roomId =
+          String(
+            data?.roomId || ""
+          );
+
+        if (!roomId) {
+          return;
+        }
+
+        console.log(
+          "room deleted:",
+          roomId
+        );
+
+        // ローカル一覧から削除
+        myRooms =
+          myRooms.filter(
+            room =>
+              String(room.id) !==
+              roomId
+          );
+
+        renderJoinedRooms();
+
+        // 今開いていた部屋なら雑談へ
+        if (
+          String(currentRoomId) ===
+          roomId
+        ) {
+
+          currentRoomId =
+            "casual";
+
+          currentRoom = {
+            id: "casual",
+            name: "雑談",
+            inviteCode: null,
+            ownerId: null
+          };
+
+          updateCurrentRoomUI();
+
+          messages.innerHTML =
+            "";
+
+          // サーバー側でも雑談へ移動済みだが
+          // 念のため
+          if (
+            socket.connected
+          ) {
+
+            socket.emit(
+              "join casual"
+            );
+
+          }
+
+        }
+
+      }
+    );
+
+    // ==================================================
+    // エラー
+    // ==================================================
+
+    socket.on(
+      "create room error",
+      (data) => {
+
+        alert(
+          data?.message ||
+          "部屋を作成できませんでした。"
+        );
+
+      }
+    );
+
+    socket.on(
+      "join room error",
+      (data) => {
+
+        if (joinError) {
+
+          joinError.textContent =
+            data?.message ||
+            "部屋に参加できませんでした。";
+
+        } else {
+
+          alert(
+            data?.message ||
+            "部屋に参加できませんでした。"
           );
 
         }
-      );
 
-    }
-  );
+      }
+    );
 
+    socket.on(
+      "room open error",
+      (data) => {
 
-  cancelJoinButtons.forEach(
-    (button) => {
+        alert(
+          data?.message ||
+          "部屋を開けませんでした。"
+        );
 
-      button.addEventListener(
-        "click",
-        () => {
+      }
+    );
 
-          closeModal(
-            joinModal
-          );
+    socket.on(
+      "delete room error",
+      (data) => {
 
-        }
-      );
+        alert(
+          data?.message ||
+          "部屋を削除できませんでした。"
+        );
 
-    }
-  );
+      }
+    );
 
+    socket.on(
+      "message send error",
+      (data) => {
 
-  if (settingsButton) {
+        alert(
+          data?.message ||
+          "メッセージを送信できませんでした。"
+        );
 
-    settingsButton.addEventListener(
-      "click",
-      () => {
+      }
+    );
 
-        openModal(
-          settingsModal
+    socket.on(
+      "message edit error",
+      (data) => {
+
+        alert(
+          data?.message ||
+          "コメントを編集できませんでした。"
+        );
+
+      }
+    );
+
+    socket.on(
+      "message delete error",
+      (data) => {
+
+        alert(
+          data?.message ||
+          "コメントを削除できませんでした。"
         );
 
       }
@@ -1722,468 +1099,190 @@ function setupModalEvents() {
 
   }
 
-
-  closeSettingsButtons.forEach(
-    (button) => {
-
-      button.addEventListener(
-        "click",
-        () => {
-
-          closeModal(
-            settingsModal
-          );
-
-        }
-      );
-
-    }
-  );
-
-
-  [
-    createModal,
-    joinModal,
-    settingsModal
-  ].forEach(
-    (modal) => {
-
-      if (!modal) {
-        return;
-      }
-
-      modal.addEventListener(
-        "click",
-        (event) => {
-
-          if (
-            event.target === modal
-          ) {
-
-            closeModal(
-              modal
-            );
-
-          }
-
-        }
-      );
-
-    }
-  );
-
-
-  document.addEventListener(
-    "keydown",
-    (event) => {
-
-      if (
-        event.key !== "Escape"
-      ) {
-
-        return;
-
-      }
-
-      closeModal(
-        createModal
-      );
-
-      closeModal(
-        joinModal
-      );
-
-      closeModal(
-        settingsModal
-      );
-
-    }
-  );
-
-}
-
-
-// ==================================================
-// Modal
-// ==================================================
-
-function openModal(
-  modal
-) {
-
-  if (!modal) {
-    return;
-  }
-
-  modal.classList.remove(
-    "hidden"
-  );
-
-}
-
-
-function closeModal(
-  modal
-) {
-
-  if (!modal) {
-    return;
-  }
-
-  modal.classList.add(
-    "hidden"
-  );
-
-}
-
-
-// ==================================================
-// Create Room
-// ==================================================
-
-function createRoom() {
-
-  if (!socket) {
-
-    showToast(
-      "サーバーに接続されていません。",
-      true
-    );
-
-    return;
-
-  }
-
-  const name =
-    roomNameInput.value.trim();
-
-  if (!name) {
-
-    showToast(
-      "部屋の名前を入力してください。",
-      true
-    );
-
-    roomNameInput.focus();
-
-    return;
-
-  }
-
-  if (name.length > 100) {
-
-    showToast(
-      "部屋の名前は100文字以内にしてください。",
-      true
-    );
-
-    return;
-
-  }
-
-  confirmCreateButton.disabled =
-    true;
-
-  socket.emit(
-    "create room",
-    {
-      name
-    }
-  );
-
-  setTimeout(
-    () => {
-
-      if (confirmCreateButton) {
-
-        confirmCreateButton.disabled =
-          false;
-
-      }
-
-    },
-    1000
-  );
-
-}
-
-
-// ==================================================
-// Join Room
-// ==================================================
-
-function joinRoom() {
-
-  if (!socket) {
-
-    showJoinError(
-      "サーバーに接続されていません。"
-    );
-
-    return;
-
-  }
-
-  const code =
-    inviteCodeInput.value
-      .trim()
-      .toUpperCase();
-
-  if (!code) {
-
-    showJoinError(
-      "招待コードを入力してください。"
-    );
-
-    inviteCodeInput.focus();
-
-    return;
-
-  }
-
-  if (code.length > 20) {
-
-    showJoinError(
-      "招待コードが長すぎます。"
-    );
-
-    return;
-
-  }
-
-  confirmJoinButton.disabled =
-    true;
-
-  socket.emit(
-    "join room",
-    {
-      code
-    }
-  );
-
-  setTimeout(
-    () => {
-
-      if (confirmJoinButton) {
-
-        confirmJoinButton.disabled =
-          false;
-
-      }
-
-    },
-    1000
-  );
-
-}
-
-
-function showJoinError(
-  message
-) {
-
-  if (joinError) {
-
-    joinError.textContent =
-      message;
-
-  }
-
-}
-
-
-// ==================================================
-// Room List
-// ==================================================
-
-function renderJoinedRooms() {
-
-  if (!joinedRooms) {
-    return;
-  }
-
-  joinedRooms.innerHTML = "";
-
-
-  if (
-    !Array.isArray(myRooms)
+  // ==================================================
+  // 部屋一覧
+  // ==================================================
+
+  function setMyRooms(
+    rooms
   ) {
 
-    myRooms = [];
+    const unique =
+      new Map();
 
-  }
-
-
-  // --------------------------------------------------
-  // 重複排除
-  // --------------------------------------------------
-
-  const uniqueRooms = [];
-
-  const seen =
-    new Set();
-
-  myRooms.forEach(
-    (room) => {
+    for (
+      const room of rooms
+    ) {
 
       if (
         !room ||
         !room.id
       ) {
-
-        return;
-
+        continue;
       }
 
-      if (
-        seen.has(room.id)
-      ) {
-
-        return;
-
-      }
-
-      seen.add(
-        room.id
-      );
-
-      uniqueRooms.push(
+      unique.set(
+        String(room.id),
         room
       );
 
     }
-  );
 
-
-  // --------------------------------------------------
-  // 部屋を作成日時順
-  // --------------------------------------------------
-
-  uniqueRooms.sort(
-    (a, b) => {
-
-      const aTime =
-        new Date(
-          a.createdAt || 0
-        ).getTime();
-
-      const bTime =
-        new Date(
-          b.createdAt || 0
-        ).getTime();
-
-      return aTime - bTime;
-
-    }
-  );
-
-
-  // --------------------------------------------------
-  // 部屋なし
-  // --------------------------------------------------
-
-  if (
-    uniqueRooms.length === 0
-  ) {
-
-    const empty =
-      document.createElement(
-        "div"
+    myRooms =
+      Array.from(
+        unique.values()
       );
 
-    empty.className =
-      "joined-room-empty";
-
-    empty.textContent =
-      "まだ部屋がありません";
-
-    joinedRooms.appendChild(
-      empty
-    );
-
-    return;
+    renderJoinedRooms();
 
   }
 
+  function addOrUpdateMyRoom(
+    room
+  ) {
 
-  // --------------------------------------------------
-  // 部屋生成
-  // --------------------------------------------------
+    if (
+      !room ||
+      !room.id
+    ) {
+      return;
+    }
 
-  uniqueRooms.forEach(
-    (room) => {
+    const roomId =
+      String(room.id);
 
-      const wrapper =
+    const index =
+      myRooms.findIndex(
+        item =>
+          String(item.id) ===
+          roomId
+      );
+
+    if (index >= 0) {
+
+      myRooms[index] =
+        {
+          ...myRooms[index],
+          ...room
+        };
+
+    } else {
+
+      myRooms.push(
+        room
+      );
+
+    }
+
+    renderJoinedRooms();
+
+  }
+
+  function renderJoinedRooms() {
+
+    if (!joinedRooms) {
+      return;
+    }
+
+    joinedRooms.innerHTML =
+      "";
+
+    // ==================================================
+    // 重要
+    //
+    // 雑談はHTML側に最初からあるので、
+    // ここでは作成/参加した部屋だけ描画する。
+    // ==================================================
+
+    if (
+      myRooms.length === 0
+    ) {
+
+      const empty =
         document.createElement(
           "div"
         );
 
-      wrapper.className =
+      empty.className =
+        "joined-rooms-empty";
+
+      empty.textContent =
+        "参加中の部屋はありません";
+
+      joinedRooms.appendChild(
+        empty
+      );
+
+      return;
+
+    }
+
+    // 作成日時順
+    const rooms =
+      [...myRooms].sort(
+        (a, b) => {
+
+          const aTime =
+            new Date(
+              a.createdAt || 0
+            ).getTime();
+
+          const bTime =
+            new Date(
+              b.createdAt || 0
+            ).getTime();
+
+          return aTime - bTime;
+
+        }
+      );
+
+    for (
+      const room of rooms
+    ) {
+
+      const button =
+        document.createElement(
+          "div"
+        );
+
+      button.className =
         "joined-room-item";
 
-
       if (
-        room.id === currentRoom
+        String(room.id) ===
+        String(currentRoomId)
       ) {
 
-        wrapper.classList.add(
+        button.classList.add(
           "active"
         );
 
       }
 
-
       // ==================================================
-      // 開くボタン
+      // 部屋本体
       // ==================================================
 
-      const button =
+      const main =
         document.createElement(
           "button"
         );
 
-      button.type =
+      main.type =
         "button";
 
-      button.className =
-        "joined-room-button";
+      main.className =
+        "joined-room-main";
 
+      main.innerHTML = `
+        <span class="joined-room-icon">🏠</span>
+        <span class="joined-room-name">
+          ${escapeHtml(room.name)}
+        </span>
+      `;
 
-      const icon =
-        document.createElement(
-          "span"
-        );
-
-      icon.className =
-        "joined-room-icon";
-
-      icon.textContent =
-        "🏠";
-
-
-      const name =
-        document.createElement(
-          "span"
-        );
-
-      name.className =
-        "joined-room-name";
-
-      name.textContent =
-        room.name ||
-        "名前のない部屋";
-
-
-      button.appendChild(
-        icon
-      );
-
-      button.appendChild(
-        name
-      );
-
-
-      button.addEventListener(
+      main.addEventListener(
         "click",
         () => {
 
@@ -2194,18 +1293,29 @@ function renderJoinedRooms() {
         }
       );
 
-
-      wrapper.appendChild(
-        button
+      button.appendChild(
+        main
       );
 
+      // ==================================================
+      // 自分が作成した部屋なら削除ボタン
+      // ==================================================
 
-      // ==================================================
-      // 自分が作った部屋の場合
-      // ==================================================
+      const ownerId =
+        room.ownerId !== null &&
+        room.ownerId !== undefined
+          ? Number(room.ownerId)
+          : null;
+
+      const userId =
+        currentUser
+          ? Number(currentUser.id)
+          : null;
 
       if (
-        isRoomOwner(room)
+        ownerId !== null &&
+        userId !== null &&
+        ownerId === userId
       ) {
 
         const deleteButton =
@@ -2219,1701 +1329,1895 @@ function renderJoinedRooms() {
         deleteButton.className =
           "joined-room-delete";
 
-        deleteButton.textContent =
-          "×";
-
         deleteButton.title =
           "この部屋を削除";
+
+        deleteButton.textContent =
+          "×";
 
         deleteButton.addEventListener(
           "click",
           (event) => {
 
+            event.preventDefault();
+
             event.stopPropagation();
 
-            confirmDeleteRoom(
+            deleteRoom(
               room
             );
 
           }
         );
 
-        wrapper.appendChild(
+        button.appendChild(
           deleteButton
         );
 
       }
 
-
       joinedRooms.appendChild(
-        wrapper
+        button
       );
 
     }
-  );
 
-}
+  }
 
+  // ==================================================
+  // 部屋を開く
+  // ==================================================
 
-// ==================================================
-// Room Owner
-// ==================================================
-
-function isRoomOwner(
-  room
-) {
-
-  if (
-    !currentUser ||
-    !room
+  function openMyRoom(
+    roomId
   ) {
-
-    return false;
-
-  }
-
-  return (
-    Number(room.ownerId) ===
-    Number(currentUser.id)
-  );
-
-}
-
-
-// ==================================================
-// Open Room
-// ==================================================
-
-function openMyRoom(
-  roomId
-) {
-
-  if (!socket) {
-
-    showToast(
-      "サーバーに接続されていません。",
-      true
-    );
-
-    return;
-
-  }
-
-  if (!roomId) {
-    return;
-  }
-
-  socket.emit(
-    "open my room",
-    {
-      roomId
-    }
-  );
-
-}
-
-
-// ==================================================
-// Delete Room Confirm
-// ==================================================
-
-function confirmDeleteRoom(
-  room
-) {
-
-  if (!room) {
-    return;
-  }
-
-  if (
-    !isRoomOwner(room)
-  ) {
-
-    showToast(
-      "自分が作成した部屋だけ削除できます。",
-      true
-    );
-
-    return;
-
-  }
-
-
-  const confirmed =
-    window.confirm(
-      [
-        `「${room.name}」を削除しますか？`,
-        "",
-        "この部屋のメッセージや参加情報も削除されます。",
-        "この操作は元に戻せません。"
-      ].join("\n")
-    );
-
-
-  if (!confirmed) {
-    return;
-  }
-
-
-  deleteRoom(
-    room.id
-  );
-
-}
-
-
-// ==================================================
-// Delete Room
-// ==================================================
-
-function deleteRoom(
-  roomId
-) {
-
-  if (!socket) {
-
-    showToast(
-      "サーバーに接続されていません。",
-      true
-    );
-
-    return;
-
-  }
-
-  if (!roomId) {
-    return;
-  }
-
-  socket.emit(
-    "delete room",
-    {
-      roomId
-    }
-  );
-
-}
-
-
-// ==================================================
-// Current Room UI
-// ==================================================
-
-function renderCurrentRoom() {
-
-  if (!currentRoomData) {
-    return;
-  }
-
-
-  if (roomName) {
-
-    roomName.textContent =
-      currentRoomData.name ||
-      "雑談";
-
-  }
-
-
-  if (roomIcon) {
 
     if (
-      currentRoomData.id ===
-      "casual"
+      !socket ||
+      !socket.connected
     ) {
 
-      roomIcon.textContent =
-        "💬";
-
-    } else {
-
-      roomIcon.textContent =
-        "🏠";
-
-    }
-
-  }
-
-
-  // ==================================================
-  // Invite Code
-  // ==================================================
-
-  if (
-    currentRoomData.id !==
-    "casual" &&
-    currentRoomData.inviteCode
-  ) {
-
-    inviteArea.classList.remove(
-      "hidden"
-    );
-
-    inviteCode.textContent =
-      currentRoomData.inviteCode;
-
-  } else {
-
-    inviteArea.classList.add(
-      "hidden"
-    );
-
-    inviteCode.textContent =
-      "------";
-
-  }
-
-
-  // ==================================================
-  // 雑談 active
-  // ==================================================
-
-  if (casualRoomButton) {
-
-    if (
-      currentRoom ===
-      "casual"
-    ) {
-
-      casualRoomButton.classList.add(
-        "active"
-      );
-
-    } else {
-
-      casualRoomButton.classList.remove(
-        "active"
-      );
-
-    }
-
-  }
-
-
-  renderJoinedRooms();
-
-}
-
-
-// ==================================================
-// Messages
-// ==================================================
-
-function clearMessages() {
-
-  if (!messages) {
-    return;
-  }
-
-  messages.innerHTML = "";
-
-}
-
-
-function addMessageToUI(
-  message,
-  animate
-) {
-
-  if (!messages || !message) {
-    return;
-  }
-
-  const element =
-    createMessageElement(
-      message
-    );
-
-  if (animate) {
-
-    element.classList.add(
-      "message-new"
-    );
-
-  }
-
-  messages.appendChild(
-    element
-  );
-
-}
-
-
-function createMessageElement(
-  message
-) {
-
-  const wrapper =
-    document.createElement(
-      "div"
-    );
-
-  wrapper.className =
-    "message";
-
-  wrapper.dataset.messageId =
-    String(message.id);
-
-
-  if (
-    currentUser &&
-    Number(message.userId) ===
-      Number(currentUser.id)
-  ) {
-
-    wrapper.classList.add(
-      "own-message"
-    );
-
-  }
-
-
-  // ==================================================
-  // Header
-  // ==================================================
-
-  const header =
-    document.createElement(
-      "div"
-    );
-
-  header.className =
-    "message-header";
-
-
-  const username =
-    document.createElement(
-      "span"
-    );
-
-  username.className =
-    "message-username";
-
-  username.textContent =
-    message.username ||
-    "Unknown";
-
-
-  const time =
-    document.createElement(
-      "span"
-    );
-
-  time.className =
-    "message-time";
-
-  time.textContent =
-    formatMessageTime(
-      message.createdAt
-    );
-
-
-  header.appendChild(
-    username
-  );
-
-  header.appendChild(
-    time
-  );
-
-
-  if (message.edited) {
-
-    const edited =
-      document.createElement(
-        "span"
-      );
-
-    edited.className =
-      "message-edited";
-
-    edited.textContent =
-      "編集済み";
-
-    header.appendChild(
-      edited
-    );
-
-  }
-
-
-  wrapper.appendChild(
-    header
-  );
-
-
-  // ==================================================
-  // Reply
-  // ==================================================
-
-  if (
-    message.replyToId
-  ) {
-
-    const reply =
-      document.createElement(
-        "div"
-      );
-
-    reply.className =
-      "message-reply";
-
-
-    const replyUser =
-      document.createElement(
-        "div"
-      );
-
-    replyUser.className =
-      "message-reply-user";
-
-    replyUser.textContent =
-      message.replyToUsername ||
-      "";
-
-
-    const replyText =
-      document.createElement(
-        "div"
-      );
-
-    replyText.className =
-      "message-reply-text";
-
-    replyText.textContent =
-      message.replyToText ||
-      "";
-
-
-    reply.appendChild(
-      replyUser
-    );
-
-    reply.appendChild(
-      replyText
-    );
-
-
-    reply.addEventListener(
-      "click",
-      () => {
-
-        focusMessage(
-          message.replyToId
-        );
-
-      }
-    );
-
-
-    wrapper.appendChild(
-      reply
-    );
-
-  }
-
-
-  // ==================================================
-  // Text
-  // ==================================================
-
-  const text =
-    document.createElement(
-      "div"
-    );
-
-  text.className =
-    "message-text";
-
-  text.textContent =
-    message.text || "";
-
-
-  wrapper.appendChild(
-    text
-  );
-
-
-  // ==================================================
-  // Actions
-  // ==================================================
-
-  const actions =
-    document.createElement(
-      "div"
-    );
-
-  actions.className =
-    "message-actions";
-
-
-  const replyButton =
-    document.createElement(
-      "button"
-    );
-
-  replyButton.type =
-    "button";
-
-  replyButton.className =
-    "message-action";
-
-  replyButton.textContent =
-    "返信";
-
-  replyButton.addEventListener(
-    "click",
-    () => {
-
-      startReply(
-        message
-      );
-
-    }
-  );
-
-
-  actions.appendChild(
-    replyButton
-  );
-
-
-  if (
-    currentUser &&
-    Number(message.userId) ===
-      Number(currentUser.id)
-  ) {
-
-    const editButton =
-      document.createElement(
-        "button"
-      );
-
-    editButton.type =
-      "button";
-
-    editButton.className =
-      "message-action";
-
-    editButton.textContent =
-      "編集";
-
-    editButton.addEventListener(
-      "click",
-      () => {
-
-        startEdit(
-          message
-        );
-
-      }
-    );
-
-
-    const deleteButton =
-      document.createElement(
-        "button"
-      );
-
-    deleteButton.type =
-      "button";
-
-    deleteButton.className =
-      "message-action danger";
-
-    deleteButton.textContent =
-      "削除";
-
-    deleteButton.addEventListener(
-      "click",
-      () => {
-
-        confirmDeleteMessage(
-          message
-        );
-
-      }
-    );
-
-
-    actions.appendChild(
-      editButton
-    );
-
-    actions.appendChild(
-      deleteButton
-    );
-
-  }
-
-
-  wrapper.appendChild(
-    actions
-  );
-
-
-  return wrapper;
-
-}
-
-
-// ==================================================
-// Send Message
-// ==================================================
-
-function sendMessage() {
-
-  if (!socket) {
-
-    showToast(
-      "サーバーに接続されていません。",
-      true
-    );
-
-    return;
-
-  }
-
-  const text =
-    messageInput.value.trim();
-
-  if (!text) {
-    return;
-  }
-
-  if (
-    text.length > 5000
-  ) {
-
-    showToast(
-      "メッセージは5000文字以内にしてください。",
-      true
-    );
-
-    return;
-
-  }
-
-
-  socket.emit(
-    "chat message",
-    {
-      room:
-        currentRoom,
-
-      text,
-
-      replyToId:
-        replyToMessage
-          ? replyToMessage.id
-          : null
-    }
-  );
-
-
-  messageInput.value = "";
-
-  clearReply();
-
-  messageInput.focus();
-
-}
-
-
-// ==================================================
-// Reply
-// ==================================================
-
-function startReply(
-  message
-) {
-
-  if (!message) {
-    return;
-  }
-
-  replyToMessage =
-    message;
-
-
-  if (replyPreview) {
-
-    replyPreview.classList.remove(
-      "hidden"
-    );
-
-    replyPreview.innerHTML = "";
-
-
-    const title =
-      document.createElement(
-        "div"
-      );
-
-    title.className =
-      "reply-preview-title";
-
-    title.textContent =
-      `${message.username || ""} に返信`;
-
-
-    const text =
-      document.createElement(
-        "div"
-      );
-
-    text.className =
-      "reply-preview-text";
-
-    text.textContent =
-      message.text || "";
-
-
-    const close =
-      document.createElement(
-        "button"
-      );
-
-    close.type =
-      "button";
-
-    close.className =
-      "reply-preview-close";
-
-    close.textContent =
-      "×";
-
-    close.addEventListener(
-      "click",
-      clearReply
-    );
-
-
-    replyPreview.appendChild(
-      title
-    );
-
-    replyPreview.appendChild(
-      text
-    );
-
-    replyPreview.appendChild(
-      close
-    );
-
-  }
-
-
-  messageInput.focus();
-
-}
-
-
-function clearReply() {
-
-  replyToMessage =
-    null;
-
-  if (replyPreview) {
-
-    replyPreview.classList.add(
-      "hidden"
-    );
-
-    replyPreview.innerHTML = "";
-
-  }
-
-}
-
-
-// ==================================================
-// Edit Message
-// ==================================================
-
-function startEdit(
-  message
-) {
-
-  if (!message) {
-    return;
-  }
-
-  if (
-    !currentUser ||
-    Number(message.userId) !==
-      Number(currentUser.id)
-  ) {
-
-    return;
-
-  }
-
-
-  editingMessageId =
-    Number(message.id);
-
-  messageInput.value =
-    message.text || "";
-
-  messageInput.focus();
-
-
-  if (messageInput) {
-
-    messageInput.placeholder =
-      "コメントを編集しています...";
-
-  }
-
-
-  if (replyPreview) {
-
-    replyPreview.classList.remove(
-      "hidden"
-    );
-
-    replyPreview.innerHTML = "";
-
-
-    const title =
-      document.createElement(
-        "div"
-      );
-
-    title.className =
-      "reply-preview-title";
-
-    title.textContent =
-      "コメントを編集中";
-
-
-    const cancel =
-      document.createElement(
-        "button"
-      );
-
-    cancel.type =
-      "button";
-
-    cancel.className =
-      "reply-preview-close";
-
-    cancel.textContent =
-      "×";
-
-    cancel.addEventListener(
-      "click",
-      cancelEdit
-    );
-
-
-    replyPreview.appendChild(
-      title
-    );
-
-    replyPreview.appendChild(
-      cancel
-    );
-
-  }
-
-}
-
-
-function submitEditMessage() {
-
-  if (!socket) {
-    return;
-  }
-
-  if (
-    editingMessageId === null
-  ) {
-    return;
-  }
-
-  const text =
-    messageInput.value.trim();
-
-  if (!text) {
-    return;
-  }
-
-  if (
-    text.length > 5000
-  ) {
-
-    showToast(
-      "メッセージは5000文字以内にしてください。",
-      true
-    );
-
-    return;
-
-  }
-
-
-  socket.emit(
-    "edit message",
-    {
-      id:
-        editingMessageId,
-
-      text
-    }
-  );
-
-
-  cancelEdit();
-
-}
-
-
-function cancelEdit() {
-
-  editingMessageId =
-    null;
-
-  messageInput.value =
-    "";
-
-  messageInput.placeholder =
-    "メッセージを入力...";
-
-  clearReply();
-
-  messageInput.focus();
-
-}
-
-
-// ==================================================
-// Delete Message
-// ==================================================
-
-function confirmDeleteMessage(
-  message
-) {
-
-  if (!message) {
-    return;
-  }
-
-  const confirmed =
-    window.confirm(
-      "このコメントを削除しますか？"
-    );
-
-  if (!confirmed) {
-    return;
-  }
-
-  deleteMessage(
-    message.id
-  );
-
-}
-
-
-function deleteMessage(
-  id
-) {
-
-  if (!socket) {
-    return;
-  }
-
-  socket.emit(
-    "delete message",
-    {
-      id
-    }
-  );
-
-}
-
-
-// ==================================================
-// Update Message UI
-// ==================================================
-
-function updateMessageUI(
-  message
-) {
-
-  if (!messages || !message) {
-    return;
-  }
-
-  const oldElement =
-    messages.querySelector(
-      `[data-message-id="${CSS.escape(
-        String(message.id)
-      )}"]`
-    );
-
-  if (!oldElement) {
-    return;
-  }
-
-  const newElement =
-    createMessageElement(
-      message
-    );
-
-  oldElement.replaceWith(
-    newElement
-  );
-
-}
-
-
-// ==================================================
-// Remove Message UI
-// ==================================================
-
-function removeMessageUI(
-  id
-) {
-
-  if (!messages) {
-    return;
-  }
-
-  const element =
-    messages.querySelector(
-      `[data-message-id="${CSS.escape(
-        String(id)
-      )}"]`
-    );
-
-  if (!element) {
-    return;
-  }
-
-  element.remove();
-
-}
-
-
-// ==================================================
-// Focus Message
-// ==================================================
-
-function focusMessage(
-  id
-) {
-
-  if (!messages) {
-    return;
-  }
-
-  const element =
-    messages.querySelector(
-      `[data-message-id="${CSS.escape(
-        String(id)
-      )}"]`
-    );
-
-  if (!element) {
-    return;
-  }
-
-  element.scrollIntoView({
-    behavior: "smooth",
-    block: "center"
-  });
-
-
-  element.classList.add(
-    "message-highlight"
-  );
-
-
-  setTimeout(
-    () => {
-
-      element.classList.remove(
-        "message-highlight"
-      );
-
-    },
-    1500
-  );
-
-}
-
-
-// ==================================================
-// Message Time
-// ==================================================
-
-function formatMessageTime(
-  value
-) {
-
-  if (!value) {
-    return "";
-  }
-
-  const date =
-    new Date(value);
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-
-    return "";
-
-  }
-
-  return date.toLocaleTimeString(
-    "ja-JP",
-    {
-      hour: "2-digit",
-      minute: "2-digit"
-    }
-  );
-
-}
-
-
-// ==================================================
-// Scroll
-// ==================================================
-
-function scrollMessagesToBottom() {
-
-  if (!messages) {
-    return;
-  }
-
-  messages.scrollTo({
-    top:
-      messages.scrollHeight,
-
-    behavior:
-      "smooth"
-  });
-
-}
-
-
-function isNearBottom() {
-
-  if (!messages) {
-    return true;
-  }
-
-  const distance =
-    messages.scrollHeight -
-    messages.scrollTop -
-    messages.clientHeight;
-
-  return distance < 120;
-
-}
-
-
-function showNewMessageButton() {
-
-  if (!newMessageButton) {
-    return;
-  }
-
-  newMessageButton.classList.remove(
-    "hidden"
-  );
-
-}
-
-
-function hideNewMessageButton() {
-
-  if (!newMessageButton) {
-    return;
-  }
-
-  newMessageButton.classList.add(
-    "hidden"
-  );
-
-}
-
-
-// ==================================================
-// Settings
-// ==================================================
-
-function setupSettings() {
-
-  const darkMode =
-    localStorage.getItem(
-      "veylo-dark-mode"
-    ) === "true";
-
-  const grayMode =
-    localStorage.getItem(
-      "veylo-gray-mode"
-    ) === "true";
-
-
-  applyTheme(
-    darkMode
-  );
-
-  applyGrayMode(
-    grayMode
-  );
-
-
-  if (themeToggleButton) {
-
-    themeToggleButton.addEventListener(
-      "click",
-      () => {
-
-        const enabled =
-          document.body.classList.contains(
-            "dark-mode"
-          );
-
-        applyTheme(
-          !enabled
-        );
-
-      }
-    );
-
-  }
-
-
-  if (grayToggleButton) {
-
-    grayToggleButton.addEventListener(
-      "click",
-      () => {
-
-        const enabled =
-          document.body.classList.contains(
-            "gray-mode"
-          );
-
-        applyGrayMode(
-          !enabled
-        );
-
-      }
-    );
-
-  }
-
-
-  if (languageSelect) {
-
-    const language =
-      localStorage.getItem(
-        "veylo-language"
-      ) || "ja";
-
-    languageSelect.value =
-      language;
-
-  }
-
-
-  if (saveSettingsButton) {
-
-    saveSettingsButton.addEventListener(
-      "click",
-      () => {
-
-        const language =
-          languageSelect
-            ? languageSelect.value
-            : "ja";
-
-
-        localStorage.setItem(
-          "veylo-language",
-          language
-        );
-
-
-        closeModal(
-          settingsModal
-        );
-
-
-        showToast(
-          "設定を保存しました。"
-        );
-
-      }
-    );
-
-  }
-
-
-  if (logoutButton) {
-
-    logoutButton.addEventListener(
-      "click",
-      logout
-    );
-
-  }
-
-}
-
-
-// ==================================================
-// Theme
-// ==================================================
-
-function applyTheme(
-  enabled
-) {
-
-  if (enabled) {
-
-    document.body.classList.add(
-      "dark-mode"
-    );
-
-    localStorage.setItem(
-      "veylo-dark-mode",
-      "true"
-    );
-
-  } else {
-
-    document.body.classList.remove(
-      "dark-mode"
-    );
-
-    localStorage.setItem(
-      "veylo-dark-mode",
-      "false"
-    );
-
-  }
-
-
-  if (themeToggleButton) {
-
-    themeToggleButton.textContent =
-      enabled
-        ? "ON"
-        : "OFF";
-
-  }
-
-}
-
-
-function applyGrayMode(
-  enabled
-) {
-
-  if (enabled) {
-
-    document.body.classList.add(
-      "gray-mode"
-    );
-
-    localStorage.setItem(
-      "veylo-gray-mode",
-      "true"
-    );
-
-  } else {
-
-    document.body.classList.remove(
-      "gray-mode"
-    );
-
-    localStorage.setItem(
-      "veylo-gray-mode",
-      "false"
-    );
-
-  }
-
-
-  if (grayToggleButton) {
-
-    grayToggleButton.textContent =
-      enabled
-        ? "ON"
-        : "OFF";
-
-  }
-
-}
-
-
-// ==================================================
-// Logout
-// ==================================================
-
-async function logout() {
-
-  const confirmed =
-    window.confirm(
-      "ログアウトしますか？"
-    );
-
-  if (!confirmed) {
-    return;
-  }
-
-  try {
-
-    const response =
-      await fetch(
-        "/api/logout",
-        {
-          method: "POST",
-          credentials: "include"
-        }
-      );
-
-    const data =
-      await response.json();
-
-    if (!response.ok) {
-
-      showToast(
-        data.message ||
-          "ログアウトに失敗しました。",
-        true
+      alert(
+        "サーバーに接続されていません。"
       );
 
       return;
 
     }
 
-    disconnectSocket();
+    const room =
+      myRooms.find(
+        item =>
+          String(item.id) ===
+          String(roomId)
+      );
 
-    currentUser =
-      null;
+    if (!room) {
+
+      console.warn(
+        "Room not found in local list:",
+        roomId
+      );
+
+      socket.emit(
+        "get my rooms"
+      );
+
+      return;
+
+    }
+
+    currentRoomId =
+      room.id;
 
     currentRoom =
+      room;
+
+    updateCurrentRoomUI();
+
+    messages.innerHTML =
+      "";
+
+    socket.emit(
+      "open my room",
+      {
+        roomId:
+          room.id
+      }
+    );
+
+  }
+
+  // ==================================================
+  // 部屋削除
+  // ==================================================
+
+  function deleteRoom(
+    room
+  ) {
+
+    if (!room) {
+      return;
+    }
+
+    const roomNameText =
+      room.name ||
+      "この部屋";
+
+    const confirmed =
+      window.confirm(
+        `「${roomNameText}」を削除しますか？\n\nこの部屋のメッセージも削除されます。\nこの操作は元に戻せません。`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    if (
+      !socket ||
+      !socket.connected
+    ) {
+
+      alert(
+        "サーバーに接続されていません。"
+      );
+
+      return;
+
+    }
+
+    socket.emit(
+      "delete room",
+      {
+        roomId:
+          room.id
+      }
+    );
+
+  }
+
+  // ==================================================
+  // 現在の部屋UI
+  // ==================================================
+
+  function updateCurrentRoomUI() {
+
+    const isCasual =
+      currentRoomId ===
       "casual";
 
-    currentRoomData = {
+    if (isCasual) {
+
+      if (roomName) {
+
+        roomName.textContent =
+          "雑談";
+
+      }
+
+      if (roomIcon) {
+
+        roomIcon.textContent =
+          "💬";
+
+      }
+
+      if (inviteArea) {
+
+        inviteArea.classList.add(
+          "hidden"
+        );
+
+      }
+
+      casualRoomButton?.classList.add(
+        "active"
+      );
+
+    } else {
+
+      if (roomName) {
+
+        roomName.textContent =
+          currentRoom?.name ||
+          "ルーム";
+
+      }
+
+      if (roomIcon) {
+
+        roomIcon.textContent =
+          "🏠";
+
+      }
+
+      if (
+        inviteArea &&
+        currentRoom?.inviteCode
+      ) {
+
+        inviteArea.classList.remove(
+          "hidden"
+        );
+
+      }
+
+      if (inviteCode) {
+
+        inviteCode.textContent =
+          currentRoom?.inviteCode ||
+          "------";
+
+      }
+
+      casualRoomButton?.classList.remove(
+        "active"
+      );
+
+    }
+
+    // サイドバーを再描画して
+    // 現在の部屋をactiveにする
+    renderJoinedRooms();
+
+  }
+
+  // ==================================================
+  // 雑談
+  // ==================================================
+
+  function joinCasualRoom() {
+
+    if (
+      !socket ||
+      !socket.connected
+    ) {
+
+      return;
+
+    }
+
+    currentRoomId =
+      "casual";
+
+    currentRoom = {
       id: "casual",
       name: "雑談",
       inviteCode: null,
       ownerId: null
     };
 
-    myRooms = [];
+    updateCurrentRoomUI();
 
-    clearMessages();
+    messages.innerHTML =
+      "";
 
-    showAuth();
-
-  } catch (error) {
-
-    console.error(
-      "Logout error:",
-      error
-    );
-
-    showToast(
-      "通信エラーが発生しました。",
-      true
+    socket.emit(
+      "join casual"
     );
 
   }
 
-}
-
-
-// ==================================================
-// Toast
-// ==================================================
-
-function showToast(
-  message,
-  isError = false
-) {
-
-  const oldToast =
-    document.querySelector(
-      ".veylo-toast"
-    );
-
-  if (oldToast) {
-    oldToast.remove();
-  }
-
-
-  const toast =
-    document.createElement(
-      "div"
-    );
-
-  toast.className =
-    "veylo-toast";
-
-  if (isError) {
-
-    toast.classList.add(
-      "error"
-    );
-
-  }
-
-  toast.textContent =
-    message;
-
-
-  document.body.appendChild(
-    toast
+  casualRoomButton?.addEventListener(
+    "click",
+    joinCasualRoom
   );
 
+  // ==================================================
+  // Create Modal
+  // ==================================================
 
-  setTimeout(
-    () => {
+  function openCreateModal() {
 
-      toast.classList.add(
-        "show"
+    if (!createModal) {
+      return;
+    }
+
+    createModal.classList.remove(
+      "hidden"
+    );
+
+    if (roomNameInput) {
+
+      roomNameInput.value =
+        "";
+
+      setTimeout(
+        () => {
+          roomNameInput.focus();
+        },
+        50
       );
 
-    },
-    10
+    }
+
+  }
+
+  function closeCreateModal() {
+
+    createModal?.classList.add(
+      "hidden"
+    );
+
+  }
+
+  createRoomButton?.addEventListener(
+    "click",
+    openCreateModal
   );
 
+  cancelCreateButtons.forEach(
+    button => {
 
-  setTimeout(
+      button.addEventListener(
+        "click",
+        closeCreateModal
+      );
+
+    }
+  );
+
+  confirmCreateButton?.addEventListener(
+    "click",
     () => {
 
-      toast.classList.remove(
-        "show"
+      const name =
+        String(
+          roomNameInput?.value ||
+          ""
+        ).trim();
+
+      if (!name) {
+
+        alert(
+          "部屋の名前を入力してください。"
+        );
+
+        roomNameInput?.focus();
+
+        return;
+
+      }
+
+      if (name.length > 100) {
+
+        alert(
+          "部屋の名前は100文字以内にしてください。"
+        );
+
+        return;
+
+      }
+
+      if (
+        !socket ||
+        !socket.connected
+      ) {
+
+        alert(
+          "サーバーに接続されていません。"
+        );
+
+        return;
+
+      }
+
+      confirmCreateButton.disabled =
+        true;
+
+      socket.emit(
+        "create room",
+        {
+          name
+        }
+      );
+
+      // 少しだけ待ってから戻す
+      setTimeout(
+        () => {
+
+          if (
+            confirmCreateButton
+          ) {
+
+            confirmCreateButton.disabled =
+              false;
+
+          }
+
+        },
+        1500
+      );
+
+    }
+  );
+
+  roomNameInput?.addEventListener(
+    "keydown",
+    (event) => {
+
+      if (
+        event.key ===
+        "Enter"
+      ) {
+
+        event.preventDefault();
+
+        confirmCreateButton?.click();
+
+      }
+
+    }
+  );
+
+  // ==================================================
+  // Join Modal
+  // ==================================================
+
+  function openJoinModal() {
+
+    if (!joinModal) {
+      return;
+    }
+
+    joinModal.classList.remove(
+      "hidden"
+    );
+
+    if (joinError) {
+
+      joinError.textContent =
+        "";
+
+    }
+
+    if (inviteCodeInput) {
+
+      inviteCodeInput.value =
+        "";
+
+      setTimeout(
+        () => {
+          inviteCodeInput.focus();
+        },
+        50
+      );
+
+    }
+
+  }
+
+  function closeJoinModal() {
+
+    joinModal?.classList.add(
+      "hidden"
+    );
+
+  }
+
+  joinRoomButton?.addEventListener(
+    "click",
+    openJoinModal
+  );
+
+  cancelJoinButtons.forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        closeJoinModal
+      );
+
+    }
+  );
+
+  confirmJoinButton?.addEventListener(
+    "click",
+    () => {
+
+      const code =
+        String(
+          inviteCodeInput?.value ||
+          ""
+        )
+          .trim()
+          .toUpperCase();
+
+      if (!code) {
+
+        if (joinError) {
+
+          joinError.textContent =
+            "招待コードを入力してください。";
+
+        }
+
+        inviteCodeInput?.focus();
+
+        return;
+
+      }
+
+      if (
+        !socket ||
+        !socket.connected
+      ) {
+
+        if (joinError) {
+
+          joinError.textContent =
+            "サーバーに接続されていません。";
+
+        }
+
+        return;
+
+      }
+
+      if (joinError) {
+
+        joinError.textContent =
+          "";
+
+      }
+
+      confirmJoinButton.disabled =
+        true;
+
+      socket.emit(
+        "join room",
+        {
+          code
+        }
       );
 
       setTimeout(
         () => {
 
-          toast.remove();
+          if (
+            confirmJoinButton
+          ) {
+
+            confirmJoinButton.disabled =
+              false;
+
+          }
 
         },
-        300
+        1500
       );
 
-    },
-    3000
+    }
   );
 
-}
+  inviteCodeInput?.addEventListener(
+    "keydown",
+    (event) => {
 
+      if (
+        event.key ===
+        "Enter"
+      ) {
 
-// ==================================================
-// Utility
-// ==================================================
+        event.preventDefault();
 
-function escapeHtml(
-  value
-) {
+        confirmJoinButton?.click();
 
-  const div =
-    document.createElement(
-      "div"
-    );
+      }
 
-  div.textContent =
-    value == null
-      ? ""
-      : String(value);
+    }
+  );
 
-  return div.innerHTML;
+  // ==================================================
+  // Invite Code Copy
+  // ==================================================
 
-}
+  inviteCode?.addEventListener(
+    "click",
+    async () => {
 
+      const code =
+        currentRoom?.inviteCode;
 
-// ==================================================
-// Browser compatibility
-// ==================================================
+      if (!code) {
+        return;
+      }
 
-if (
-  typeof CSS === "undefined" ||
-  typeof CSS.escape !== "function"
-) {
+      try {
 
-  if (
-    typeof CSS === "undefined"
-  ) {
-
-    window.CSS = {};
-
-  }
-
-  CSS.escape =
-    function (value) {
-
-      return String(value)
-        .replace(
-          /[^a-zA-Z0-9_-]/g,
-          "\\$&"
+        await navigator.clipboard.writeText(
+          code
         );
 
-    };
+        const original =
+          inviteCode.textContent;
 
-}
+        inviteCode.textContent =
+          "コピーしました！";
 
+        setTimeout(
+          () => {
 
-// ==================================================
-// 初期状態
-// ==================================================
+            if (inviteCode) {
 
-document.addEventListener(
-  "visibilitychange",
-  () => {
+              inviteCode.textContent =
+                original;
 
-    if (
-      !document.hidden &&
-      socket &&
-      !socket.connected &&
-      currentUser
-    ) {
+            }
 
-      socket.connect();
+          },
+          1200
+        );
+
+      } catch (error) {
+
+        console.error(
+          "clipboard error:",
+          error
+        );
+
+      }
+
+    }
+  );
+
+  // ==================================================
+  // Messages
+  // ==================================================
+
+  function clearMessages() {
+
+    if (messages) {
+
+      messages.innerHTML =
+        "";
 
     }
 
   }
-);
 
+  function renderMessages(
+    list
+  ) {
 
-// ==================================================
-// Debug
-// ==================================================
-
-window.Veylo =
-  {
-    get currentUser() {
-      return currentUser;
-    },
-
-    get currentRoom() {
-      return currentRoom;
-    },
-
-    get currentRoomData() {
-      return currentRoomData;
-    },
-
-    get myRooms() {
-      return myRooms;
-    },
-
-    get socket() {
-      return socket;
+    if (!messages) {
+      return;
     }
-  };
+
+    isLoadingMessages =
+      true;
+
+    clearMessages();
+
+    for (
+      const message of list
+    ) {
+
+      if (
+        message.room !==
+        currentRoomId
+      ) {
+
+        continue;
+
+      }
+
+      appendMessage(
+        message,
+        false
+      );
+
+    }
+
+    isLoadingMessages =
+      false;
+
+    requestAnimationFrame(
+      () => {
+
+        scrollToBottom(
+          false
+        );
+
+      }
+    );
+
+  }
+
+  function appendMessage(
+    message,
+    scroll = true
+  ) {
+
+    if (!messages || !message) {
+      return;
+    }
+
+    if (
+      message.room !==
+      currentRoomId
+    ) {
+
+      return;
+
+    }
+
+    const wrapper =
+      document.createElement(
+        "div"
+      );
+
+    wrapper.className =
+      "message";
+
+    wrapper.dataset.messageId =
+      String(message.id);
+
+    const isOwn =
+      currentUser &&
+      Number(message.userId) ===
+      Number(currentUser.id);
+
+    if (isOwn) {
+
+      wrapper.classList.add(
+        "own"
+      );
+
+    }
+
+    const replyHtml =
+      message.replyToId
+        ? `
+          <div class="message-reply">
+            <div class="message-reply-user">
+              ↪ ${escapeHtml(
+                message.replyToUsername ||
+                ""
+              )}
+            </div>
+
+            <div class="message-reply-text">
+              ${escapeHtml(
+                message.replyToText ||
+                ""
+              )}
+            </div>
+          </div>
+        `
+        : "";
+
+    wrapper.innerHTML = `
+      ${replyHtml}
+
+      <div class="message-header">
+
+        <span class="message-username">
+          ${escapeHtml(
+            message.username ||
+            "Unknown"
+          )}
+        </span>
+
+        <span class="message-time">
+          ${formatTime(
+            message.createdAt
+          )}
+        </span>
+
+        ${
+          message.edited
+            ? `
+              <span class="message-edited">
+                編集済み
+              </span>
+            `
+            : ""
+        }
+
+      </div>
+
+      <div class="message-text">
+        ${escapeHtml(
+          message.text
+        )}
+      </div>
+
+      <div class="message-actions">
+
+        <button
+          type="button"
+          class="message-reply-button"
+          data-action="reply"
+        >
+          返信
+        </button>
+
+        ${
+          isOwn
+            ? `
+              <button
+                type="button"
+                class="message-edit-button"
+                data-action="edit"
+              >
+                編集
+              </button>
+
+              <button
+                type="button"
+                class="message-delete-button"
+                data-action="delete"
+              >
+                削除
+              </button>
+            `
+            : ""
+        }
+
+      </div>
+    `;
+
+    wrapper
+      .querySelector(
+        '[data-action="reply"]'
+      )
+      ?.addEventListener(
+        "click",
+        () => {
+
+          setReply(
+            message
+          );
+
+        }
+      );
+
+    wrapper
+      .querySelector(
+        '[data-action="edit"]'
+      )
+      ?.addEventListener(
+        "click",
+        () => {
+
+          editMessage(
+            message
+          );
+
+        }
+      );
+
+    wrapper
+      .querySelector(
+        '[data-action="delete"]'
+      )
+      ?.addEventListener(
+        "click",
+        () => {
+
+          deleteMessage(
+            message
+          );
+
+        }
+      );
+
+    messages.appendChild(
+      wrapper
+    );
+
+    if (scroll) {
+
+      requestAnimationFrame(
+        () => {
+
+          scrollToBottom(
+            true
+          );
+
+        }
+      );
+
+    }
+
+  }
+
+  function updateMessageElement(
+    message
+  ) {
+
+    if (!messages || !message) {
+      return;
+    }
+
+    const element =
+      messages.querySelector(
+        `[data-message-id="${CSS.escape(String(message.id))}"]`
+      );
+
+    if (!element) {
+      return;
+    }
+
+    const textElement =
+      element.querySelector(
+        ".message-text"
+      );
+
+    if (textElement) {
+
+      textElement.textContent =
+        message.text;
+
+    }
+
+    let editedElement =
+      element.querySelector(
+        ".message-edited"
+      );
+
+    if (
+      message.edited &&
+      !editedElement
+    ) {
+
+      editedElement =
+        document.createElement(
+          "span"
+        );
+
+      editedElement.className =
+        "message-edited";
+
+      editedElement.textContent =
+        "編集済み";
+
+      element
+        .querySelector(
+          ".message-header"
+        )
+        ?.appendChild(
+          editedElement
+        );
+
+    }
+
+  }
+
+  // ==================================================
+  // Reply
+  // ==================================================
+
+  function setReply(
+    message
+  ) {
+
+    replyToMessage =
+      message;
+
+    if (!replyPreview) {
+      return;
+    }
+
+    replyPreview.classList.remove(
+      "hidden"
+    );
+
+    replyPreview.innerHTML = `
+      <div class="reply-preview-content">
+
+        <div class="reply-preview-title">
+          ${escapeHtml(
+            message.username ||
+            ""
+          )}
+          に返信
+        </div>
+
+        <div class="reply-preview-text">
+          ${escapeHtml(
+            message.text ||
+            ""
+          )}
+        </div>
+
+      </div>
+
+      <button
+        type="button"
+        class="reply-preview-close"
+        id="cancelReplyButton"
+      >
+        ×
+      </button>
+    `;
+
+    document
+      .getElementById(
+        "cancelReplyButton"
+      )
+      ?.addEventListener(
+        "click",
+        clearReply
+      );
+
+    messageInput?.focus();
+
+  }
+
+  function clearReply() {
+
+    replyToMessage =
+      null;
+
+    replyPreview?.classList.add(
+      "hidden"
+    );
+
+    if (replyPreview) {
+
+      replyPreview.innerHTML =
+        "";
+
+    }
+
+  }
+
+  // ==================================================
+  // Send message
+  // ==================================================
+
+  messageForm?.addEventListener(
+    "submit",
+    (event) => {
+
+      event.preventDefault();
+
+      const text =
+        String(
+          messageInput?.value ||
+          ""
+        ).trim();
+
+      if (!text) {
+        return;
+      }
+
+      if (text.length > 5000) {
+
+        alert(
+          "メッセージが長すぎます。"
+        );
+
+        return;
+
+      }
+
+      if (
+        !socket ||
+        !socket.connected
+      ) {
+
+        alert(
+          "サーバーに接続されていません。"
+        );
+
+        return;
+
+      }
+
+      socket.emit(
+        "chat message",
+        {
+          room:
+            currentRoomId,
+
+          text,
+
+          replyToId:
+            replyToMessage
+              ? replyToMessage.id
+              : null
+        }
+      );
+
+      messageInput.value =
+        "";
+
+      clearReply();
+
+    }
+  );
+
+  // ==================================================
+  // Edit message
+  // ==================================================
+
+  function editMessage(
+    message
+  ) {
+
+    if (!message) {
+      return;
+    }
+
+    const newText =
+      window.prompt(
+        "メッセージを編集",
+        message.text || ""
+      );
+
+    if (
+      newText === null
+    ) {
+
+      return;
+
+    }
+
+    const text =
+      newText.trim();
+
+    if (!text) {
+
+      alert(
+        "メッセージを空にはできません。"
+      );
+
+      return;
+
+    }
+
+    if (
+      !socket ||
+      !socket.connected
+    ) {
+
+      return;
+
+    }
+
+    socket.emit(
+      "edit message",
+      {
+        id:
+          message.id,
+
+        text
+      }
+    );
+
+  }
+
+  // ==================================================
+  // Delete message
+  // ==================================================
+
+  function deleteMessage(
+    message
+  ) {
+
+    if (!message) {
+      return;
+    }
+
+    const confirmed =
+      window.confirm(
+        "このメッセージを削除しますか？"
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    if (
+      !socket ||
+      !socket.connected
+    ) {
+
+      return;
+
+    }
+
+    socket.emit(
+      "delete message",
+      {
+        id:
+          message.id
+      }
+    );
+
+  }
+
+  // ==================================================
+  // Scroll
+  // ==================================================
+
+  scrollTopButton?.addEventListener(
+    "click",
+    () => {
+
+      messages?.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+
+    }
+  );
+
+  scrollBottomButton?.addEventListener(
+    "click",
+    () => {
+
+      scrollToBottom(
+        true
+      );
+
+    }
+  );
+
+  newMessageButton?.addEventListener(
+    "click",
+    () => {
+
+      scrollToBottom(
+        true
+      );
+
+      newMessageButton.classList.add(
+        "hidden"
+      );
+
+    }
+  );
+
+  messages?.addEventListener(
+    "scroll",
+    () => {
+
+      if (
+        isNearBottom()
+      ) {
+
+        newMessageButton?.classList.add(
+          "hidden"
+        );
+
+      }
+
+    }
+  );
+
+  // ==================================================
+  // Settings
+  // ==================================================
+
+  function openSettings() {
+
+    settingsModal?.classList.remove(
+      "hidden"
+    );
+
+    loadSettings();
+
+  }
+
+  function closeSettings() {
+
+    settingsModal?.classList.add(
+      "hidden"
+    );
+
+  }
+
+  settingsButton?.addEventListener(
+    "click",
+    openSettings
+  );
+
+  closeSettingsButtons.forEach(
+    button => {
+
+      button.addEventListener(
+        "click",
+        closeSettings
+      );
+
+    }
+  );
+
+  function loadSettings() {
+
+    const dark =
+      localStorage.getItem(
+        "veylo-dark-mode"
+      ) === "true";
+
+    const gray =
+      localStorage.getItem(
+        "veylo-gray-mode"
+      ) === "true";
+
+    applyTheme(
+      dark
+    );
+
+    applyGrayMode(
+      gray
+    );
+
+    if (themeToggleButton) {
+
+      themeToggleButton.textContent =
+        dark
+          ? "ON"
+          : "OFF";
+
+    }
+
+    if (grayToggleButton) {
+
+      grayToggleButton.textContent =
+        gray
+          ? "ON"
+          : "OFF";
+
+    }
+
+    const language =
+      localStorage.getItem(
+        "veylo-language"
+      ) || "ja";
+
+    if (languageSelect) {
+
+      languageSelect.value =
+        language;
+
+    }
+
+  }
+
+  function applyTheme(
+    enabled
+  ) {
+
+    document.body.classList.toggle(
+      "dark-mode",
+      Boolean(enabled)
+    );
+
+  }
+
+  function applyGrayMode(
+    enabled
+  ) {
+
+    document.body.classList.toggle(
+      "gray-mode",
+      Boolean(enabled)
+    );
+
+  }
+
+  themeToggleButton?.addEventListener(
+    "click",
+    () => {
+
+      const enabled =
+        !(
+          localStorage.getItem(
+            "veylo-dark-mode"
+          ) === "true"
+        );
+
+      localStorage.setItem(
+        "veylo-dark-mode",
+        String(enabled)
+      );
+
+      applyTheme(
+        enabled
+      );
+
+      themeToggleButton.textContent =
+        enabled
+          ? "ON"
+          : "OFF";
+
+    }
+  );
+
+  grayToggleButton?.addEventListener(
+    "click",
+    () => {
+
+      const enabled =
+        !(
+          localStorage.getItem(
+            "veylo-gray-mode"
+          ) === "true"
+        );
+
+      localStorage.setItem(
+        "veylo-gray-mode",
+        String(enabled)
+      );
+
+      applyGrayMode(
+        enabled
+      );
+
+      grayToggleButton.textContent =
+        enabled
+          ? "ON"
+          : "OFF";
+
+    }
+  );
+
+  saveSettingsButton?.addEventListener(
+    "click",
+    () => {
+
+      if (languageSelect) {
+
+        localStorage.setItem(
+          "veylo-language",
+          languageSelect.value
+        );
+
+      }
+
+      closeSettings();
+
+    }
+  );
+
+  // ==================================================
+  // Logout
+  // ==================================================
+
+  logoutButton?.addEventListener(
+    "click",
+    async () => {
+
+      const confirmed =
+        window.confirm(
+          "ログアウトしますか？"
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+
+        await api(
+          "/api/logout",
+          {
+            method: "POST"
+          }
+        );
+
+        if (socket) {
+
+          socket.disconnect();
+
+        }
+
+        currentUser =
+          null;
+
+        myRooms =
+          [];
+
+        currentRoomId =
+          "casual";
+
+        currentRoom = {
+          id: "casual",
+          name: "雑談",
+          inviteCode: null,
+          ownerId: null
+        };
+
+        showScreen(
+          "auth"
+        );
+
+        showAuthPanel(
+          loginPanel
+        );
+
+        closeSettings();
+
+      } catch (error) {
+
+        alert(
+          error.message ||
+          "ログアウトに失敗しました。"
+        );
+
+      }
+
+    }
+  );
+
+  // ==================================================
+  // Login
+  // ==================================================
+
+  loginForm?.addEventListener(
+    "submit",
+    async (event) => {
+
+      event.preventDefault();
+
+      if (loginError) {
+
+        loginError.textContent =
+          "";
+
+      }
+
+      const name =
+        String(
+          document.getElementById(
+            "loginName"
+          )?.value ||
+          ""
+        ).trim();
+
+      const password =
+        String(
+          document.getElementById(
+            "loginPassword"
+          )?.value ||
+          ""
+        );
+
+      try {
+
+        const data =
+          await api(
+            "/api/login",
+            {
+              method: "POST",
+
+              body:
+                JSON.stringify({
+                  name,
+                  password
+                })
+            }
+          );
+
+        currentUser =
+          data.user;
+
+        updateUserUI();
+
+        showScreen(
+          "app"
+        );
+
+        connectSocket();
+
+      } catch (error) {
+
+        if (loginError) {
+
+          loginError.textContent =
+            error.message ||
+            "ログインに失敗しました。";
+
+        }
+
+      }
+
+    }
+  );
+
+  // ==================================================
+  // Register
+  // ==================================================
+
+  registerForm?.addEventListener(
+    "submit",
+    async (event) => {
+
+      event.preventDefault();
+
+      if (registerError) {
+
+        registerError.textContent =
+          "";
+
+      }
+
+      const email =
+        String(
+          document.getElementById(
+            "registerEmail"
+          )?.value ||
+          ""
+        ).trim();
+
+      const name =
+        String(
+          document.getElementById(
+            "registerName"
+          )?.value ||
+          ""
+        ).trim();
+
+      const password =
+        String(
+          document.getElementById(
+            "registerPassword"
+          )?.value ||
+          ""
+        );
+
+      try {
+
+        const data =
+          await api(
+            "/api/register",
+            {
+              method: "POST",
+
+              body:
+                JSON.stringify({
+                  email,
+                  name,
+                  password
+                })
+            }
+          );
+
+        currentUser =
+          data.user;
+
+        updateUserUI();
+
+        showScreen(
+          "app"
+        );
+
+        connectSocket();
+
+      } catch (error) {
+
+        if (registerError) {
+
+          registerError.textContent =
+            error.message ||
+            "登録に失敗しました。";
+
+        }
+
+      }
+
+    }
+  );
+
+  // ==================================================
+  // Forgot Password
+  // ==================================================
+
+  forgotForm?.addEventListener(
+    "submit",
+    async (event) => {
+
+      event.preventDefault();
+
+      if (forgotMessage) {
+
+        forgotMessage.textContent =
+          "";
+
+      }
+
+      const email =
+        String(
+          document.getElementById(
+            "forgotEmail"
+          )?.value ||
+          ""
+        ).trim();
+
+      try {
+
+        const data =
+          await api(
+            "/api/forgot-password",
+            {
+              method: "POST",
+
+              body:
+                JSON.stringify({
+                  email
+                })
+            }
+          );
+
+        if (forgotMessage) {
+
+          forgotMessage.textContent =
+            data.message ||
+            "メールを送信しました。";
+
+        }
+
+      } catch (error) {
+
+        if (forgotMessage) {
+
+          forgotMessage.textContent =
+            error.message ||
+            "処理に失敗しました。";
+
+        }
+
+      }
+
+    }
+  );
+
+  // ==================================================
+  // Auth navigation
+  // ==================================================
+
+  showRegisterButton?.addEventListener(
+    "click",
+    () => {
+
+      showAuthPanel(
+        registerPanel
+      );
+
+    }
+  );
+
+  showLoginButton?.addEventListener(
+    "click",
+    () => {
+
+      showAuthPanel(
+        loginPanel
+      );
+
+    }
+  );
+
+  forgotPasswordButton?.addEventListener(
+    "click",
+    () => {
+
+      showAuthPanel(
+        forgotPanel
+      );
+
+    }
+  );
+
+  backToLoginButton?.addEventListener(
+    "click",
+    () => {
+
+      showAuthPanel(
+        loginPanel
+      );
+
+    }
+  );
+
+  // ==================================================
+  // Modal outside click
+  // ==================================================
+
+  createModal?.addEventListener(
+    "click",
+    (event) => {
+
+      if (
+        event.target ===
+        createModal
+      ) {
+
+        closeCreateModal();
+
+      }
+
+    }
+  );
+
+  joinModal?.addEventListener(
+    "click",
+    (event) => {
+
+      if (
+        event.target ===
+        joinModal
+      ) {
+
+        closeJoinModal();
+
+      }
+
+    }
+  );
+
+  settingsModal?.addEventListener(
+    "click",
+    (event) => {
+
+      if (
+        event.target ===
+        settingsModal
+      ) {
+
+        closeSettings();
+
+      }
+
+    }
+  );
+
+  // ==================================================
+  // ESCでモーダルを閉じる
+  // ==================================================
+
+  document.addEventListener(
+    "keydown",
+    (event) => {
+
+      if (
+        event.key !==
+        "Escape"
+      ) {
+
+        return;
+
+      }
+
+      closeCreateModal();
+
+      closeJoinModal();
+
+      closeSettings();
+
+    }
+  );
+
+  // ==================================================
+  // 初期化
+  // ==================================================
+
+  async function init() {
+
+    console.log(
+      "Veylo App initializing..."
+    );
+
+    loadSettings();
+
+    const loggedIn =
+      await loadCurrentUser();
+
+    if (!loggedIn) {
+
+      return;
+
+    }
+
+    connectSocket();
+
+  }
+
+  init();
+
+});
