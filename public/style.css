@@ -2160,3 +2160,923 @@ body.dark-mode.gray-mode {
   }
 
 }
+
+/* ==================================================
+   Veylo - Design Enhancement
+   ※既存デザインを崩さず、下に追加してください
+================================================== */
+
+
+/* ==================================================
+   全体の滑らかさ
+================================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+
+button,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+/* ==================================================
+   フォーカス表示
+================================================== */
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline:
+    2px solid var(--primary);
+
+  outline-offset:
+    2px;
+}
+
+
+/* ==================================================
+   Auth - 少しだけリッチに
+================================================== */
+
+.auth-container {
+  animation:
+    authFadeIn .35s ease;
+}
+
+
+@keyframes authFadeIn {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
+  }
+
+}
+
+
+.logo-area h1 {
+  text-shadow:
+    0 4px 18px
+    rgba(
+      102,
+      126,
+      234,
+      .15
+    );
+}
+
+
+.auth-panel {
+  transition:
+    transform .25s ease,
+    box-shadow .25s ease;
+}
+
+
+.auth-panel:hover {
+  box-shadow:
+    0 14px 40px
+    rgba(
+      31,
+      41,
+      55,
+      .10
+    );
+}
+
+
+/* ==================================================
+   入力欄
+================================================== */
+
+.input-group input:hover,
+.settings-group input:hover,
+.settings-group select:hover {
+  border-color:
+    #d3d8e3;
+}
+
+
+.input-group input::placeholder {
+  color:
+    #aeb4c0;
+}
+
+
+body.dark-mode
+.input-group input::placeholder {
+  color:
+    #777e8d;
+}
+
+
+/* ==================================================
+   ボタンの押し込み感
+================================================== */
+
+.primary-button:active,
+.secondary-button:active,
+.danger-button:active,
+.send-button:active,
+.room-button:active,
+.room-action-button:active,
+.joined-room:active,
+.icon-button:active,
+.scroll-button:active {
+  transform:
+    translateY(1px);
+}
+
+
+.primary-button,
+.secondary-button,
+.danger-button {
+  user-select:
+    none;
+}
+
+
+/* ==================================================
+   Sidebar - 少しだけ高級感
+================================================== */
+
+.sidebar {
+  box-shadow:
+    4px 0 18px
+    rgba(
+      31,
+      41,
+      55,
+      .025
+    );
+}
+
+
+.brand-mark {
+  box-shadow:
+    0 5px 14px
+    rgba(
+      102,
+      126,
+      234,
+      .20
+    );
+
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+}
+
+
+.brand-mark:hover {
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 7px 18px
+    rgba(
+      102,
+      126,
+      234,
+      .27
+    );
+}
+
+
+/* ==================================================
+   User Card
+================================================== */
+
+.user-card {
+  transition:
+    border-color .2s ease,
+    background .2s ease,
+    transform .2s ease;
+}
+
+
+.user-card:hover {
+  border-color:
+    rgba(
+      102,
+      126,
+      234,
+      .18
+    );
+
+  transform:
+    translateY(-1px);
+}
+
+
+.user-avatar {
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(
+      102,
+      126,
+      234,
+      .08
+    );
+}
+
+
+/* ==================================================
+   Room buttons
+================================================== */
+
+.room-button.active,
+.joined-room.active {
+  box-shadow:
+    inset 3px 0 0
+    var(--primary);
+}
+
+
+.room-button:hover,
+.room-action-button:hover,
+.joined-room:hover {
+  transform:
+    translateX(2px);
+}
+
+
+.room-button,
+.room-action-button,
+.joined-room {
+  will-change:
+    transform;
+}
+
+
+/* ==================================================
+   接続状態
+================================================== */
+
+.connection-dot {
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      76,
+      175,
+      80,
+      .10
+    );
+
+  animation:
+    connectionPulse 2.2s infinite;
+}
+
+
+@keyframes connectionPulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 3px
+      rgba(
+        76,
+        175,
+        80,
+        .10
+      );
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 5px
+      rgba(
+        76,
+        175,
+        80,
+        .03
+      );
+  }
+
+}
+
+
+/* ==================================================
+   Chat Header
+================================================== */
+
+.chat-header {
+  box-shadow:
+    0 2px 10px
+    rgba(
+      31,
+      41,
+      55,
+      .025
+    );
+}
+
+
+.chat-room-icon {
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease;
+}
+
+
+.chat-room-icon:hover {
+  transform:
+    scale(1.04);
+}
+
+
+/* ==================================================
+   Messages
+================================================== */
+
+.message {
+  animation:
+    messageAppear .25s ease;
+}
+
+
+@keyframes messageAppear {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
+  }
+
+}
+
+
+.message-user {
+  color:
+    var(--text);
+}
+
+
+.message-time {
+  opacity:
+    .85;
+}
+
+
+.message-content {
+  letter-spacing:
+    .01em;
+}
+
+
+/* 自分のメッセージをJS側で
+   .own-message を付けた場合にも対応 */
+
+.message.own-message {
+  border-color:
+    rgba(
+      102,
+      126,
+      234,
+      .18
+    );
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--surface),
+      var(--primary-light)
+    );
+}
+
+
+/* ==================================================
+   Message actions
+================================================== */
+
+.message-actions {
+  opacity:
+    .72;
+
+  transition:
+    opacity .2s ease;
+}
+
+
+.message:hover .message-actions {
+  opacity:
+    1;
+}
+
+
+.message-actions button {
+  transition:
+    background .15s ease,
+    color .15s ease,
+    transform .15s ease;
+}
+
+
+.message-actions button:hover {
+  transform:
+    translateY(-1px);
+}
+
+
+/* ==================================================
+   Reply
+================================================== */
+
+.message-reply-info {
+  transition:
+    background .2s ease,
+    transform .2s ease;
+}
+
+
+.message-reply-info:hover {
+  background:
+    rgba(
+      102,
+      126,
+      234,
+      .18
+    );
+
+  transform:
+    translateX(2px);
+}
+
+
+.reply-preview {
+  box-shadow:
+    0 5px 20px
+    rgba(
+      102,
+      126,
+      234,
+      .08
+    );
+
+  animation:
+    replySlideUp .2s ease;
+}
+
+
+@keyframes replySlideUp {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
+  }
+
+}
+
+
+/* ==================================================
+   New Message
+================================================== */
+
+.new-message-button {
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease,
+    background .2s ease;
+}
+
+
+.new-message-button:hover {
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 8px 25px
+    rgba(
+      31,
+      41,
+      55,
+      .16
+    );
+}
+
+
+/* ==================================================
+   Scroll Buttons
+================================================== */
+
+.scroll-button {
+  transition:
+    transform .2s ease,
+    color .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+
+.scroll-button:hover {
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 6px 16px
+    rgba(
+      31,
+      41,
+      55,
+      .10
+    );
+}
+
+
+/* ==================================================
+   Message Input
+================================================== */
+
+.message-input-area {
+  padding-top:
+    18px;
+}
+
+
+.message-form {
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .2s ease;
+}
+
+
+.message-form:focus-within {
+  border-color:
+    rgba(
+      102,
+      126,
+      234,
+      .45
+    );
+
+  box-shadow:
+    0 8px 30px
+    rgba(
+      31,
+      41,
+      55,
+      .10
+    ),
+    0 0 0 3px
+    rgba(
+      102,
+      126,
+      234,
+      .08
+    );
+}
+
+
+.message-form input::placeholder {
+  color:
+    #a4aab6;
+}
+
+
+.send-button {
+  box-shadow:
+    0 4px 12px
+    rgba(
+      102,
+      126,
+      234,
+      .20
+    );
+}
+
+
+.send-button:hover {
+  box-shadow:
+    0 6px 16px
+    rgba(
+      102,
+      126,
+      234,
+      .28
+    );
+}
+
+
+/* ==================================================
+   Invite Code
+================================================== */
+
+.invite-code {
+  padding:
+    4px 6px;
+
+  border-radius:
+    6px;
+
+  transition:
+    background .2s ease;
+}
+
+
+.invite-code:hover {
+  background:
+    var(--primary-light);
+}
+
+
+/* ==================================================
+   Modal
+================================================== */
+
+.modal {
+  animation:
+    modalBackgroundIn .2s ease;
+}
+
+
+@keyframes modalBackgroundIn {
+
+  from {
+    opacity:
+      0;
+  }
+
+  to {
+    opacity:
+      1;
+  }
+
+}
+
+
+.modal-content {
+  animation:
+    modalContentIn .25s ease;
+
+  transform-origin:
+    center;
+}
+
+
+@keyframes modalContentIn {
+
+  from {
+    opacity:
+      0;
+
+    transform:
+      translateY(8px)
+      scale(.98);
+  }
+
+  to {
+    opacity:
+      1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+
+}
+
+
+.modal-close {
+  transition:
+    background .2s ease,
+    color .2s ease,
+    transform .2s ease;
+}
+
+
+.modal-close:hover {
+  transform:
+    rotate(4deg);
+}
+
+
+/* ==================================================
+   Settings
+================================================== */
+
+.settings-group {
+  padding-bottom:
+    18px;
+
+  border-bottom:
+    1px solid var(--border);
+}
+
+
+.settings-group:last-child {
+  padding-bottom:
+    0;
+
+  border-bottom:
+    0;
+}
+
+
+.setting-row {
+  min-height:
+    42px;
+}
+
+
+.toggle-button {
+  transition:
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease,
+    transform .2s ease;
+}
+
+
+.toggle-button:hover {
+  transform:
+    translateY(-1px);
+}
+
+
+/* ==================================================
+   Dark mode 微調整
+================================================== */
+
+body.dark-mode .sidebar {
+  box-shadow:
+    4px 0 18px
+    rgba(
+      0,
+      0,
+      0,
+      .12
+    );
+}
+
+
+body.dark-mode .message {
+  box-shadow:
+    0 2px 8px
+    rgba(
+      0,
+      0,
+      0,
+      .10
+    );
+}
+
+
+body.dark-mode .message:hover {
+  box-shadow:
+    0 5px 16px
+    rgba(
+      0,
+      0,
+      0,
+      .16
+    );
+}
+
+
+body.dark-mode .message-form {
+  box-shadow:
+    0 6px 25px
+    rgba(
+      0,
+      0,
+      0,
+      .18
+    );
+}
+
+
+body.dark-mode .message-form:focus-within {
+  box-shadow:
+    0 8px 30px
+    rgba(
+      0,
+      0,
+      0,
+      .22
+    ),
+    0 0 0 3px
+    rgba(
+      129,
+      146,
+      245,
+      .10
+    );
+}
+
+
+/* ==================================================
+   Mobile
+================================================== */
+
+@media (max-width: 560px) {
+
+  .message {
+    border-radius:
+      11px;
+  }
+
+
+  .message-actions {
+    opacity:
+      1;
+  }
+
+
+  .send-button {
+    width:
+      40px;
+
+    height:
+      40px;
+  }
+
+
+  .message-form input {
+    height:
+      40px;
+  }
+
+
+  .scroll-buttons {
+    right:
+      10px;
+
+    bottom:
+      125px;
+  }
+
+
+  .scroll-button {
+    width:
+      32px;
+
+    height:
+      32px;
+  }
+
+
+  .new-message-button {
+    right:
+      12px;
+
+    bottom:
+      78px;
+  }
+
+}
+
+
+/* ==================================================
+   Reduced Motion
+================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration:
+      .01ms !important;
+
+    animation-iteration-count:
+      1 !important;
+
+    transition-duration:
+      .01ms !important;
+
+    scroll-behavior:
+      auto !important;
+  }
+
+}
