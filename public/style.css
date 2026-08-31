@@ -35,6 +35,9 @@
   --danger:
     #e05252;
 
+  --success:
+    #4caf50;
+
   --shadow:
     0 10px 35px rgba(
       31,
@@ -57,17 +60,18 @@
 ================================================== */
 
 * {
-  box-sizing: border-box;
+  box-sizing:
+    border-box;
 }
 
 
 html,
 body {
-  margin: 0;
-  padding: 0;
-
   width: 100%;
   height: 100%;
+
+  margin: 0;
+  padding: 0;
 
   font-family:
     -apple-system,
@@ -83,6 +87,9 @@ body {
 
   background:
     var(--bg);
+
+  -webkit-font-smoothing:
+    antialiased;
 }
 
 
@@ -95,12 +102,22 @@ select {
 
 
 button {
-  cursor: pointer;
+  cursor:
+    pointer;
+}
+
+
+button,
+input,
+select {
+  outline:
+    none;
 }
 
 
 .hidden {
-  display: none !important;
+  display:
+    none !important;
 }
 
 
@@ -109,8 +126,11 @@ button {
 ================================================== */
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width:
+    8px;
+
+  height:
+    8px;
 }
 
 
@@ -140,8 +160,11 @@ button {
 ================================================== */
 
 .screen {
-  width: 100%;
-  height: 100vh;
+  width:
+    100%;
+
+  height:
+    100vh;
 }
 
 
@@ -150,14 +173,20 @@ button {
 ================================================== */
 
 #authScreen {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
-  justify-content: center;
+  align-items:
+    center;
 
-  min-height: 100vh;
+  justify-content:
+    center;
 
-  padding: 24px;
+  min-height:
+    100vh;
+
+  padding:
+    24px;
 
   background:
     linear-gradient(
@@ -170,13 +199,17 @@ button {
 
 
 .auth-container {
-  width: 100%;
-  max-width: 430px;
+  width:
+    100%;
+
+  max-width:
+    430px;
 }
 
 
 .logo-area {
-  text-align: center;
+  text-align:
+    center;
 
   margin-bottom:
     30px;
@@ -184,10 +217,14 @@ button {
 
 
 .logo-area h1 {
-  margin: 0;
+  margin:
+    0;
 
-  font-size: 42px;
-  font-weight: 800;
+  font-size:
+    42px;
+
+  font-weight:
+    800;
 
   letter-spacing:
     -1.5px;
@@ -204,7 +241,8 @@ button {
   color:
     var(--text-soft);
 
-  font-size: 14px;
+  font-size:
+    14px;
 }
 
 
@@ -298,9 +336,9 @@ button {
     14px;
 
   transition:
-    border-color .2s,
-    box-shadow .2s,
-    background .2s;
+    border-color .2s ease,
+    box-shadow .2s ease,
+    background .2s ease;
 }
 
 
@@ -374,7 +412,10 @@ button {
     700;
 
   transition:
-    .2s ease;
+    transform .2s ease,
+    background .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease;
 }
 
 
@@ -387,6 +428,15 @@ button {
 
   color:
     #fff;
+
+  box-shadow:
+    0 4px 12px
+    rgba(
+      102,
+      126,
+      234,
+      .16
+    );
 }
 
 
@@ -401,13 +451,19 @@ button {
     translateY(-1px);
 
   box-shadow:
-    0 5px 14px
+    0 6px 16px
     rgba(
       102,
       126,
       234,
-      .18
+      .22
     );
+}
+
+
+.primary-button:active {
+  transform:
+    translateY(0);
 }
 
 
@@ -428,7 +484,7 @@ button {
     var(--surface-soft);
 
   border-color:
-    #d9dde6;
+    #d8dce5;
 }
 
 
@@ -620,7 +676,11 @@ button {
     10px;
 
   background:
-    var(--primary);
+    linear-gradient(
+      135deg,
+      var(--primary),
+      #7c8cf0
+    );
 
   color:
     #fff;
@@ -634,7 +694,7 @@ button {
       102,
       126,
       234,
-      .18
+      .2
     );
 }
 
@@ -683,7 +743,9 @@ button {
     19px;
 
   transition:
-    .2s ease;
+    background .2s ease,
+    color .2s ease,
+    transform .2s ease;
 }
 
 
@@ -729,7 +791,8 @@ button {
     var(--surface-soft);
 
   transition:
-    .2s ease;
+    border-color .2s ease,
+    box-shadow .2s ease;
 }
 
 
@@ -739,11 +802,11 @@ button {
       102,
       126,
       234,
-      .18
+      .22
     );
 
   box-shadow:
-    0 4px 12px
+    0 4px 14px
     rgba(
       31,
       41,
@@ -780,15 +843,21 @@ button {
 
   color:
     var(--primary);
+
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(
+      102,
+      126,
+      234,
+      .08
+    );
 }
 
 
 .user-info {
   min-width:
     0;
-
-  flex:
-    1;
 }
 
 
@@ -829,14 +898,8 @@ button {
   font-weight:
     700;
 
-  overflow:
-    hidden;
-
   text-overflow:
     ellipsis;
-
-  white-space:
-    nowrap;
 }
 
 
@@ -926,7 +989,10 @@ button {
     13px;
 
   transition:
-    .2s ease;
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease,
+    transform .15s ease;
 }
 
 
@@ -935,8 +1001,15 @@ button {
   background:
     var(--surface-soft);
 
+  border-color:
+    var(--border);
+}
+
+
+.room-button:active,
+.room-action-button:active {
   transform:
-    translateX(2px);
+    scale(.985);
 }
 
 
@@ -949,7 +1022,7 @@ button {
       102,
       126,
       234,
-      .1
+      .13
     );
 
   color:
@@ -959,13 +1032,8 @@ button {
     700;
 
   box-shadow:
-    0 3px 10px
-    rgba(
-      102,
-      126,
-      234,
-      .05
-    );
+    inset 3px 0 0
+    var(--primary);
 }
 
 
@@ -980,6 +1048,9 @@ button {
     center;
 
   width:
+    28px;
+
+  min-width:
     28px;
 
   font-size:
@@ -1018,6 +1089,9 @@ button {
   width:
     28px;
 
+  min-width:
+    28px;
+
   color:
     var(--primary);
 
@@ -1028,6 +1102,7 @@ button {
 
 /* ==================================================
    Joined rooms
+   参加中の部屋
 ================================================== */
 
 .joined-room-section {
@@ -1065,13 +1140,16 @@ button {
     800;
 
   letter-spacing:
-    .3px;
+    .4px;
 }
 
 
-/* ==================================================
-   Joined rooms container
-================================================== */
+/*
+  参加中の部屋一覧
+
+  JSから追加される .joined-room を
+  ちゃんと「ルームボタン」に見せる
+*/
 
 .joined-rooms {
   display:
@@ -1084,12 +1162,12 @@ button {
     6px;
 
   padding:
-    0 2px;
+    0 2px 8px;
 }
 
 
 /* ==================================================
-   Joined room item
+   Joined room button
 ================================================== */
 
 .joined-room {
@@ -1106,16 +1184,16 @@ button {
     100%;
 
   min-height:
-    46px;
+    48px;
 
   padding:
-    7px 10px;
+    6px 9px;
 
   border:
     1px solid transparent;
 
   border-radius:
-    11px;
+    12px;
 
   background:
     transparent;
@@ -1135,8 +1213,42 @@ button {
   transition:
     background .2s ease,
     border-color .2s ease,
-    transform .2s ease,
-    box-shadow .2s ease;
+    box-shadow .2s ease,
+    transform .15s ease;
+}
+
+
+/*
+  左側にうっすら光るライン
+*/
+
+.joined-room::before {
+  content:
+    "";
+
+  position:
+    absolute;
+
+  left:
+    0;
+
+  top:
+    10px;
+
+  bottom:
+    10px;
+
+  width:
+    3px;
+
+  border-radius:
+    999px;
+
+  background:
+    transparent;
+
+  transition:
+    background .2s ease;
 }
 
 
@@ -1147,14 +1259,29 @@ button {
   border-color:
     var(--border);
 
+  box-shadow:
+    0 3px 10px
+    rgba(
+      31,
+      41,
+      55,
+      .045
+    );
+
   transform:
-    translateX(2px);
+    translateX(1px);
 }
 
 
-/* ==================================================
-   Selected joined room
-================================================== */
+.joined-room:active {
+  transform:
+    scale(.985);
+}
+
+
+/*
+  選択中の部屋
+*/
 
 .joined-room.active {
   background:
@@ -1171,42 +1298,18 @@ button {
   color:
     var(--primary);
 
-  font-weight:
-    700;
-
   box-shadow:
-    0 4px 12px
+    0 4px 13px
     rgba(
       102,
       126,
       234,
-      .06
+      .08
     );
 }
 
 
 .joined-room.active::before {
-  content:
-    "";
-
-  position:
-    absolute;
-
-  left:
-    -2px;
-
-  top:
-    9px;
-
-  bottom:
-    9px;
-
-  width:
-    3px;
-
-  border-radius:
-    999px;
-
   background:
     var(--primary);
 }
@@ -1227,22 +1330,25 @@ button {
     center;
 
   width:
-    32px;
+    34px;
 
   height:
-    32px;
+    34px;
+
+  min-width:
+    34px;
 
   margin-right:
-    8px;
-
-  flex-shrink:
-    0;
+    9px;
 
   border-radius:
     9px;
 
   background:
     var(--surface-soft);
+
+  border:
+    1px solid var(--border);
 
   color:
     var(--text-soft);
@@ -1251,16 +1357,27 @@ button {
     15px;
 
   transition:
-    .2s ease;
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease,
+    transform .2s ease;
 }
 
 
 .joined-room:hover .joined-room-icon {
-  background:
-    #ffffff;
+  border-color:
+    rgba(
+      102,
+      126,
+      234,
+      .18
+    );
 
   color:
     var(--primary);
+
+  transform:
+    scale(1.04);
 }
 
 
@@ -1270,7 +1387,15 @@ button {
       102,
       126,
       234,
-      .14
+      .13
+    );
+
+  border-color:
+    rgba(
+      102,
+      126,
+      234,
+      .18
     );
 
   color:
@@ -1283,11 +1408,11 @@ button {
 ================================================== */
 
 .joined-room-name {
-  min-width:
-    0;
-
   flex:
     1;
+
+  min-width:
+    0;
 
   overflow:
     hidden;
@@ -1298,8 +1423,20 @@ button {
   white-space:
     nowrap;
 
+  font-size:
+    13px;
+
+  font-weight:
+    600;
+
   line-height:
     1.4;
+}
+
+
+.joined-room.active .joined-room-name {
+  font-weight:
+    750;
 }
 
 
@@ -1309,10 +1446,10 @@ button {
 
 .joined-room-empty {
   margin:
-    2px 2px 0;
+    3px 2px;
 
   padding:
-    12px 10px;
+    13px 10px;
 
   border:
     1px dashed var(--border);
@@ -1363,12 +1500,6 @@ button {
   gap:
     7px;
 
-  padding:
-    6px 8px;
-
-  border-radius:
-    8px;
-
   color:
     var(--text-soft);
 
@@ -1388,7 +1519,7 @@ button {
     50%;
 
   background:
-    #4caf50;
+    var(--success);
 
   box-shadow:
     0 0 0 3px
@@ -1454,6 +1585,15 @@ button {
 
   border-bottom:
     1px solid var(--border);
+
+  box-shadow:
+    0 2px 8px
+    rgba(
+      31,
+      41,
+      55,
+      .025
+    );
 }
 
 
@@ -1488,9 +1628,6 @@ button {
   height:
     42px;
 
-  flex-shrink:
-    0;
-
   border-radius:
     12px;
 
@@ -1499,6 +1636,15 @@ button {
 
   font-size:
     20px;
+
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(
+      102,
+      126,
+      234,
+      .08
+    );
 }
 
 
@@ -1609,56 +1755,128 @@ button {
 
 
 /* ==================================================
-   Message card
+   Message
+   コメントを「ボタン/インタラクティブカード」
+   っぽく見せる
 ================================================== */
 
 .message {
+  position:
+    relative;
+
   max-width:
     850px;
 
   margin:
-    0 auto 18px;
+    0 auto 12px;
 
   padding:
-    13px 15px;
+    14px 16px;
 
   border:
     1px solid var(--border);
 
   border-radius:
-    13px;
+    14px;
 
   background:
     var(--surface);
 
   box-shadow:
-    0 2px 7px
+    0 2px 8px
     rgba(
       31,
       41,
       55,
-      .025
+      .035
     );
 
   transition:
-    background .2s,
-    box-shadow .2s,
-    transform .2s;
+    background .2s ease,
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .15s ease;
+}
+
+
+/*
+  左端のアクセント
+*/
+
+.message::before {
+  content:
+    "";
+
+  position:
+    absolute;
+
+  left:
+    -1px;
+
+  top:
+    12px;
+
+  bottom:
+    12px;
+
+  width:
+    3px;
+
+  border-radius:
+    999px;
+
+  background:
+    transparent;
+
+  transition:
+    background .2s ease;
 }
 
 
 .message:hover {
+  border-color:
+    rgba(
+      102,
+      126,
+      234,
+      .18
+    );
+
+  background:
+    var(--surface);
+
   box-shadow:
-    0 4px 13px
+    0 6px 18px
     rgba(
       31,
       41,
       55,
-      .05
+      .07
     );
 
   transform:
     translateY(-1px);
+}
+
+
+.message:hover::before {
+  background:
+    rgba(
+      102,
+      126,
+      234,
+      .55
+    );
+}
+
+
+/*
+  クリック感
+*/
+
+.message:active {
+  transform:
+    translateY(0);
 }
 
 
@@ -1682,8 +1900,29 @@ button {
 
 
 .message-user {
+  display:
+    inline-flex;
+
+  align-items:
+    center;
+
+  min-height:
+    24px;
+
+  padding:
+    3px 8px;
+
+  border-radius:
+    7px;
+
+  background:
+    var(--primary-light);
+
+  color:
+    var(--primary);
+
   font-size:
-    13px;
+    12px;
 
   font-weight:
     800;
@@ -1698,6 +1937,10 @@ button {
     10px;
 }
 
+
+/* ==================================================
+   Message content
+================================================== */
 
 .message-content {
   color:
@@ -1751,13 +1994,30 @@ button {
 
   margin-top:
     10px;
+
+  padding-top:
+    8px;
+
+  border-top:
+    1px solid transparent;
+
+  opacity:
+    .75;
+
+  transition:
+    opacity .2s ease,
+    border-color .2s ease;
 }
 
 
-/*
-  コメント操作を
-  小さなボタン風にする
-*/
+.message:hover .message-actions {
+  opacity:
+    1;
+
+  border-top-color:
+    var(--border);
+}
+
 
 .message-actions button {
   display:
@@ -1779,10 +2039,10 @@ button {
     1px solid transparent;
 
   border-radius:
-    7px;
+    8px;
 
   background:
-    transparent;
+    var(--surface-soft);
 
   color:
     var(--text-soft);
@@ -1791,40 +2051,51 @@ button {
     11px;
 
   transition:
-    .2s ease;
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease,
+    transform .15s ease;
 }
 
 
 .message-actions button:hover {
   background:
-    var(--surface-soft);
+    var(--primary-light);
 
   border-color:
-    var(--border);
+    rgba(
+      102,
+      126,
+      234,
+      .14
+    );
 
   color:
-    var(--text);
+    var(--primary);
+}
 
+
+.message-actions button:active {
   transform:
-    translateY(-1px);
+    scale(.96);
 }
 
 
 .message-actions .delete-action:hover {
-  border-color:
-    rgba(
-      224,
-      82,
-      82,
-      .15
-    );
-
   background:
     rgba(
       224,
       82,
       82,
-      .07
+      .08
+    );
+
+  border-color:
+    rgba(
+      224,
+      82,
+      82,
+      .14
     );
 
   color:
@@ -1871,7 +2142,7 @@ button {
     nowrap;
 
   transition:
-    .2s ease;
+    background .2s ease;
 }
 
 
@@ -1881,7 +2152,7 @@ button {
       102,
       126,
       234,
-      .16
+      .18
     );
 }
 
@@ -1972,6 +2243,15 @@ button {
 
   font-size:
     11px;
+
+  box-shadow:
+    0 4px 14px
+    rgba(
+      31,
+      41,
+      55,
+      .06
+    );
 }
 
 
@@ -1991,9 +2271,6 @@ button {
   height:
     25px;
 
-  flex-shrink:
-    0;
-
   border:
     0;
 
@@ -2010,20 +2287,6 @@ button {
 
   color:
     var(--primary);
-
-  transition:
-    .2s ease;
-}
-
-
-.reply-preview button:hover {
-  background:
-    rgba(
-      102,
-      126,
-      234,
-      .2
-    );
 }
 
 
@@ -2080,16 +2343,23 @@ button {
     700;
 
   transition:
-    .2s ease;
+    transform .2s ease,
+    box-shadow .2s ease;
 }
 
 
 .new-message-button:hover {
-  background:
-    var(--primary-light);
-
   transform:
-    translateY(-1px);
+    translateY(-2px);
+
+  box-shadow:
+    0 7px 24px
+    rgba(
+      31,
+      41,
+      55,
+      .16
+    );
 }
 
 
@@ -2159,7 +2429,9 @@ button {
     );
 
   transition:
-    .2s ease;
+    color .2s ease,
+    border-color .2s ease,
+    transform .15s ease;
 }
 
 
@@ -2250,7 +2522,8 @@ button {
     );
 
   transition:
-    .2s ease;
+    border-color .2s ease,
+    box-shadow .2s ease;
 }
 
 
@@ -2260,23 +2533,16 @@ button {
       102,
       126,
       234,
-      .4
+      .35
     );
 
   box-shadow:
-    0 6px 25px
+    0 7px 27px
     rgba(
       31,
       41,
       55,
-      .07
-    ),
-    0 0 0 3px
-    rgba(
-      102,
-      126,
-      234,
-      .08
+      .1
     );
 }
 
@@ -2343,7 +2609,9 @@ button {
     17px;
 
   transition:
-    .2s ease;
+    background .2s ease,
+    transform .15s ease,
+    box-shadow .2s ease;
 }
 
 
@@ -2360,8 +2628,14 @@ button {
       102,
       126,
       234,
-      .2
+      .22
     );
+}
+
+
+.send-button:active {
+  transform:
+    scale(.95);
 }
 
 
@@ -2445,7 +2719,7 @@ button {
 
     transform:
       translateY(8px)
-      scale(.98);
+      scale(.985);
   }
 
   to {
@@ -2525,7 +2799,8 @@ button {
     22px;
 
   transition:
-    .2s ease;
+    background .2s ease,
+    color .2s ease;
 }
 
 
@@ -2535,9 +2810,6 @@ button {
 
   color:
     var(--text);
-
-  transform:
-    rotate(4deg);
 }
 
 
@@ -2670,18 +2942,9 @@ button {
     800;
 
   transition:
-    .2s ease;
-}
-
-
-.toggle-button:hover {
-  border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .25
-    );
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease;
 }
 
 
@@ -2788,41 +3051,6 @@ body.dark-mode
 
   color:
     var(--text);
-}
-
-
-/* ==================================================
-   Dark mode - room
-================================================== */
-
-body.dark-mode
-.joined-room:hover
-.joined-room-icon {
-
-  background:
-    #323641;
-}
-
-
-body.dark-mode
-.joined-room-icon {
-
-  background:
-    #292c35;
-}
-
-
-body.dark-mode
-.joined-room.active
-.joined-room-icon {
-
-  background:
-    rgba(
-      129,
-      146,
-      245,
-      .16
-    );
 }
 
 
@@ -2967,7 +3195,22 @@ body.dark-mode.gray-mode {
 
   .message {
     padding:
-      11px 12px;
+      12px 13px;
+
+    margin-bottom:
+      10px;
+  }
+
+
+  .message-user {
+    font-size:
+      11px;
+  }
+
+
+  .message-content {
+    font-size:
+      13px;
   }
 
 
