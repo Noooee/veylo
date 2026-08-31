@@ -1983,3 +1983,43 @@ body.gray-mode {
       10px;
   }
 }
+
+/* ==================================================
+   自分が参加している部屋
+   ================================================== */
+
+.my-rooms {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.my-room-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  padding: 9px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.my-room-item:hover {
+  background: rgba(127, 127, 127, 0.12);
+}
+
+.my-room-item:active {
+  transform: scale(0.98);
+}
+
+.my-room-item.active {
+  background: rgba(127, 127, 127, 0.18);
+  font-weight: 600;
+}
