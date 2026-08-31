@@ -3327,3 +3327,200 @@ async function start() {
 }
 
 start();
+
+// ==================================================
+// 部屋削除
+// ==================================================
+
+socket.on(
+  "delete room",
+  async (data) => {
+
+    try {
+
+      const roomId =
+        String(
+          data?.roomId || ""
+        ).trim();
+
+
+      if (!roomId) {
+
+        socket.emit(
+          "delete room error",
+          {
+            message:
+              "削除する部屋が指定されていません。"
+          }
+        );
+
+        return;
+
+      }
+
+
+      /*
+       * 自分が作った部屋か確認
+       *
+       * owner / owner_id の両方に対応できるよう、
+       * 現在のDB構造に合わせて owner を使用します。
+       */
+
+      const roomResult =
+        await pool.query(
+          `
+          SELECT
+            id,
+            name,
+            owner
+          FROM rooms
+          WHERE id = $1
+          LIMIT 1
+          `,
+          [
+            roomId
+          ]
+        );
+
+
+      if (
+        roomResult.rows.length === 0
+      ) {
+
+        socket.emit(
+          "delete room error",
+          {
+            message:
+              "部屋が見つかりません。"
+          }
+        );
+
+        return;
+
+      }
+
+
+      const room =
+        roomResult.rows[0];
+
+
+      /*
+       * owner は現在のDBでは
+       * ユーザーIDを保存している想定
+       */
+
+      if (
+        Number(room.owner) !==
+        Number(user.id)
+      ) {
+
+        socket.emit(
+          "delete room error",
+          {
+            message:
+              "自分が作成した部屋のみ削除できます。"
+          }
+        );
+
+        return;
+
+      }
+
+
+      /*
+       * 部屋を削除
+       *
+       * room_members は ON DELETE CASCADE
+       * になっているため、
+       * 部屋のメンバー情報も自動削除されます。
+       */
+
+      await pool.query(
+        `
+        DELETE FROM rooms
+        WHERE id = $1
+          AND owner = $2
+        `,
+        [
+          roomId,
+          user.id
+        ]
+      );
+
+
+      /*
+       * 削除した部屋に入っていた場合、
+       * Socket.IOからも退出
+       */
+
+      if (
+        socket.rooms.has(roomId)
+      ) {
+
+        socket.leave(
+          roomId
+        );
+
+      }
+
+
+      /*
+       * 削除完了を本人へ通知
+       */
+
+      socket.emit(
+        "room deleted",
+        {
+          roomId:
+            roomId
+        }
+      );
+
+
+      /*
+       * 最新の参加中の部屋一覧を送信
+       */
+
+      await sendMyRooms(
+        socket,
+        user.id
+      );
+
+
+      /*
+       * 念のためクライアント側が
+       * 雑談へ戻れるようにする
+       */
+
+      await joinCasual(
+        socket
+      );
+
+
+      console.log(
+        "Room deleted:",
+        roomId,
+        "by user:",
+        user.id
+      );
+
+    } catch (error) {
+
+      console.error(
+        "delete room error:",
+        error
+      );
+
+
+      socket.emit(
+        "delete room error",
+        {
+          message:
+            "部屋を削除できませんでした。"
+        }
+      );
+
+    }
+
+  }
+);
