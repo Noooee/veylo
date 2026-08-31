@@ -1,7 +1,6 @@
 /* ==================================================
    Veylo
    style.css
-   LINE風メッセージ + シンプルなルーム表示
 ================================================== */
 
 :root {
@@ -286,7 +285,8 @@ button {
 
   transition:
     border-color .2s,
-    box-shadow .2s;
+    box-shadow .2s,
+    background .2s;
 }
 
 
@@ -352,7 +352,11 @@ button {
   font-weight: 700;
 
   transition:
-    .2s ease;
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease,
+    transform .2s ease,
+    box-shadow .2s ease;
 }
 
 
@@ -377,6 +381,15 @@ button {
 
   transform:
     translateY(-1px);
+
+  box-shadow:
+    0 5px 15px
+    rgba(
+      102,
+      126,
+      234,
+      .18
+    );
 }
 
 
@@ -562,6 +575,15 @@ button {
     #fff;
 
   font-weight: 800;
+
+  box-shadow:
+    0 4px 10px
+    rgba(
+      102,
+      126,
+      234,
+      .18
+    );
 }
 
 
@@ -663,6 +685,8 @@ button {
 
 .user-info {
   min-width: 0;
+
+  flex: 1;
 }
 
 
@@ -693,6 +717,15 @@ button {
 
   font-size: 13px;
   font-weight: 700;
+
+  overflow:
+    hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
 }
 
 
@@ -763,7 +796,10 @@ button {
   font-size: 13px;
 
   transition:
-    .2s ease;
+    background .2s ease,
+    border-color .2s ease,
+    color .2s ease,
+    transform .2s ease;
 }
 
 
@@ -819,13 +855,13 @@ button {
 
 /* ==================================================
    Joined rooms
-   シンプル・上品なルームリスト
+   参加中の部屋
 ================================================== */
 
 .joined-room-section {
   margin-top: 18px;
 
-  padding-top: 16px;
+  padding-top: 15px;
 
   border-top:
     1px solid var(--border);
@@ -837,12 +873,8 @@ button {
 
   align-items: center;
 
-  height: 30px;
-
   padding:
-    0 8px;
-
-  margin-bottom: 5px;
+    0 9px 9px;
 
   color:
     var(--text-soft);
@@ -851,16 +883,28 @@ button {
   font-weight: 800;
 
   letter-spacing:
-    .4px;
+    .2px;
+}
+
+
+.joined-rooms {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
 }
 
 
 /*
-  JavaScriptで生成される部屋ボタン。
+  参加中の部屋
 
-  絵文字を使わず、
-  左側に小さなアクセントラインを置いて
-  サイドバー全体のデザインに合わせます。
+  ここをかなり変更しています。
+
+  ・文字だけに見えない
+  ・カード型
+  ・Discord風の控えめな部屋一覧
+  ・余計な絵文字を見せない
 */
 
 .joined-room {
@@ -874,10 +918,8 @@ button {
 
   min-height: 44px;
 
-  margin-bottom: 4px;
-
   padding:
-    0 12px 0 16px;
+    0 12px;
 
   border:
     1px solid transparent;
@@ -889,25 +931,32 @@ button {
     transparent;
 
   color:
-    var(--text);
+    var(--text-soft);
 
-  text-align: left;
+  text-align:
+    left;
 
-  font-size: 13px;
-  font-weight: 600;
+  font-size:
+    13px;
 
-  cursor: pointer;
+  font-weight:
+    600;
+
+  cursor:
+    pointer;
 
   transition:
     background .18s ease,
     border-color .18s ease,
     color .18s ease,
-    transform .18s ease;
+    transform .18s ease,
+    box-shadow .18s ease;
 }
 
 
 /*
-  左側のアクセント
+  左側に細いアクセントを入れる。
+  普段は見えない。
 */
 
 .joined-room::before {
@@ -915,7 +964,7 @@ button {
 
   position: absolute;
 
-  left: 7px;
+  left: 0;
 
   top: 50%;
 
@@ -923,7 +972,7 @@ button {
   height: 0;
 
   border-radius:
-    999px;
+    0 4px 4px 0;
 
   background:
     var(--primary);
@@ -939,13 +988,12 @@ button {
 }
 
 
-/*
-  ホバー
-*/
-
 .joined-room:hover {
   background:
     var(--surface-soft);
+
+  color:
+    var(--text);
 
   border-color:
     var(--border);
@@ -955,15 +1003,8 @@ button {
 }
 
 
-.joined-room:hover::before {
-  height: 18px;
-
-  opacity: .45;
-}
-
-
 /*
-  現在選択中の部屋
+  選択中の部屋
 */
 
 .joined-room.active {
@@ -981,7 +1022,8 @@ button {
   color:
     var(--primary);
 
-  font-weight: 700;
+  font-weight:
+    700;
 
   box-shadow:
     0 2px 7px
@@ -995,38 +1037,53 @@ button {
 
 
 .joined-room.active::before {
-  height: 22px;
+  height:
+    20px;
 
-  opacity: 1;
+  opacity:
+    1;
 }
 
 
 /*
-  JavaScript側でアイコン要素がある場合も
-  絵文字を目立たせず、シンプルにします。
+  HTML側にある絵文字用の要素。
+
+  「部屋名の横に絵文字があると
+   ごちゃつく」という要望に合わせて
+  スペースを取らないようにする。
 */
 
 .joined-room-icon {
-  display: none;
+  display:
+    none !important;
 }
 
 
 /*
   部屋名
+
+  flex: 1 にすることで
+  長い部屋名も綺麗に省略。
 */
 
 .joined-room-name {
-  display: block;
+  display:
+    block;
 
-  flex: 1;
+  flex:
+    1;
 
-  min-width: 0;
+  min-width:
+    0;
 
-  overflow: hidden;
+  overflow:
+    hidden;
 
-  text-overflow: ellipsis;
+  text-overflow:
+    ellipsis;
 
-  white-space: nowrap;
+  white-space:
+    nowrap;
 
   line-height:
     1.4;
@@ -1034,15 +1091,15 @@ button {
 
 
 /*
-  部屋がないとき
+  空のとき
 */
 
 .joined-room-empty {
   margin:
-    3px 4px;
+    2px 3px 0;
 
   padding:
-    12px 10px;
+    11px 10px;
 
   border:
     1px dashed var(--border);
@@ -1056,10 +1113,11 @@ button {
   color:
     #9aa0ad;
 
-  font-size: 11px;
+  font-size:
+    11px;
 
   line-height:
-    1.6;
+    1.5;
 
   text-align:
     center;
@@ -1109,7 +1167,7 @@ button {
       76,
       175,
       80,
-      .10
+      .08
     );
 }
 
@@ -1254,7 +1312,8 @@ button {
   font-family:
     monospace;
 
-  font-weight: 800;
+  font-weight:
+    800;
 
   letter-spacing:
     1px;
@@ -1263,7 +1322,6 @@ button {
 
 /* ==================================================
    Messages
-   LINE風の「囲まれたコメント」
 ================================================== */
 
 .messages {
@@ -1281,11 +1339,14 @@ button {
 
 
 /*
-  メッセージ本体
+  ==================================================
+  コメント本体
 
   元のカード感を残しつつ、
-  LINEのトーク吹き出しに近い
-  柔らかい角丸にします。
+  LINEのトークのように
+  「コメントそのものが囲まれている」
+  デザインに調整。
+  ==================================================
 */
 
 .message {
@@ -1294,7 +1355,7 @@ button {
   max-width: 850px;
 
   margin:
-    0 auto 14px;
+    0 auto 12px;
 
   padding:
     13px 15px 12px;
@@ -1303,18 +1364,18 @@ button {
     1px solid var(--border);
 
   border-radius:
-    16px;
+    13px;
 
   background:
     var(--surface);
 
   box-shadow:
-    0 2px 8px
+    0 2px 7px
     rgba(
       31,
       41,
       55,
-      .035
+      .025
     );
 
   transition:
@@ -1326,10 +1387,31 @@ button {
 
 
 /*
-  ホバー時
+  コメントを囲むカード感
 */
 
 .message:hover {
+  border-color:
+    #dce0e8;
+
+  box-shadow:
+    0 5px 15px
+    rgba(
+      31,
+      41,
+      55,
+      .06
+    );
+}
+
+
+/*
+  自分のコメントに
+  JS側で .own-message 等を付けている場合にも
+  綺麗に見えるよう対応。
+*/
+
+.message.own-message {
   border-color:
     rgba(
       102,
@@ -1338,23 +1420,23 @@ button {
       .18
     );
 
-  box-shadow:
-    0 5px 15px
-    rgba(
-      31,
-      41,
-      55,
-      .07
+  background:
+    linear-gradient(
+      180deg,
+      rgba(
+        238,
+        240,
+        255,
+        .8
+      ),
+      var(--surface)
     );
-
-  transform:
-    translateY(-1px);
 }
 
 
-/*
-  メッセージ上部
-*/
+/* ==================================================
+   Message header
+================================================== */
 
 .message-header {
   display: flex;
@@ -1362,6 +1444,8 @@ button {
   align-items: center;
 
   gap: 8px;
+
+  min-height: 20px;
 
   margin-bottom:
     7px;
@@ -1373,11 +1457,26 @@ button {
 */
 
 .message-user {
-  color:
-    var(--primary);
+  max-width:
+    65%;
 
-  font-size: 13px;
-  font-weight: 800;
+  overflow:
+    hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+
+  font-size:
+    13px;
+
+  font-weight:
+    800;
+
+  color:
+    var(--text);
 }
 
 
@@ -1389,22 +1488,27 @@ button {
   color:
     var(--text-soft);
 
-  font-size: 10px;
+  font-size:
+    10px;
+
+  white-space:
+    nowrap;
 }
 
 
-/*
-  コメント本文
-*/
+/* ==================================================
+   Message content
+================================================== */
 
 .message-content {
   color:
     var(--text);
 
-  font-size: 14px;
+  font-size:
+    14px;
 
   line-height:
-    1.7;
+    1.65;
 
   word-break:
     break-word;
@@ -1422,28 +1526,45 @@ button {
 */
 
 .edited-label {
-  display: inline-block;
+  display:
+    inline-block;
 
-  margin-left: 7px;
+  margin-left:
+    7px;
+
+  padding:
+    1px 5px;
+
+  border-radius:
+    5px;
+
+  background:
+    var(--surface-soft);
 
   color:
     var(--text-soft);
 
-  font-size: 10px;
+  font-size:
+    9px;
+
+  line-height:
+    1.5;
 }
 
 
 /* ==================================================
    Message actions
-   LINEのメッセージ下部にある操作欄っぽく
 ================================================== */
 
 .message-actions {
-  display: flex;
+  display:
+    flex;
 
-  align-items: center;
+  align-items:
+    center;
 
-  gap: 5px;
+  gap:
+    5px;
 
   margin-top:
     10px;
@@ -1452,21 +1573,21 @@ button {
     8px;
 
   border-top:
-    1px solid
-    rgba(
+    1px solid rgba(
       229,
       232,
       239,
-      .75
+      .7
     );
 }
 
 
 .message-actions button {
-  min-height: 28px;
+  min-height:
+    27px;
 
   padding:
-    3px 9px;
+    4px 9px;
 
   border:
     1px solid transparent;
@@ -1475,4 +1596,1150 @@ button {
     7px;
 
   background:
-   
+    transparent;
+
+  color:
+    var(--text-soft);
+
+  font-size:
+    11px;
+
+  transition:
+    background .18s ease,
+    border-color .18s ease,
+    color .18s ease;
+}
+
+
+.message-actions button:hover {
+  background:
+    var(--surface-soft);
+
+  border-color:
+    var(--border);
+
+  color:
+    var(--text);
+}
+
+
+.message-actions .delete-action:hover {
+  color:
+    var(--danger);
+
+  background:
+    rgba(
+      224,
+      82,
+      82,
+      .06
+    );
+
+  border-color:
+    rgba(
+      224,
+      82,
+      82,
+      .12
+    );
+}
+
+
+/* ==================================================
+   Reply
+================================================== */
+
+.message-reply-info {
+  margin-bottom:
+    8px;
+
+  padding:
+    8px 10px;
+
+  border:
+    1px solid rgba(
+      102,
+      126,
+      234,
+      .12
+    );
+
+  border-left:
+    3px solid var(--primary);
+
+  border-radius:
+    7px;
+
+  background:
+    var(--primary-light);
+
+  color:
+    var(--primary);
+
+  font-size:
+    11px;
+
+  cursor:
+    pointer;
+
+  overflow:
+    hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+
+  transition:
+    background .18s ease;
+}
+
+
+.message-reply-info:hover {
+  background:
+    rgba(
+      102,
+      126,
+      234,
+      .18
+    );
+}
+
+
+.message-highlight {
+  animation:
+    messageHighlight 1.8s ease;
+}
+
+
+@keyframes messageHighlight {
+
+  0% {
+    background:
+      rgba(
+        102,
+        126,
+        234,
+        .3
+      );
+
+    border-color:
+      rgba(
+        102,
+        126,
+        234,
+        .35
+      );
+  }
+
+  100% {
+    background:
+      var(--surface);
+
+    border-color:
+      var(--border);
+  }
+
+}
+
+
+/* ==================================================
+   Reply preview
+================================================== */
+
+.reply-preview {
+  position: absolute;
+
+  left: 24px;
+  right: 24px;
+
+  bottom: 72px;
+
+  z-index: 5;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  max-width: 850px;
+
+  margin:
+    0 auto;
+
+  padding:
+    9px 12px;
+
+  border:
+    1px solid rgba(
+      102,
+      126,
+      234,
+      .2
+    );
+
+  border-radius:
+    10px;
+
+  background:
+    var(--primary-light);
+
+  color:
+    var(--primary);
+
+  font-size:
+    11px;
+}
+
+
+.reply-preview button {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  width:
+    25px;
+
+  height:
+    25px;
+
+  border:
+    0;
+
+  border-radius:
+    50%;
+
+  background:
+    rgba(
+      102,
+      126,
+      234,
+      .12
+    );
+
+  color:
+    var(--primary);
+}
+
+
+/* ==================================================
+   New message
+================================================== */
+
+.new-message-button {
+  position: absolute;
+
+  right: 24px;
+  bottom: 85px;
+
+  z-index: 10;
+
+  padding:
+    9px 14px;
+
+  border:
+    1px solid rgba(
+      102,
+      126,
+      234,
+      .2
+    );
+
+  border-radius:
+    999px;
+
+  background:
+    var(--surface);
+
+  color:
+    var(--primary);
+
+  box-shadow:
+    0 5px 20px
+    rgba(
+      31,
+      41,
+      55,
+      .12
+    );
+
+  font-size:
+    12px;
+
+  font-weight:
+    700;
+
+  transition:
+    .2s ease;
+}
+
+
+.new-message-button:hover {
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 7px 24px
+    rgba(
+      31,
+      41,
+      55,
+      .15
+    );
+}
+
+
+/* ==================================================
+   Scroll controls
+================================================== */
+
+.scroll-buttons {
+  position: absolute;
+
+  right: 18px;
+  bottom: 135px;
+
+  z-index: 4;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+
+.scroll-button {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 34px;
+  height: 34px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:
+    50%;
+
+  background:
+    var(--surface);
+
+  color:
+    var(--text-soft);
+
+  box-shadow:
+    0 3px 10px
+    rgba(
+      31,
+      41,
+      55,
+      .06
+    );
+
+  transition:
+    .2s ease;
+}
+
+
+.scroll-button:hover {
+  color:
+    var(--primary);
+
+  border-color:
+    rgba(
+      102,
+      126,
+      234,
+      .3
+    );
+
+  transform:
+    translateY(-1px);
+}
+
+
+/* ==================================================
+   Input area
+================================================== */
+
+.message-input-area {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  z-index: 3;
+
+  padding:
+    12px 24px 18px;
+
+  background:
+    linear-gradient(
+      to top,
+      var(--bg) 70%,
+      transparent
+    );
+}
+
+
+.message-form {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  max-width: 850px;
+
+  margin:
+    0 auto;
+
+  padding:
+    5px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:
+    13px;
+
+  background:
+    var(--surface);
+
+  box-shadow:
+    0 6px 25px
+    rgba(
+      31,
+      41,
+      55,
+      .07
+    );
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease;
+}
+
+
+.message-form:focus-within {
+  border-color:
+    rgba(
+      102,
+      126,
+      234,
+      .35
+    );
+
+  box-shadow:
+    0 7px 27px
+    rgba(
+      31,
+      41,
+      55,
+      .09
+    ),
+    0 0 0 3px
+    rgba(
+      102,
+      126,
+      234,
+      .06
+    );
+}
+
+
+.message-form input {
+  flex: 1;
+
+  min-width: 0;
+
+  height: 42px;
+
+  padding:
+    0 12px;
+
+  border:
+    0;
+
+  outline:
+    none;
+
+  background:
+    transparent;
+
+  color:
+    var(--text);
+
+  font-size:
+    14px;
+}
+
+
+.send-button {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  border:
+    0;
+
+  border-radius:
+    10px;
+
+  background:
+    var(--primary);
+
+  color:
+    #fff;
+
+  font-size:
+    17px;
+
+  transition:
+    .2s ease;
+}
+
+
+.send-button:hover {
+  background:
+    var(--primary-dark);
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 4px 12px
+    rgba(
+      102,
+      126,
+      234,
+      .2
+    );
+}
+
+
+/* ==================================================
+   Modal
+================================================== */
+
+.modal {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 100;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(
+      20,
+      24,
+      32,
+      .42
+    );
+
+  backdrop-filter:
+    blur(4px);
+}
+
+
+.modal-content {
+  width: 100%;
+  max-width: 440px;
+
+  overflow: hidden;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:
+    17px;
+
+  background:
+    var(--surface);
+
+  box-shadow:
+    0 25px 70px
+    rgba(
+      0,
+      0,
+      0,
+      .18
+    );
+}
+
+
+.settings-content {
+  max-width: 500px;
+}
+
+
+.modal-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  padding:
+    19px 22px;
+
+  border-bottom:
+    1px solid var(--border);
+}
+
+
+.modal-header h2 {
+  margin: 0;
+
+  font-size: 18px;
+}
+
+
+.modal-close {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;
+  height: 32px;
+
+  border:
+    0;
+
+  border-radius:
+    8px;
+
+  background:
+    transparent;
+
+  color:
+    var(--text-soft);
+
+  font-size:
+    22px;
+
+  transition:
+    .18s ease;
+}
+
+
+.modal-close:hover {
+  background:
+    var(--surface-soft);
+
+  color:
+    var(--text);
+}
+
+
+.modal-body {
+  padding:
+    22px;
+}
+
+
+.modal-description {
+  margin:
+    0 0 20px;
+
+  color:
+    var(--text-soft);
+
+  font-size:
+    13px;
+
+  line-height:
+    1.6;
+}
+
+
+.modal-footer {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+
+  padding:
+    15px 22px;
+
+  border-top:
+    1px solid var(--border);
+}
+
+
+.modal-footer-right {
+  display:
+    flex;
+
+  gap:
+    8px;
+}
+
+
+/* ==================================================
+   Settings
+================================================== */
+
+.settings-group {
+  margin-bottom:
+    22px;
+}
+
+
+.settings-group:last-child {
+  margin-bottom:
+    0;
+}
+
+
+.setting-row {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+
+.setting-title {
+  font-size:
+    14px;
+
+  font-weight:
+    700;
+}
+
+
+.setting-description {
+  margin-top:
+    3px;
+
+  color:
+    var(--text-soft);
+
+  font-size:
+    11px;
+}
+
+
+.toggle-button {
+  min-width:
+    58px;
+
+  padding:
+    7px 12px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:
+    999px;
+
+  background:
+    var(--surface-soft);
+
+  color:
+    var(--text-soft);
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+}
+
+
+.toggle-button.active {
+  border-color:
+    var(--primary);
+
+  background:
+    var(--primary);
+
+  color:
+    #fff;
+}
+
+
+/* ==================================================
+   Dark mode
+================================================== */
+
+body.dark-mode {
+
+  --bg:
+    #17191f;
+
+  --surface:
+    #20232b;
+
+  --surface-soft:
+    #292c35;
+
+  --border:
+    #363a45;
+
+  --text:
+    #f1f3f7;
+
+  --text-soft:
+    #a2a7b3;
+
+  --primary:
+    #8192f5;
+
+  --primary-dark:
+    #7182e8;
+
+  --primary-light:
+    rgba(
+      129,
+      146,
+      245,
+      .14
+    );
+
+  --shadow:
+    0 10px 35px
+    rgba(
+      0,
+      0,
+      0,
+      .25
+    );
+}
+
+
+body.dark-mode #authScreen {
+  background:
+    linear-gradient(
+      135deg,
+      #151820 0%,
+      #20232b 50%,
+      #17191f 100%
+    );
+}
+
+
+body.dark-mode
+.input-group input,
+body.dark-mode
+.settings-group input,
+body.dark-mode
+.settings-group select {
+
+  background:
+    var(--surface);
+
+  color:
+    var(--text);
+}
+
+
+body.dark-mode
+.secondary-button {
+
+  background:
+    var(--surface);
+
+  color:
+    var(--text);
+}
+
+
+body.dark-mode
+.message-form input {
+
+  color:
+    var(--text);
+}
+
+
+/*
+  ダークモードのコメント
+*/
+
+body.dark-mode
+.message {
+
+  background:
+    var(--surface);
+
+  border-color:
+    var(--border);
+
+  box-shadow:
+    0 3px 12px
+    rgba(
+      0,
+      0,
+      0,
+      .12
+    );
+}
+
+
+body.dark-mode
+.message:hover {
+
+  border-color:
+    #444955;
+
+  box-shadow:
+    0 5px 16px
+    rgba(
+      0,
+      0,
+      0,
+      .18
+    );
+}
+
+
+body.dark-mode
+.message-actions {
+
+  border-top-color:
+    rgba(
+      54,
+      58,
+      69,
+      .8
+    );
+}
+
+
+/* ==================================================
+   Gray mode
+================================================== */
+
+body.gray-mode {
+
+  --primary:
+    #6d737d;
+
+  --primary-dark:
+    #5d636d;
+
+  --primary-light:
+    #eceef0;
+}
+
+
+body.dark-mode.gray-mode {
+
+  --primary:
+    #9ca3ad;
+
+  --primary-dark:
+    #858c96;
+
+  --primary-light:
+    rgba(
+      156,
+      163,
+      173,
+      .14
+    );
+}
+
+
+/* ==================================================
+   Responsive
+================================================== */
+
+@media (
+  max-width: 760px
+) {
+
+  :root {
+    --sidebar-width:
+      225px;
+  }
+
+
+  .sidebar {
+    width:
+      var(--sidebar-width);
+
+    min-width:
+      var(--sidebar-width);
+  }
+
+
+  .chat-header {
+    padding:
+      0 15px;
+  }
+
+
+  .messages {
+    padding:
+      18px 14px 115px;
+  }
+
+
+  .message-input-area {
+    padding:
+      10px 12px 14px;
+  }
+
+
+  .reply-preview {
+    left:
+      12px;
+
+    right:
+      12px;
+
+    bottom:
+      67px;
+  }
+
+
+  .invite-area {
+    display:
+      none;
+  }
+
+
+  .joined-room {
+    min-height:
+      42px;
+
+    padding:
+      0 10px;
+  }
+
+}
+
+
+@media (
+  max-width: 560px
+) {
+
+  .app-layout {
+    display:
+      block;
+  }
+
+
+  .sidebar {
+    display:
+      none;
+  }
+
+
+  .chat-header {
+    min-height:
+      62px;
+  }
+
+
+  .chat-room-icon {
+    width:
+      36px;
+
+    height:
+      36px;
+  }
+
+
+  .chat-room-info h2 {
+    font-size:
+      16px;
+  }
+
+
+  .messages {
+    padding:
+      14px 10px 110px;
+  }
+
+
+  .message {
+    padding:
+      11px 12px;
+  }
+
+
+  .message-header {
+    margin-bottom:
+      6px;
+  }
+
+
+  .message-user {
+    max-width:
+      55%;
+  }
+
+
+  .message-content {
+    font-size:
+      14px;
+
+    line-height:
+      1.6;
+  }
+
+
+  .modal {
+    padding:
+      12px;
+  }
+
+
+  .modal-content {
+    max-height:
+      calc(100vh - 24px);
+
+    overflow-y:
+      auto;
+  }
+
+
+  .modal-footer {
+    flex-wrap:
+      wrap;
+  }
+
+
+  .modal-footer-right {
+    margin-left:
+      auto;
+  }
+
+
+  .auth-panel {
+    padding:
+      24px 20px;
+  }
+
+}
