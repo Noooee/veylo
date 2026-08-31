@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
   <meta charset="UTF-8">
 
@@ -15,97 +14,78 @@
     rel="stylesheet"
     href="/style.css"
   >
-
-  <script
-    src="/socket.io/socket.io.js"
-    defer
-  ></script>
-
-  <script
-    src="/app.js"
-    defer
-  ></script>
 </head>
 
 <body>
 
   <!-- ==================================================
        認証画面
-       ================================================== -->
+  ================================================== -->
 
-  <main
+  <div
     id="authScreen"
-    class="screen auth-screen"
+    class="screen"
   >
 
-    <div class="auth-card">
+    <div class="auth-container">
 
       <div class="logo-area">
-
-        <div class="logo">
-          Veylo
-        </div>
-
-        <p class="logo-subtitle">
-          シンプルに話そう。
-        </p>
-
+        <h1>Veylo</h1>
+        <p>気軽につながるチャット</p>
       </div>
 
 
-      <!-- =========================
-           Login
-           ========================= -->
+      <!-- ================================
+           ログイン
+      ================================= -->
 
-      <section
+      <div
         id="loginPanel"
         class="auth-panel"
       >
 
-        <h1>
-          ログイン
-        </h1>
+        <h2>ログイン</h2>
 
-        <p class="panel-description">
-          Veyloにログインしてください。
-        </p>
+        <form id="loginForm">
 
+          <div class="input-group">
 
-        <form
-          id="loginForm"
-        >
+            <label for="loginName">
+              ユーザー名
+            </label>
 
-          <label>
-            名前
-          </label>
+            <input
+              id="loginName"
+              type="text"
+              autocomplete="username"
+              placeholder="ユーザー名"
+              required
+            >
 
-          <input
-            id="loginName"
-            type="text"
-            autocomplete="username"
-            placeholder="名前"
-            maxlength="100"
-            required
-          >
+          </div>
 
 
-          <label>
-            パスワード
-          </label>
+          <div class="input-group">
 
-          <input
-            id="loginPassword"
-            type="password"
-            autocomplete="current-password"
-            placeholder="パスワード"
-            required
-          >
+            <label for="loginPassword">
+              パスワード
+            </label>
+
+            <input
+              id="loginPassword"
+              type="password"
+              autocomplete="current-password"
+              placeholder="パスワード"
+              required
+            >
+
+          </div>
 
 
-          <p
+          <div
             id="loginError"
             class="form-error"
-          ></p>
+          ></div>
 
 
           <button
@@ -123,13 +103,8 @@
           type="button"
           class="text-button"
         >
-          パスワードを忘れた
+          パスワードを忘れた方
         </button>
-
-
-        <div class="auth-divider">
-          <span>または</span>
-        </div>
 
 
         <button
@@ -140,93 +115,84 @@
           新規登録
         </button>
 
-      </section>
+      </div>
 
 
-      <!-- =========================
-           Register
-           ========================= -->
+      <!-- ================================
+           新規登録
+      ================================= -->
 
-      <section
+      <div
         id="registerPanel"
         class="auth-panel hidden"
       >
 
-        <h1>
-          新規登録
-        </h1>
+        <h2>新規登録</h2>
 
-        <p class="panel-description">
-          Veyloのアカウントを作成します。
-        </p>
+        <form id="registerForm">
 
+          <div class="input-group">
 
-        <div class="info-box">
-          <strong>メールアドレスについて</strong>
+            <label for="registerEmail">
+              メールアドレス
+            </label>
 
-          <p>
-            同じメールアドレスでも
-            最大5個までアカウントを作成できます。
-          </p>
-        </div>
+            <input
+              id="registerEmail"
+              type="email"
+              autocomplete="email"
+              placeholder="メールアドレス"
+              required
+            >
 
-
-        <form
-          id="registerForm"
-        >
-
-          <label>
-            メールアドレス
-          </label>
-
-          <input
-            id="registerEmail"
-            type="email"
-            autocomplete="email"
-            placeholder="example@example.com"
-            required
-          >
+          </div>
 
 
-          <label>
-            名前
-          </label>
+          <div class="input-group">
 
-          <input
-            id="registerName"
-            type="text"
-            autocomplete="username"
-            placeholder="名前"
-            maxlength="100"
-            required
-          >
+            <label for="registerName">
+              ユーザー名
+            </label>
 
+            <input
+              id="registerName"
+              type="text"
+              autocomplete="username"
+              placeholder="ユーザー名"
+              required
+            >
 
-          <label>
-            パスワード
-          </label>
-
-          <input
-            id="registerPassword"
-            type="password"
-            autocomplete="new-password"
-            placeholder="8文字以上"
-            minlength="8"
-            required
-          >
+          </div>
 
 
-          <p
+          <div class="input-group">
+
+            <label for="registerPassword">
+              パスワード
+            </label>
+
+            <input
+              id="registerPassword"
+              type="password"
+              autocomplete="new-password"
+              placeholder="パスワード"
+              required
+            >
+
+          </div>
+
+
+          <div
             id="registerError"
             class="form-error"
-          ></p>
+          ></div>
 
 
           <button
             type="submit"
             class="primary-button"
           >
-            アカウントを作成
+            登録する
           </button>
 
         </form>
@@ -240,55 +206,50 @@
           ログインに戻る
         </button>
 
-      </section>
+      </div>
 
 
-      <!-- =========================
-           Forgot
-           ========================= -->
+      <!-- ================================
+           パスワードリセット
+      ================================= -->
 
-      <section
+      <div
         id="forgotPanel"
         class="auth-panel hidden"
       >
 
-        <h1>
-          パスワード再設定
-        </h1>
+        <h2>パスワードを忘れた方</h2>
 
-        <p class="panel-description">
-          登録したメールアドレスを入力してください。
-        </p>
+        <form id="forgotForm">
 
+          <div class="input-group">
 
-        <form
-          id="forgotForm"
-        >
+            <label for="forgotEmail">
+              メールアドレス
+            </label>
 
-          <label>
-            メールアドレス
-          </label>
+            <input
+              id="forgotEmail"
+              type="email"
+              autocomplete="email"
+              placeholder="メールアドレス"
+              required
+            >
 
-          <input
-            id="forgotEmail"
-            type="email"
-            autocomplete="email"
-            placeholder="example@example.com"
-            required
-          >
+          </div>
 
 
-          <p
+          <div
             id="forgotMessage"
             class="form-message"
-          ></p>
+          ></div>
 
 
           <button
             type="submit"
             class="primary-button"
           >
-            再設定メールを送信
+            リセットメールを送信
           </button>
 
         </form>
@@ -302,138 +263,205 @@
           ログインに戻る
         </button>
 
-      </section>
+      </div>
 
     </div>
 
-  </main>
+  </div>
 
 
   <!-- ==================================================
        アプリ画面
-       ================================================== -->
+  ================================================== -->
 
-  <main
+  <div
     id="appScreen"
-    class="screen app-screen hidden"
+    class="screen hidden"
   >
-
-    <!-- =========================
-         Header
-         ========================= -->
-
-    <header class="app-header">
-
-      <div class="header-left">
-
-        <div class="app-logo">
-          Veylo
-        </div>
-
-        <div class="current-room">
-          <span class="room-label">
-            ROOM
-          </span>
-
-          <strong id="roomName">
-            雑談
-          </strong>
-        </div>
-
-      </div>
-
-
-      <div class="header-right">
-
-        <button
-          id="settingsButton"
-          type="button"
-          class="icon-button"
-          title="設定"
-        >
-          ⚙️
-        </button>
-
-      </div>
-
-    </header>
-
-
-    <!-- =========================
-         Layout
-         ========================= -->
 
     <div class="app-layout">
 
 
-      <!-- =========================
-           Sidebar
-           ========================= -->
+      <!-- ==================================================
+           サイドバー
+      ================================================== -->
 
       <aside class="sidebar">
 
-        <div class="sidebar-section">
+        <!-- ================================
+             ヘッダー
+        ================================= -->
 
-          <h2>
-            ルーム
-          </h2>
+        <div class="sidebar-header">
 
+          <div class="brand">
+            <span class="brand-mark">V</span>
+
+            <span class="brand-name">
+              Veylo
+            </span>
+          </div>
+
+
+          <button
+            id="settingsButton"
+            type="button"
+            class="icon-button"
+            title="設定"
+          >
+            ⚙
+          </button>
+
+        </div>
+
+
+        <!-- ================================
+             ユーザー
+        ================================= -->
+
+        <div class="user-card">
+
+          <div class="user-avatar">
+            <span>●</span>
+          </div>
+
+          <div class="user-info">
+
+            <div class="user-label">
+              ログイン中
+            </div>
+
+            <input
+              id="usernameInput"
+              class="username-display"
+              type="text"
+              readonly
+            >
+
+          </div>
+
+        </div>
+
+
+        <!-- ================================
+             ルーム
+        ================================= -->
+
+        <div class="room-section">
+
+          <div class="section-title">
+
+            <span>
+              ルーム
+            </span>
+
+          </div>
+
+
+          <!-- 雑談 -->
 
           <button
             id="casualRoomButton"
             type="button"
             class="room-button active"
           >
-            <span>
+
+            <span class="room-icon">
               💬
             </span>
 
-            <span>
+            <span class="room-button-text">
               雑談
             </span>
+
           </button>
 
+
+          <!-- 部屋作成 -->
 
           <button
             id="createRoomButton"
             type="button"
-            class="room-button"
+            class="room-action-button"
           >
+
             <span>
               ＋
             </span>
 
             <span>
-              部屋を作る
+              部屋を作成
             </span>
+
           </button>
 
+
+          <!-- 部屋参加 -->
 
           <button
             id="joinRoomButton"
             type="button"
-            class="room-button"
+            class="room-action-button"
           >
+
             <span>
-              🔗
+              ↪
             </span>
 
             <span>
               部屋に参加
             </span>
+
           </button>
+
+
+          <!-- ================================
+               参加中の部屋
+          ================================= -->
+
+          <div class="joined-room-section">
+
+            <div class="joined-room-title">
+              参加中の部屋
+            </div>
+
+
+            <div
+              id="joinedRooms"
+              class="joined-rooms"
+            >
+
+              <!--
+                JavaScriptから参加中の部屋が
+                ここに追加されます。
+
+                雑談は常に一番上に表示します。
+              -->
+
+            </div>
+
+          </div>
 
         </div>
 
 
-        <div class="sidebar-user">
+        <!-- ================================
+             サイドバー下部
+        ================================= -->
 
-          <div class="sidebar-user-name">
-            <span class="online-dot"></span>
+        <div class="sidebar-footer">
+
+          <div class="connection-status">
 
             <span
-              id="usernameInput"
+              id="connectionDot"
+              class="connection-dot"
             ></span>
+
+            <span>
+              Veylo
+            </span>
+
           </div>
 
         </div>
@@ -441,17 +469,79 @@
       </aside>
 
 
-      <!-- =========================
-           Chat
-           ========================= -->
+      <!-- ==================================================
+           メイン
+      ================================================== -->
 
-      <section class="chat-area">
+      <main class="chat-area">
+
+
+        <!-- ================================
+             チャットヘッダー
+        ================================= -->
+
+        <header class="chat-header">
+
+          <div class="chat-room-info">
+
+            <div
+              id="roomIcon"
+              class="chat-room-icon"
+            >
+              💬
+            </div>
+
+            <div>
+
+              <h2 id="roomName">
+                雑談
+              </h2>
+
+              <div class="room-subtitle">
+                気軽に話しましょう
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="inviteArea"
+            class="invite-area hidden"
+          >
+
+            <span class="invite-label">
+              招待コード
+            </span>
+
+            <button
+              id="inviteCode"
+              type="button"
+              class="invite-code"
+              title="クリックしてコピー"
+            >
+              ------
+            </button>
+
+          </div>
+
+        </header>
+
+
+        <!-- ================================
+             メッセージ
+        ================================= -->
 
         <div
           id="messages"
           class="messages"
         ></div>
 
+
+        <!-- ================================
+             新着メッセージ
+        ================================= -->
 
         <button
           id="newMessageButton"
@@ -462,13 +552,16 @@
         </button>
 
 
-        <!-- Scroll controls -->
+        <!-- ================================
+             スクロールボタン
+        ================================= -->
 
-        <div class="scroll-controls">
+        <div class="scroll-buttons">
 
           <button
             id="scrollTopButton"
             type="button"
+            class="scroll-button"
             title="上へ"
           >
             ↑
@@ -477,6 +570,7 @@
           <button
             id="scrollBottomButton"
             type="button"
+            class="scroll-button"
             title="下へ"
           >
             ↓
@@ -485,7 +579,9 @@
         </div>
 
 
-        <!-- Reply -->
+        <!-- ================================
+             返信プレビュー
+        ================================= -->
 
         <div
           id="replyPreview"
@@ -493,204 +589,224 @@
         ></div>
 
 
-        <!-- Message form -->
+        <!-- ================================
+             入力
+        ================================= -->
 
-        <form
-          id="messageForm"
-          class="message-form"
-        >
+        <div class="message-input-area">
 
-          <textarea
-            id="messageInput"
-            rows="1"
-            maxlength="5000"
-            placeholder="メッセージを入力..."
-          ></textarea>
-
-
-          <button
-            type="submit"
-            class="send-button"
-            title="送信"
+          <form
+            id="messageForm"
+            class="message-form"
           >
-            ➤
-          </button>
 
-        </form>
+            <input
+              id="messageInput"
+              type="text"
+              autocomplete="off"
+              placeholder="メッセージを入力..."
+              maxlength="2000"
+            >
 
-      </section>
+            <button
+              type="submit"
+              class="send-button"
+              title="送信"
+            >
+              ➤
+            </button>
 
-    </div>
+          </form>
 
+        </div>
 
-    <!-- ==================================================
-         Invite Area
-         ================================================== -->
-
-    <div
-      id="inviteArea"
-      class="invite-area hidden"
-    >
-
-      <div>
-        招待コード
-      </div>
-
-      <strong
-        id="inviteCode"
-      ></strong>
+      </main>
 
     </div>
 
+  </div>
 
-    <!-- ==================================================
-         Create Room Modal
-         ================================================== -->
 
-    <div
-      id="createModal"
-      class="modal hidden"
-    >
+  <!-- ==================================================
+       部屋作成モーダル
+  ================================================== -->
 
-      <div class="modal-card">
+  <div
+    id="createModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h2>
+          部屋を作成
+        </h2>
 
         <button
+          id="cancelCreateButton"
           type="button"
           class="modal-close"
-          onclick="document.getElementById('createModal').classList.add('hidden')"
         >
           ×
         </button>
 
+      </div>
 
-        <h2>
-          部屋を作る
-        </h2>
 
-        <p>
-          新しいチャットルームを作成します。
+      <div class="modal-body">
+
+        <p class="modal-description">
+          新しい部屋を作成して、友達と話しましょう。
         </p>
 
 
-        <label>
-          部屋の名前
-        </label>
+        <div class="input-group">
 
-        <input
-          id="roomNameInput"
-          type="text"
-          maxlength="100"
-          placeholder="例：ゲーム部"
-        >
+          <label for="roomNameInput">
+            部屋の名前
+          </label>
 
-
-        <div class="modal-actions">
-
-          <button
-            id="cancelCreateButton"
-            type="button"
-            class="secondary-button"
+          <input
+            id="roomNameInput"
+            type="text"
+            maxlength="50"
+            autocomplete="off"
+            placeholder="例：ゲーム部屋"
           >
-            キャンセル
-          </button>
-
-          <button
-            id="confirmCreateButton"
-            type="button"
-            class="primary-button"
-          >
-            作成
-          </button>
 
         </div>
 
       </div>
 
-    </div>
 
-
-    <!-- ==================================================
-         Join Room Modal
-         ================================================== -->
-
-    <div
-      id="joinModal"
-      class="modal hidden"
-    >
-
-      <div class="modal-card">
+      <div class="modal-footer">
 
         <button
+          id="cancelCreateButton"
           type="button"
-          class="modal-close"
-          onclick="document.getElementById('joinModal').classList.add('hidden')"
+          class="secondary-button"
         >
-          ×
+          キャンセル
         </button>
 
+        <button
+          id="confirmCreateButton"
+          type="button"
+          class="primary-button"
+        >
+          作成する
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ==================================================
+       部屋参加モーダル
+  ================================================== -->
+
+  <div
+    id="joinModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-content">
+
+      <div class="modal-header">
 
         <h2>
           部屋に参加
         </h2>
 
-        <p>
+        <button
+          id="cancelJoinButton"
+          type="button"
+          class="modal-close"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="modal-body">
+
+        <p class="modal-description">
           招待コードを入力してください。
         </p>
 
 
-        <label>
-          招待コード
-        </label>
+        <div class="input-group">
 
-        <input
-          id="inviteCodeInput"
-          type="text"
-          maxlength="20"
-          placeholder="例：A1B2C3D4"
-        >
+          <label for="inviteCodeInput">
+            招待コード
+          </label>
 
-
-        <p
-          id="joinError"
-          class="form-error"
-        ></p>
-
-
-        <div class="modal-actions">
-
-          <button
-            id="cancelJoinButton"
-            type="button"
-            class="secondary-button"
+          <input
+            id="inviteCodeInput"
+            type="text"
+            maxlength="20"
+            autocomplete="off"
+            placeholder="例：ABC123"
           >
-            キャンセル
-          </button>
-
-          <button
-            id="confirmJoinButton"
-            type="button"
-            class="primary-button"
-          >
-            参加
-          </button>
 
         </div>
+
+
+        <div
+          id="joinError"
+          class="form-error"
+        ></div>
+
+      </div>
+
+
+      <div class="modal-footer">
+
+        <button
+          id="cancelJoinButton"
+          type="button"
+          class="secondary-button"
+        >
+          キャンセル
+        </button>
+
+        <button
+          id="confirmJoinButton"
+          type="button"
+          class="primary-button"
+        >
+          参加する
+        </button>
 
       </div>
 
     </div>
 
+  </div>
 
-    <!-- ==================================================
-         Settings Modal
-         ================================================== -->
 
-    <div
-      id="settingsModal"
-      class="modal hidden"
-    >
+  <!-- ==================================================
+       設定モーダル
+  ================================================== -->
 
-      <div class="modal-card settings-card">
+  <div
+    id="settingsModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-content settings-content">
+
+      <div class="modal-header">
+
+        <h2>
+          設定
+        </h2>
 
         <button
           id="closeSettingsButton"
@@ -700,57 +816,46 @@
           ×
         </button>
 
-
-        <h2>
-          設定
-        </h2>
+      </div>
 
 
-        <!-- Account -->
-
-        <div class="settings-section">
-
-          <h3>
-            アカウント
-          </h3>
+      <div class="modal-body">
 
 
-          <label>
-            名前
+        <!-- ユーザー名 -->
+
+        <div class="settings-group">
+
+          <label for="settingsUsernameInput">
+            ユーザー名
           </label>
 
           <input
             id="settingsUsernameInput"
             type="text"
-            maxlength="100"
+            readonly
           >
-
-
-          <button
-            id="saveSettingsButton"
-            type="button"
-            class="primary-button"
-          >
-            保存
-          </button>
 
         </div>
 
 
-        <!-- Appearance -->
+        <!-- テーマ -->
 
-        <div class="settings-section">
-
-          <h3>
-            外観
-          </h3>
-
+        <div class="settings-group">
 
           <div class="setting-row">
 
-            <span>
-              ダークモード
-            </span>
+            <div>
+
+              <div class="setting-title">
+                ダークモード
+              </div>
+
+              <div class="setting-description">
+                画面を暗いテーマにします
+              </div>
+
+            </div>
 
             <button
               id="themeToggleButton"
@@ -762,12 +867,26 @@
 
           </div>
 
+        </div>
+
+
+        <!-- グレーモード -->
+
+        <div class="settings-group">
 
           <div class="setting-row">
 
-            <span>
-              グレーモード
-            </span>
+            <div>
+
+              <div class="setting-title">
+                グレーモード
+              </div>
+
+              <div class="setting-description">
+                色を落ち着いたグレー系にします
+              </div>
+
+            </div>
 
             <button
               id="grayToggleButton"
@@ -782,17 +901,16 @@
         </div>
 
 
-        <!-- Language -->
+        <!-- 言語 -->
 
-        <div class="settings-section">
+        <div class="settings-group">
 
-          <h3>
+          <label for="languageSelect">
             言語
-          </h3>
+          </label>
 
-          <select
-            id="languageSelect"
-          >
+          <select id="languageSelect">
+
             <option value="ja">
               日本語
             </option>
@@ -800,96 +918,40 @@
             <option value="en">
               English
             </option>
+
           </select>
 
         </div>
 
-
-        <!-- Accounts -->
-
-        <div class="settings-section">
-
-          <div class="section-title-row">
-
-            <h3>
-              アカウント管理
-            </h3>
-
-            <span
-              id="accountCountLabel"
-              class="account-count"
-            >
-              0 / 5
-            </span>
-
-          </div>
+      </div>
 
 
-          <p class="settings-help">
-            同じメールアドレスでは最大5個までアカウントを作成できます。
-          </p>
+      <div class="modal-footer">
 
+        <button
+          id="logoutButton"
+          type="button"
+          class="danger-button"
+        >
+          ログアウト
+        </button>
 
-          <div
-            id="accountList"
-            class="account-list"
-          ></div>
-
-
-          <div class="delete-account-box">
-
-            <h4>
-              アカウントを削除
-            </h4>
-
-            <p>
-              削除するアカウントを選択し、現在のパスワードを入力してください。
-            </p>
-
-
-            <select
-              id="deleteAccountSelect"
-            >
-            </select>
-
-
-            <input
-              id="deleteAccountPassword"
-              type="password"
-              placeholder="現在のパスワード"
-              autocomplete="current-password"
-            >
-
-
-            <p
-              id="deleteAccountMessage"
-              class="form-error"
-            ></p>
-
-
-            <button
-              id="deleteAccountButton"
-              type="button"
-              class="danger-button"
-            >
-              アカウントを削除
-            </button>
-
-          </div>
-
-        </div>
-
-
-        <!-- Logout -->
-
-        <div class="settings-section">
+        <div class="modal-footer-right">
 
           <button
-            id="logoutButton"
+            id="closeSettingsButton"
             type="button"
-            class="logout-button"
+            class="secondary-button"
           >
-            ログアウト
+            閉じる
+          </button>
+
+          <button
+            id="saveSettingsButton"
+            type="button"
+            class="primary-button"
+          >
+            保存
           </button>
 
         </div>
@@ -898,8 +960,20 @@
 
     </div>
 
-  </main>
+  </div>
+
+
+  <!-- ==================================================
+       Socket.IO
+  ================================================== -->
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- ==================================================
+       App.js
+  ================================================== -->
+
+  <script src="/app.js"></script>
 
 </body>
-
 </html>
