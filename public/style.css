@@ -35,9 +35,6 @@
   --danger:
     #e05252;
 
-  --success:
-    #4caf50;
-
   --shadow:
     0 10px 35px rgba(
       31,
@@ -86,9 +83,6 @@ body {
 
   background:
     var(--bg);
-
-  -webkit-font-smoothing:
-    antialiased;
 }
 
 
@@ -102,22 +96,6 @@ select {
 
 button {
   cursor: pointer;
-}
-
-
-button:focus-visible,
-input:focus-visible,
-select:focus-visible {
-  outline:
-    3px solid rgba(
-      102,
-      126,
-      234,
-      .16
-    );
-
-  outline-offset:
-    1px;
 }
 
 
@@ -409,15 +387,6 @@ select:focus-visible {
 
   color:
     #fff;
-
-  box-shadow:
-    0 3px 10px
-    rgba(
-      102,
-      126,
-      234,
-      .16
-    );
 }
 
 
@@ -437,14 +406,8 @@ select:focus-visible {
       102,
       126,
       234,
-      .22
+      .18
     );
-}
-
-
-.primary-button:active {
-  transform:
-    translateY(0);
 }
 
 
@@ -465,7 +428,7 @@ select:focus-visible {
     var(--surface-soft);
 
   border-color:
-    #d8dce5;
+    #d9dde6;
 }
 
 
@@ -671,7 +634,7 @@ select:focus-visible {
       102,
       126,
       234,
-      .2
+      .18
     );
 }
 
@@ -732,7 +695,7 @@ select:focus-visible {
     var(--text);
 
   transform:
-    rotate(10deg);
+    rotate(8deg);
 }
 
 
@@ -764,6 +727,29 @@ select:focus-visible {
 
   background:
     var(--surface-soft);
+
+  transition:
+    .2s ease;
+}
+
+
+.user-card:hover {
+  border-color:
+    rgba(
+      102,
+      126,
+      234,
+      .18
+    );
+
+  box-shadow:
+    0 4px 12px
+    rgba(
+      31,
+      41,
+      55,
+      .04
+    );
 }
 
 
@@ -848,6 +834,9 @@ select:focus-visible {
 
   text-overflow:
     ellipsis;
+
+  white-space:
+    nowrap;
 }
 
 
@@ -895,7 +884,7 @@ select:focus-visible {
 
 
 /* ==================================================
-   Casual room
+   Main room button
 ================================================== */
 
 .room-button,
@@ -945,6 +934,9 @@ select:focus-visible {
 .room-action-button:hover {
   background:
     var(--surface-soft);
+
+  transform:
+    translateX(2px);
 }
 
 
@@ -952,18 +944,27 @@ select:focus-visible {
   background:
     var(--primary-light);
 
+  border-color:
+    rgba(
+      102,
+      126,
+      234,
+      .1
+    );
+
   color:
     var(--primary);
 
   font-weight:
     700;
 
-  border-color:
+  box-shadow:
+    0 3px 10px
     rgba(
       102,
       126,
       234,
-      .08
+      .05
     );
 }
 
@@ -979,9 +980,6 @@ select:focus-visible {
     center;
 
   width:
-    28px;
-
-  min-width:
     28px;
 
   font-size:
@@ -1020,9 +1018,6 @@ select:focus-visible {
   width:
     28px;
 
-  min-width:
-    28px;
-
   color:
     var(--primary);
 
@@ -1037,10 +1032,10 @@ select:focus-visible {
 
 .joined-room-section {
   margin-top:
-    16px;
+    18px;
 
   padding-top:
-    14px;
+    16px;
 
   border-top:
     1px solid var(--border);
@@ -1054,11 +1049,11 @@ select:focus-visible {
   align-items:
     center;
 
-  gap:
-    7px;
+  justify-content:
+    space-between;
 
   padding:
-    0 8px 9px;
+    0 8px 10px;
 
   color:
     var(--text-soft);
@@ -1074,26 +1069,9 @@ select:focus-visible {
 }
 
 
-.joined-room-title::before {
-  content:
-    "";
-
-  width:
-    6px;
-
-  height:
-    6px;
-
-  border-radius:
-    50%;
-
-  background:
-    var(--primary);
-
-  opacity:
-    .65;
-}
-
+/* ==================================================
+   Joined rooms container
+================================================== */
 
 .joined-rooms {
   display:
@@ -1103,13 +1081,16 @@ select:focus-visible {
     column;
 
   gap:
-    5px;
+    6px;
+
+  padding:
+    0 2px;
 }
 
 
-/*
-  JavaScriptで生成される参加中の部屋
-*/
+/* ==================================================
+   Joined room item
+================================================== */
 
 .joined-room {
   position:
@@ -1125,16 +1106,16 @@ select:focus-visible {
     100%;
 
   min-height:
-    44px;
+    46px;
 
   padding:
-    0 10px;
+    7px 10px;
 
   border:
     1px solid transparent;
 
   border-radius:
-    10px;
+    11px;
 
   background:
     transparent;
@@ -1154,8 +1135,8 @@ select:focus-visible {
   transition:
     background .2s ease,
     border-color .2s ease,
-    color .2s ease,
-    transform .15s ease;
+    transform .2s ease,
+    box-shadow .2s ease;
 }
 
 
@@ -1163,10 +1144,17 @@ select:focus-visible {
   background:
     var(--surface-soft);
 
+  border-color:
+    var(--border);
+
   transform:
-    translateX(1px);
+    translateX(2px);
 }
 
+
+/* ==================================================
+   Selected joined room
+================================================== */
 
 .joined-room.active {
   background:
@@ -1177,7 +1165,7 @@ select:focus-visible {
       102,
       126,
       234,
-      .14
+      .16
     );
 
   color:
@@ -1187,12 +1175,12 @@ select:focus-visible {
     700;
 
   box-shadow:
-    0 2px 8px
+    0 4px 12px
     rgba(
       102,
       126,
       234,
-      .05
+      .06
     );
 }
 
@@ -1205,24 +1193,28 @@ select:focus-visible {
     absolute;
 
   left:
-    -1px;
+    -2px;
 
   top:
-    8px;
+    9px;
 
   bottom:
-    8px;
+    9px;
 
   width:
     3px;
 
   border-radius:
-    0 4px 4px 0;
+    999px;
 
   background:
     var(--primary);
 }
 
+
+/* ==================================================
+   Joined room icon
+================================================== */
 
 .joined-room-icon {
   display:
@@ -1235,34 +1227,67 @@ select:focus-visible {
     center;
 
   width:
-    30px;
+    32px;
 
-  min-width:
-    30px;
+  height:
+    32px;
 
   margin-right:
-    3px;
+    8px;
+
+  flex-shrink:
+    0;
+
+  border-radius:
+    9px;
+
+  background:
+    var(--surface-soft);
 
   color:
     var(--text-soft);
 
   font-size:
     15px;
+
+  transition:
+    .2s ease;
 }
 
 
-.joined-room.active .joined-room-icon {
+.joined-room:hover .joined-room-icon {
+  background:
+    #ffffff;
+
   color:
     var(--primary);
 }
 
 
-.joined-room-name {
-  flex:
-    1;
+.joined-room.active .joined-room-icon {
+  background:
+    rgba(
+      102,
+      126,
+      234,
+      .14
+    );
 
+  color:
+    var(--primary);
+}
+
+
+/* ==================================================
+   Joined room name
+================================================== */
+
+.joined-room-name {
   min-width:
     0;
+
+  flex:
+    1;
 
   overflow:
     hidden;
@@ -1274,22 +1299,29 @@ select:focus-visible {
     nowrap;
 
   line-height:
-    1.3;
+    1.4;
 }
 
 
+/* ==================================================
+   Empty joined room
+================================================== */
+
 .joined-room-empty {
   margin:
-    2px 4px;
+    2px 2px 0;
 
   padding:
-    10px;
+    12px 10px;
 
   border:
     1px dashed var(--border);
 
   border-radius:
-    9px;
+    10px;
+
+  background:
+    var(--surface-soft);
 
   color:
     #9aa0ad;
@@ -1298,18 +1330,10 @@ select:focus-visible {
     11px;
 
   line-height:
-    1.5;
+    1.6;
 
   text-align:
     center;
-
-  background:
-    rgba(
-      248,
-      249,
-      252,
-      .5
-    );
 }
 
 
@@ -1323,6 +1347,9 @@ select:focus-visible {
 
   border-top:
     1px solid var(--border);
+
+  background:
+    var(--surface);
 }
 
 
@@ -1335,6 +1362,12 @@ select:focus-visible {
 
   gap:
     7px;
+
+  padding:
+    6px 8px;
+
+  border-radius:
+    8px;
 
   color:
     var(--text-soft);
@@ -1355,7 +1388,7 @@ select:focus-visible {
     50%;
 
   background:
-    var(--success);
+    #4caf50;
 
   box-shadow:
     0 0 0 3px
@@ -1421,18 +1454,6 @@ select:focus-visible {
 
   border-bottom:
     1px solid var(--border);
-
-  box-shadow:
-    0 1px 5px
-    rgba(
-      31,
-      41,
-      55,
-      .025
-    );
-
-  z-index:
-    2;
 }
 
 
@@ -1467,17 +1488,8 @@ select:focus-visible {
   height:
     42px;
 
-  min-width:
-    42px;
-
-  border:
-    1px solid
-    rgba(
-      102,
-      126,
-      234,
-      .08
-    );
+  flex-shrink:
+    0;
 
   border-radius:
     12px;
@@ -1505,12 +1517,6 @@ select:focus-visible {
 
   font-size:
     18px;
-
-  font-weight:
-    800;
-
-  letter-spacing:
-    -.2px;
 }
 
 
@@ -1602,31 +1608,25 @@ select:focus-visible {
 }
 
 
-/*
-  メッセージ本体
-
-  以前の「カード感」は残しつつ、
-  チャットとして見やすいサイズ感に調整
-*/
+/* ==================================================
+   Message card
+================================================== */
 
 .message {
-  position:
-    relative;
-
   max-width:
     850px;
 
   margin:
-    0 auto 12px;
+    0 auto 18px;
 
   padding:
-    12px 14px;
+    13px 15px;
 
   border:
     1px solid var(--border);
 
   border-radius:
-    12px;
+    13px;
 
   background:
     var(--surface);
@@ -1641,9 +1641,9 @@ select:focus-visible {
     );
 
   transition:
-    background .2s ease,
-    box-shadow .2s ease,
-    border-color .2s ease;
+    background .2s,
+    box-shadow .2s,
+    transform .2s;
 }
 
 
@@ -1657,8 +1657,8 @@ select:focus-visible {
       .05
     );
 
-  border-color:
-    #dfe3eb;
+  transform:
+    translateY(-1px);
 }
 
 
@@ -1677,17 +1677,11 @@ select:focus-visible {
     8px;
 
   margin-bottom:
-    6px;
-
-  min-height:
-    20px;
+    7px;
 }
 
 
 .message-user {
-  color:
-    var(--text);
-
   font-size:
     13px;
 
@@ -1704,10 +1698,6 @@ select:focus-visible {
     10px;
 }
 
-
-/* ==================================================
-   Message content
-================================================== */
 
 .message-content {
   color:
@@ -1730,10 +1720,6 @@ select:focus-visible {
 }
 
 
-/* ==================================================
-   Edited label
-================================================== */
-
 .edited-label {
   display:
     inline-block;
@@ -1753,11 +1739,6 @@ select:focus-visible {
    Message actions
 ================================================== */
 
-/*
-  コメント・返信・編集・削除などを
-  「ボタン」っぽく見せる
-*/
-
 .message-actions {
   display:
     flex;
@@ -1769,21 +1750,14 @@ select:focus-visible {
     5px;
 
   margin-top:
-    9px;
-
-  padding-top:
-    8px;
-
-  border-top:
-    1px solid
-    rgba(
-      229,
-      232,
-      239,
-      .7
-    );
+    10px;
 }
 
+
+/*
+  コメント操作を
+  小さなボタン風にする
+*/
 
 .message-actions button {
   display:
@@ -1816,11 +1790,8 @@ select:focus-visible {
   font-size:
     11px;
 
-  font-weight:
-    600;
-
   transition:
-    .18s ease;
+    .2s ease;
 }
 
 
@@ -1839,19 +1810,13 @@ select:focus-visible {
 }
 
 
-.message-actions button:active {
-  transform:
-    translateY(0);
-}
-
-
 .message-actions .delete-action:hover {
   border-color:
     rgba(
       224,
       82,
       82,
-      .12
+      .15
     );
 
   background:
@@ -1868,24 +1833,15 @@ select:focus-visible {
 
 
 /* ==================================================
-   Reply information
+   Reply
 ================================================== */
 
 .message-reply-info {
-  display:
-    flex;
-
-  align-items:
-    center;
-
-  min-height:
-    30px;
-
   margin-bottom:
     8px;
 
   padding:
-    6px 9px;
+    7px 9px;
 
   border-left:
     3px solid var(--primary);
@@ -1915,7 +1871,7 @@ select:focus-visible {
     nowrap;
 
   transition:
-    background .2s ease;
+    .2s ease;
 }
 
 
@@ -1925,14 +1881,10 @@ select:focus-visible {
       102,
       126,
       234,
-      .18
+      .16
     );
 }
 
-
-/* ==================================================
-   Message highlight
-================================================== */
 
 .message-highlight {
   animation:
@@ -2002,8 +1954,7 @@ select:focus-visible {
     9px 12px;
 
   border:
-    1px solid
-    rgba(
+    1px solid rgba(
       102,
       126,
       234,
@@ -2021,15 +1972,6 @@ select:focus-visible {
 
   font-size:
     11px;
-
-  box-shadow:
-    0 3px 12px
-    rgba(
-      31,
-      41,
-      55,
-      .04
-    );
 }
 
 
@@ -2049,8 +1991,8 @@ select:focus-visible {
   height:
     25px;
 
-  min-width:
-    25px;
+  flex-shrink:
+    0;
 
   border:
     0;
@@ -2080,11 +2022,8 @@ select:focus-visible {
       102,
       126,
       234,
-      .22
+      .2
     );
-
-  transform:
-    scale(1.05);
 }
 
 
@@ -2109,8 +2048,7 @@ select:focus-visible {
     9px 14px;
 
   border:
-    1px solid
-    rgba(
+    1px solid rgba(
       102,
       126,
       234,
@@ -2147,17 +2085,11 @@ select:focus-visible {
 
 
 .new-message-button:hover {
-  transform:
-    translateY(-2px);
+  background:
+    var(--primary-light);
 
-  box-shadow:
-    0 7px 23px
-    rgba(
-      31,
-      41,
-      55,
-      .16
-    );
+  transform:
+    translateY(-1px);
 }
 
 
@@ -2318,8 +2250,7 @@ select:focus-visible {
     );
 
   transition:
-    border-color .2s ease,
-    box-shadow .2s ease;
+    .2s ease;
 }
 
 
@@ -2329,7 +2260,7 @@ select:focus-visible {
       102,
       126,
       234,
-      .45
+      .4
     );
 
   box-shadow:
@@ -2338,14 +2269,14 @@ select:focus-visible {
       31,
       41,
       55,
-      .08
+      .07
     ),
     0 0 0 3px
     rgba(
       102,
       126,
       234,
-      .07
+      .08
     );
 }
 
@@ -2377,12 +2308,6 @@ select:focus-visible {
 
   font-size:
     14px;
-}
-
-
-.message-form input::placeholder {
-  color:
-    #a1a6b1;
 }
 
 
@@ -2419,15 +2344,6 @@ select:focus-visible {
 
   transition:
     .2s ease;
-
-  box-shadow:
-    0 3px 9px
-    rgba(
-      102,
-      126,
-      234,
-      .18
-    );
 }
 
 
@@ -2439,19 +2355,13 @@ select:focus-visible {
     translateY(-1px);
 
   box-shadow:
-    0 5px 13px
+    0 4px 12px
     rgba(
       102,
       126,
       234,
-      .25
+      .2
     );
-}
-
-
-.send-button:active {
-  transform:
-    translateY(0);
 }
 
 
@@ -2523,11 +2433,11 @@ select:focus-visible {
     );
 
   animation:
-    modalOpen .18s ease;
+    modalIn .18s ease;
 }
 
 
-@keyframes modalOpen {
+@keyframes modalIn {
 
   from {
     opacity:
@@ -2580,9 +2490,6 @@ select:focus-visible {
 
   font-size:
     18px;
-
-  font-weight:
-    800;
 }
 
 
@@ -2630,7 +2537,7 @@ select:focus-visible {
     var(--text);
 
   transform:
-    rotate(90deg);
+    rotate(4deg);
 }
 
 
@@ -2769,7 +2676,12 @@ select:focus-visible {
 
 .toggle-button:hover {
   border-color:
-    #d3d8e2;
+    rgba(
+      102,
+      126,
+      234,
+      .25
+    );
 }
 
 
@@ -2782,15 +2694,6 @@ select:focus-visible {
 
   color:
     #fff;
-
-  box-shadow:
-    0 3px 10px
-    rgba(
-      102,
-      126,
-      234,
-      .18
-    );
 }
 
 
@@ -2882,38 +2785,43 @@ body.dark-mode
 
 body.dark-mode
 .message-form input {
+
   color:
     var(--text);
 }
 
 
+/* ==================================================
+   Dark mode - room
+================================================== */
+
 body.dark-mode
-.message:hover {
-  border-color:
-    #424754;
+.joined-room:hover
+.joined-room-icon {
+
+  background:
+    #323641;
 }
 
 
 body.dark-mode
-.message-actions {
-  border-top-color:
-    rgba(
-      54,
-      58,
-      69,
-      .8
-    );
+.joined-room-icon {
+
+  background:
+    #292c35;
 }
 
 
 body.dark-mode
-.joined-room-empty {
+.joined-room.active
+.joined-room-icon {
+
   background:
     rgba(
-      41,
-      44,
-      53,
-      .5
+      129,
+      146,
+      245,
+      .16
     );
 }
 
@@ -3042,12 +2950,6 @@ body.dark-mode.gray-mode {
 
     height:
       36px;
-
-    min-width:
-      36px;
-
-    border-radius:
-      10px;
   }
 
 
@@ -3066,27 +2968,15 @@ body.dark-mode.gray-mode {
   .message {
     padding:
       11px 12px;
-
-    border-radius:
-      11px;
-  }
-
-
-  .message-actions {
-    gap:
-      3px;
-
-    overflow-x:
-      auto;
   }
 
 
   .message-actions button {
-    white-space:
-      nowrap;
+    min-height:
+      27px;
 
     padding:
-      4px 7px;
+      4px 8px;
   }
 
 
@@ -3120,85 +3010,6 @@ body.dark-mode.gray-mode {
   .auth-panel {
     padding:
       24px 20px;
-  }
-
-}
-
-
-/* ==================================================
-   Very small screens
-================================================== */
-
-@media (
-  max-width: 380px
-) {
-
-  .chat-header {
-    padding:
-      0 10px;
-  }
-
-
-  .chat-room-info {
-    gap:
-      8px;
-  }
-
-
-  .chat-room-icon {
-    width:
-      34px;
-
-    height:
-      34px;
-
-    min-width:
-      34px;
-
-    font-size:
-      17px;
-  }
-
-
-  .chat-room-info h2 {
-    font-size:
-      15px;
-  }
-
-
-  .room-subtitle {
-    font-size:
-      10px;
-  }
-
-
-  .message-input-area {
-    padding:
-      8px 8px 11px;
-  }
-
-
-  .message-form {
-    border-radius:
-      11px;
-  }
-
-
-  .send-button {
-    width:
-      38px;
-
-    height:
-      38px;
-  }
-
-
-  .message-form input {
-    height:
-      38px;
-
-    font-size:
-      13px;
   }
 
 }
