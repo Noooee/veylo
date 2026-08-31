@@ -1,6 +1,7 @@
 /* ==================================================
    Veylo
    style.css
+   LINE風メッセージ + シンプルなルーム表示
 ================================================== */
 
 :root {
@@ -115,7 +116,8 @@ button {
 
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background:
+    transparent;
 }
 
 
@@ -594,6 +596,9 @@ button {
     var(--text-soft);
 
   font-size: 19px;
+
+  transition:
+    .2s ease;
 }
 
 
@@ -726,11 +731,8 @@ button {
 }
 
 
-/* ==================================================
-   雑談ルーム
-================================================== */
-
-.room-button {
+.room-button,
+.room-action-button {
   display: flex;
 
   align-items: center;
@@ -761,33 +763,20 @@ button {
   font-size: 13px;
 
   transition:
-    background .18s ease,
-    border-color .18s ease,
-    color .18s ease,
-    transform .18s ease;
+    .2s ease;
 }
 
 
-.room-button:hover {
+.room-button:hover,
+.room-action-button:hover {
   background:
     var(--surface-soft);
-
-  border-color:
-    var(--border);
 }
 
 
 .room-button.active {
   background:
     var(--primary-light);
-
-  border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .12
-    );
 
   color:
     var(--primary);
@@ -796,28 +785,8 @@ button {
 }
 
 
-.room-button.active:hover {
-  background:
-    var(--primary-light);
-
-  border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .2
-    );
-}
-
-
 .room-icon {
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
   width: 28px;
-  min-width: 28px;
 
   font-size: 17px;
 }
@@ -832,73 +801,14 @@ button {
 }
 
 
-/* ==================================================
-   部屋作成・参加
-================================================== */
-
 .room-action-button {
-  display: flex;
-
-  align-items: center;
-
-  width: 100%;
-
-  min-height: 42px;
-
-  margin-bottom: 4px;
-
-  padding:
-    0 11px;
-
-  border:
-    1px solid transparent;
-
-  border-radius:
-    10px;
-
-  background:
-    transparent;
-
   color:
     var(--text-soft);
-
-  text-align: left;
-
-  font-size: 13px;
-
-  transition:
-    background .18s ease,
-    color .18s ease,
-    border-color .18s ease;
-}
-
-
-.room-action-button:hover {
-  background:
-    var(--surface-soft);
-
-  border-color:
-    var(--border);
-
-  color:
-    var(--text);
-}
-
-
-.room-action-button:active {
-  transform:
-    scale(.985);
 }
 
 
 .room-action-button span:first-child {
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
   width: 28px;
-  min-width: 28px;
 
   color:
     var(--primary);
@@ -908,13 +818,14 @@ button {
 
 
 /* ==================================================
-   参加中の部屋
+   Joined rooms
+   シンプル・上品なルームリスト
 ================================================== */
 
 .joined-room-section {
   margin-top: 18px;
 
-  padding-top: 15px;
+  padding-top: 16px;
 
   border-top:
     1px solid var(--border);
@@ -926,8 +837,12 @@ button {
 
   align-items: center;
 
+  height: 30px;
+
   padding:
-    0 8px 9px;
+    0 8px;
+
+  margin-bottom: 5px;
 
   color:
     var(--text-soft);
@@ -936,44 +851,17 @@ button {
   font-weight: 800;
 
   letter-spacing:
-    .3px;
+    .4px;
 }
 
 
-.joined-room-title::before {
-  content: "";
+/*
+  JavaScriptで生成される部屋ボタン。
 
-  width: 5px;
-  height: 5px;
-
-  margin-right: 7px;
-
-  border-radius:
-    50%;
-
-  background:
-    var(--primary);
-
-  opacity:
-    .7;
-}
-
-
-.joined-rooms {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 5px;
-
-  padding:
-    0 2px;
-}
-
-
-/* ==================================================
-   参加中の部屋ボタン
-================================================== */
+  絵文字を使わず、
+  左側に小さなアクセントラインを置いて
+  サイドバー全体のデザインに合わせます。
+*/
 
 .joined-room {
   position: relative;
@@ -984,10 +872,12 @@ button {
 
   width: 100%;
 
-  min-height: 43px;
+  min-height: 44px;
+
+  margin-bottom: 4px;
 
   padding:
-    0 10px;
+    0 12px 0 16px;
 
   border:
     1px solid transparent;
@@ -1004,7 +894,7 @@ button {
   text-align: left;
 
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
 
   cursor: pointer;
 
@@ -1012,10 +902,46 @@ button {
     background .18s ease,
     border-color .18s ease,
     color .18s ease,
-    box-shadow .18s ease,
     transform .18s ease;
 }
 
+
+/*
+  左側のアクセント
+*/
+
+.joined-room::before {
+  content: "";
+
+  position: absolute;
+
+  left: 7px;
+
+  top: 50%;
+
+  width: 3px;
+  height: 0;
+
+  border-radius:
+    999px;
+
+  background:
+    var(--primary);
+
+  transform:
+    translateY(-50%);
+
+  opacity: 0;
+
+  transition:
+    height .18s ease,
+    opacity .18s ease;
+}
+
+
+/*
+  ホバー
+*/
 
 .joined-room:hover {
   background:
@@ -1024,20 +950,21 @@ button {
   border-color:
     var(--border);
 
-  color:
-    var(--text);
-
   transform:
-    translateX(1px);
+    translateX(2px);
 }
 
 
-.joined-room:active {
-  transform:
-    translateX(1px)
-    scale(.99);
+.joined-room:hover::before {
+  height: 18px;
+
+  opacity: .45;
 }
 
+
+/*
+  現在選択中の部屋
+*/
 
 .joined-room.active {
   background:
@@ -1048,7 +975,7 @@ button {
       102,
       126,
       234,
-      .15
+      .16
     );
 
   color:
@@ -1057,7 +984,7 @@ button {
   font-weight: 700;
 
   box-shadow:
-    0 2px 8px
+    0 2px 7px
     rgba(
       102,
       126,
@@ -1067,84 +994,30 @@ button {
 }
 
 
-.joined-room.active:hover {
-  background:
-    var(--primary-light);
+.joined-room.active::before {
+  height: 22px;
 
-  border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .22
-    );
+  opacity: 1;
 }
 
 
-/* ==================================================
-   部屋アイコン
-================================================== */
+/*
+  JavaScript側でアイコン要素がある場合も
+  絵文字を目立たせず、シンプルにします。
+*/
 
 .joined-room-icon {
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  width: 30px;
-  min-width: 30px;
-
-  height: 30px;
-
-  margin-right: 7px;
-
-  border-radius:
-    8px;
-
-  background:
-    var(--surface-soft);
-
-  color:
-    var(--text-soft);
-
-  font-size: 14px;
-
-  transition:
-    background .18s ease,
-    color .18s ease;
+  display: none;
 }
 
 
-.joined-room:hover
-.joined-room-icon {
-  background:
-    #eef0f5;
-
-  color:
-    var(--text);
-}
-
-
-.joined-room.active
-.joined-room-icon {
-  background:
-    rgba(
-      102,
-      126,
-      234,
-      .12
-    );
-
-  color:
-    var(--primary);
-}
-
-
-/* ==================================================
-   部屋名
-================================================== */
+/*
+  部屋名
+*/
 
 .joined-room-name {
+  display: block;
+
   flex: 1;
 
   min-width: 0;
@@ -1156,20 +1029,20 @@ button {
   white-space: nowrap;
 
   line-height:
-    1.3;
+    1.4;
 }
 
 
-/* ==================================================
-   部屋一覧の空状態
-================================================== */
+/*
+  部屋がないとき
+*/
 
 .joined-room-empty {
   margin:
-    2px 4px;
+    3px 4px;
 
   padding:
-    10px 9px;
+    12px 10px;
 
   border:
     1px dashed var(--border);
@@ -1186,9 +1059,10 @@ button {
   font-size: 11px;
 
   line-height:
-    1.5;
+    1.6;
 
-  text-align: center;
+  text-align:
+    center;
 }
 
 
@@ -1389,6 +1263,7 @@ button {
 
 /* ==================================================
    Messages
+   LINE風の「囲まれたコメント」
 ================================================== */
 
 .messages {
@@ -1405,9 +1280,13 @@ button {
 }
 
 
-/* ==================================================
-   コメント本体
-================================================== */
+/*
+  メッセージ本体
+
+  元のカード感を残しつつ、
+  LINEのトーク吹き出しに近い
+  柔らかい角丸にします。
+*/
 
 .message {
   position: relative;
@@ -1415,27 +1294,27 @@ button {
   max-width: 850px;
 
   margin:
-    0 auto 18px;
+    0 auto 14px;
 
   padding:
-    13px 15px;
+    13px 15px 12px;
 
   border:
     1px solid var(--border);
 
   border-radius:
-    13px;
+    16px;
 
   background:
     var(--surface);
 
   box-shadow:
-    0 2px 7px
+    0 2px 8px
     rgba(
       31,
       41,
       55,
-      .025
+      .035
     );
 
   transition:
@@ -1446,17 +1325,26 @@ button {
 }
 
 
+/*
+  ホバー時
+*/
+
 .message:hover {
   border-color:
-    #dfe3eb;
+    rgba(
+      102,
+      126,
+      234,
+      .18
+    );
 
   box-shadow:
-    0 4px 13px
+    0 5px 15px
     rgba(
       31,
       41,
       55,
-      .06
+      .07
     );
 
   transform:
@@ -1464,9 +1352,9 @@ button {
 }
 
 
-/* ==================================================
-   コメントヘッダー
-================================================== */
+/*
+  メッセージ上部
+*/
 
 .message-header {
   display: flex;
@@ -1480,14 +1368,22 @@ button {
 }
 
 
+/*
+  ユーザー名
+*/
+
 .message-user {
   color:
-    var(--text);
+    var(--primary);
 
   font-size: 13px;
   font-weight: 800;
 }
 
+
+/*
+  時刻
+*/
 
 .message-time {
   color:
@@ -1497,9 +1393,9 @@ button {
 }
 
 
-/* ==================================================
-   コメント内容
-================================================== */
+/*
+  コメント本文
+*/
 
 .message-content {
   color:
@@ -1508,7 +1404,7 @@ button {
   font-size: 14px;
 
   line-height:
-    1.65;
+    1.7;
 
   word-break:
     break-word;
@@ -1521,9 +1417,9 @@ button {
 }
 
 
-/* ==================================================
-   編集済み
-================================================== */
+/*
+  編集済み
+*/
 
 .edited-label {
   display: inline-block;
@@ -1538,7 +1434,8 @@ button {
 
 
 /* ==================================================
-   コメント操作ボタン
+   Message actions
+   LINEのメッセージ下部にある操作欄っぽく
 ================================================== */
 
 .message-actions {
@@ -1550,19 +1447,26 @@ button {
 
   margin-top:
     10px;
+
+  padding-top:
+    8px;
+
+  border-top:
+    1px solid
+    rgba(
+      229,
+      232,
+      239,
+      .75
+    );
 }
 
 
 .message-actions button {
-  display: inline-flex;
-
-  align-items: center;
-  justify-content: center;
-
   min-height: 28px;
 
   padding:
-    4px 9px;
+    3px 9px;
 
   border:
     1px solid transparent;
@@ -1571,1025 +1475,4 @@ button {
     7px;
 
   background:
-    transparent;
-
-  color:
-    var(--text-soft);
-
-  font-size: 11px;
-
-  transition:
-    background .18s ease,
-    border-color .18s ease,
-    color .18s ease,
-    transform .18s ease;
-}
-
-
-.message-actions button:hover {
-  background:
-    var(--surface-soft);
-
-  border-color:
-    var(--border);
-
-  color:
-    var(--text);
-
-  transform:
-    translateY(-1px);
-}
-
-
-.message-actions button:active {
-  transform:
-    scale(.96);
-}
-
-
-.message-actions .delete-action:hover {
-  border-color:
-    rgba(
-      224,
-      82,
-      82,
-      .15
-    );
-
-  background:
-    rgba(
-      224,
-      82,
-      82,
-      .07
-    );
-
-  color:
-    var(--danger);
-}
-
-
-/* ==================================================
-   Reply
-================================================== */
-
-.message-reply-info {
-  margin-bottom:
-    8px;
-
-  padding:
-    7px 9px;
-
-  border-left:
-    3px solid var(--primary);
-
-  border-radius:
-    5px;
-
-  background:
-    var(--primary-light);
-
-  color:
-    var(--primary);
-
-  font-size: 11px;
-
-  cursor: pointer;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
-
-  transition:
-    background .18s ease;
-}
-
-
-.message-reply-info:hover {
-  background:
-    rgba(
-      102,
-      126,
-      234,
-      .17
-    );
-}
-
-
-.message-highlight {
-  animation:
-    messageHighlight 1.8s ease;
-}
-
-
-@keyframes messageHighlight {
-
-  0% {
-    background:
-      rgba(
-        102,
-        126,
-        234,
-        .3
-      );
-  }
-
-  100% {
-    background:
-      var(--surface);
-  }
-
-}
-
-
-/* ==================================================
-   Reply preview
-================================================== */
-
-.reply-preview {
-  position: absolute;
-
-  left: 24px;
-  right: 24px;
-
-  bottom: 72px;
-
-  z-index: 5;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 12px;
-
-  max-width: 850px;
-
-  margin:
-    0 auto;
-
-  padding:
-    9px 12px;
-
-  border:
-    1px solid rgba(
-      102,
-      126,
-      234,
-      .2
-    );
-
-  border-radius:
-    10px;
-
-  background:
-    var(--primary-light);
-
-  color:
-    var(--primary);
-
-  font-size: 11px;
-}
-
-
-.reply-preview button {
-  width: 25px;
-  height: 25px;
-
-  border:
-    0;
-
-  border-radius:
-    50%;
-
-  background:
-    rgba(
-      102,
-      126,
-      234,
-      .12
-    );
-
-  color:
-    var(--primary);
-}
-
-
-/* ==================================================
-   New message
-================================================== */
-
-.new-message-button {
-  position: absolute;
-
-  right: 24px;
-  bottom: 85px;
-
-  z-index: 10;
-
-  padding:
-    9px 14px;
-
-  border:
-    1px solid rgba(
-      102,
-      126,
-      234,
-      .2
-    );
-
-  border-radius:
-    999px;
-
-  background:
-    var(--surface);
-
-  color:
-    var(--primary);
-
-  box-shadow:
-    0 5px 20px
-    rgba(
-      31,
-      41,
-      55,
-      .12
-    );
-
-  font-size: 12px;
-  font-weight: 700;
-}
-
-
-/* ==================================================
-   Scroll controls
-================================================== */
-
-.scroll-buttons {
-  position: absolute;
-
-  right: 18px;
-  bottom: 135px;
-
-  z-index: 4;
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 6px;
-}
-
-
-.scroll-button {
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  width: 34px;
-  height: 34px;
-
-  border:
-    1px solid var(--border);
-
-  border-radius:
-    50%;
-
-  background:
-    var(--surface);
-
-  color:
-    var(--text-soft);
-
-  box-shadow:
-    0 3px 10px
-    rgba(
-      31,
-      41,
-      55,
-      .06
-    );
-
-  transition:
-    .18s ease;
-}
-
-
-.scroll-button:hover {
-  color:
-    var(--primary);
-
-  border-color:
-    rgba(
-      102,
-      126,
-      234,
-      .3
-    );
-
-  transform:
-    translateY(-1px);
-}
-
-
-/* ==================================================
-   Input area
-================================================== */
-
-.message-input-area {
-  position: absolute;
-
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  z-index: 3;
-
-  padding:
-    12px 24px 18px;
-
-  background:
-    linear-gradient(
-      to top,
-      var(--bg) 70%,
-      transparent
-    );
-}
-
-
-.message-form {
-  display: flex;
-
-  align-items: center;
-
-  gap: 8px;
-
-  max-width: 850px;
-
-  margin:
-    0 auto;
-
-  padding:
-    5px;
-
-  border:
-    1px solid var(--border);
-
-  border-radius:
-    13px;
-
-  background:
-    var(--surface);
-
-  box-shadow:
-    0 6px 25px
-    rgba(
-      31,
-      41,
-      55,
-      .07
-    );
-}
-
-
-.message-form input {
-  flex: 1;
-
-  min-width: 0;
-
-  height: 42px;
-
-  padding:
-    0 12px;
-
-  border:
-    0;
-
-  outline:
-    none;
-
-  background:
-    transparent;
-
-  color:
-    var(--text);
-
-  font-size: 14px;
-}
-
-
-.send-button {
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  width: 42px;
-  height: 42px;
-
-  border:
-    0;
-
-  border-radius:
-    10px;
-
-  background:
-    var(--primary);
-
-  color:
-    #fff;
-
-  font-size: 17px;
-
-  transition:
-    .2s ease;
-}
-
-
-.send-button:hover {
-  background:
-    var(--primary-dark);
-
-  transform:
-    translateY(-1px);
-}
-
-
-/* ==================================================
-   Modal
-================================================== */
-
-.modal {
-  position: fixed;
-
-  inset: 0;
-
-  z-index: 100;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  padding: 20px;
-
-  background:
-    rgba(
-      20,
-      24,
-      32,
-      .42
-    );
-
-  backdrop-filter:
-    blur(4px);
-}
-
-
-.modal-content {
-  width: 100%;
-  max-width: 440px;
-
-  overflow: hidden;
-
-  border:
-    1px solid var(--border);
-
-  border-radius:
-    17px;
-
-  background:
-    var(--surface);
-
-  box-shadow:
-    0 25px 70px
-    rgba(
-      0,
-      0,
-      0,
-      .18
-    );
-}
-
-
-.settings-content {
-  max-width: 500px;
-}
-
-
-.modal-header {
-  display: flex;
-
-  align-items: center;
-  justify-content: space-between;
-
-  padding:
-    19px 22px;
-
-  border-bottom:
-    1px solid var(--border);
-}
-
-
-.modal-header h2 {
-  margin: 0;
-
-  font-size: 18px;
-}
-
-
-.modal-close {
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  width: 32px;
-  height: 32px;
-
-  border:
-    0;
-
-  border-radius:
-    8px;
-
-  background:
-    transparent;
-
-  color:
-    var(--text-soft);
-
-  font-size: 22px;
-}
-
-
-.modal-close:hover {
-  background:
-    var(--surface-soft);
-
-  color:
-    var(--text);
-}
-
-
-.modal-body {
-  padding:
-    22px;
-}
-
-
-.modal-description {
-  margin:
-    0 0 20px;
-
-  color:
-    var(--text-soft);
-
-  font-size: 13px;
-
-  line-height:
-    1.6;
-}
-
-
-.modal-footer {
-  display: flex;
-
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 8px;
-
-  padding:
-    15px 22px;
-
-  border-top:
-    1px solid var(--border);
-}
-
-
-.modal-footer-right {
-  display: flex;
-
-  gap: 8px;
-}
-
-
-/* ==================================================
-   Settings
-================================================== */
-
-.settings-group {
-  margin-bottom:
-    22px;
-}
-
-
-.settings-group:last-child {
-  margin-bottom:
-    0;
-}
-
-
-.setting-row {
-  display: flex;
-
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 20px;
-}
-
-
-.setting-title {
-  font-size: 14px;
-  font-weight: 700;
-}
-
-
-.setting-description {
-  margin-top: 3px;
-
-  color:
-    var(--text-soft);
-
-  font-size: 11px;
-}
-
-
-.toggle-button {
-  min-width: 58px;
-
-  padding:
-    7px 12px;
-
-  border:
-    1px solid var(--border);
-
-  border-radius:
-    999px;
-
-  background:
-    var(--surface-soft);
-
-  color:
-    var(--text-soft);
-
-  font-size: 11px;
-  font-weight: 800;
-}
-
-
-.toggle-button.active {
-  border-color:
-    var(--primary);
-
-  background:
-    var(--primary);
-
-  color:
-    #fff;
-}
-
-
-/* ==================================================
-   Dark mode
-================================================== */
-
-body.dark-mode {
-
-  --bg:
-    #17191f;
-
-  --surface:
-    #20232b;
-
-  --surface-soft:
-    #292c35;
-
-  --border:
-    #363a45;
-
-  --text:
-    #f1f3f7;
-
-  --text-soft:
-    #a2a7b3;
-
-  --primary:
-    #8192f5;
-
-  --primary-dark:
-    #7182e8;
-
-  --primary-light:
-    rgba(
-      129,
-      146,
-      245,
-      .14
-    );
-
-  --shadow:
-    0 10px 35px
-    rgba(
-      0,
-      0,
-      0,
-      .25
-    );
-}
-
-
-body.dark-mode #authScreen {
-  background:
-    linear-gradient(
-      135deg,
-      #151820 0%,
-      #20232b 50%,
-      #17191f 100%
-    );
-}
-
-
-body.dark-mode
-.input-group input,
-body.dark-mode
-.settings-group input,
-body.dark-mode
-.settings-group select {
-
-  background:
-    var(--surface);
-
-  color:
-    var(--text);
-}
-
-
-body.dark-mode
-.secondary-button {
-
-  background:
-    var(--surface);
-
-  color:
-    var(--text);
-}
-
-
-body.dark-mode
-.message-form input {
-
-  color:
-    var(--text);
-}
-
-
-/* ==================================================
-   Gray mode
-================================================== */
-
-body.gray-mode {
-
-  --primary:
-    #6d737d;
-
-  --primary-dark:
-    #5d636d;
-
-  --primary-light:
-    #eceef0;
-}
-
-
-body.dark-mode.gray-mode {
-
-  --primary:
-    #9ca3ad;
-
-  --primary-dark:
-    #858c96;
-
-  --primary-light:
-    rgba(
-      156,
-      163,
-      173,
-      .14
-    );
-}
-
-
-/* ==================================================
-   Responsive
-================================================== */
-
-@media (
-  max-width: 760px
-) {
-
-  :root {
-    --sidebar-width: 225px;
-  }
-
-
-  .sidebar {
-    width:
-      var(--sidebar-width);
-
-    min-width:
-      var(--sidebar-width);
-  }
-
-
-  .chat-header {
-    padding:
-      0 15px;
-  }
-
-
-  .messages {
-    padding:
-      18px 14px 115px;
-  }
-
-
-  .message-input-area {
-    padding:
-      10px 12px 14px;
-  }
-
-
-  .reply-preview {
-    left: 12px;
-    right: 12px;
-
-    bottom: 67px;
-  }
-
-
-  .invite-area {
-    display: none;
-  }
-
-}
-
-
-@media (
-  max-width: 560px
-) {
-
-  .app-layout {
-    display: block;
-  }
-
-
-  .sidebar {
-    display: none;
-  }
-
-
-  .chat-header {
-    min-height: 62px;
-  }
-
-
-  .chat-room-icon {
-    width: 36px;
-    height: 36px;
-  }
-
-
-  .chat-room-info h2 {
-    font-size: 16px;
-  }
-
-
-  .messages {
-    padding:
-      14px 10px 110px;
-  }
-
-
-  .message {
-    padding:
-      11px 12px;
-  }
-
-
-  .message-actions button {
-    min-height: 27px;
-
-    padding:
-      4px 8px;
-  }
-
-
-  .modal {
-    padding:
-      12px;
-  }
-
-
-  .modal-content {
-    max-height:
-      calc(100vh - 24px);
-
-    overflow-y:
-      auto;
-  }
-
-
-  .modal-footer {
-    flex-wrap:
-      wrap;
-  }
-
-
-  .modal-footer-right {
-    margin-left:
-      auto;
-  }
-
-
-  .auth-panel {
-    padding:
-      24px 20px;
-  }
-
-}
-
-
-/* ==================================================
-   Dark mode - joined rooms
-================================================== */
-
-body.dark-mode
-.joined-room:hover
-.joined-room-icon {
-
-  background:
-    #323641;
-
-  color:
-    var(--text);
-}
-
-
-/* ==================================================
-   Dark mode - message hover
-================================================== */
-
-body.dark-mode
-.message:hover {
-
-  border-color:
-    #414652;
-
-  box-shadow:
-    0 4px 13px
-    rgba(
-      0,
-      0,
-      0,
-      .18
-    );
-}
-
-
-/* ==================================================
-   Dark mode - message buttons
-================================================== */
-
-body.dark-mode
-.message-actions button:hover {
-
-  background:
-    var(--surface-soft);
-
-  border-color:
-    var(--border);
-}
-
-
-/* ==================================================
-   Dark mode - room buttons
-================================================== */
-
-body.dark-mode
-.room-button:hover,
-body.dark-mode
-.room-action-button:hover,
-body.dark-mode
-.joined-room:hover {
-
-  background:
-    var(--surface-soft);
-
-  border-color:
-    var(--border);
-}
+   
