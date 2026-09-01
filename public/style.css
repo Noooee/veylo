@@ -3170,3 +3170,2066 @@ body.gray-mode .logo-area h1 {
     scroll-behavior: auto !important;
   }
 }
+
+/* =========================================================
+   Veylo UI Upgrade
+   LINE × Discord
+   PC FIRST / Mobile Friendly
+========================================================= */
+
+
+/* =========================================================
+   Design Tokens
+========================================================= */
+
+:root {
+
+  --ui-radius-sm: 8px;
+  --ui-radius-md: 12px;
+  --ui-radius-lg: 16px;
+  --ui-radius-xl: 20px;
+
+  --ui-transition:
+    180ms cubic-bezier(.2,.8,.2,1);
+
+  --ui-transition-slow:
+    280ms cubic-bezier(.2,.8,.2,1);
+
+  --ui-message-max:
+    720px;
+
+  --ui-chat-max:
+    900px;
+
+  --ui-own:
+    #667eea;
+
+  --ui-own-dark:
+    #5568d9;
+
+  --ui-own-soft:
+    #eef0ff;
+
+  --ui-other:
+    #ffffff;
+
+  --ui-reply:
+    #f3f4f8;
+
+  --ui-hover:
+    rgba(102,126,234,.055);
+
+}
+
+
+/* =========================================================
+   Global smoother UI
+========================================================= */
+
+button,
+input,
+select,
+.message,
+.room-button,
+.room-action-button,
+.joined-room,
+.send-button,
+.scroll-button,
+.new-message-button,
+.modal-content,
+.message-actions button,
+.reply-preview {
+
+  transition:
+    background-color var(--ui-transition),
+    border-color var(--ui-transition),
+    color var(--ui-transition),
+    box-shadow var(--ui-transition),
+    transform var(--ui-transition),
+    opacity var(--ui-transition);
+
+}
+
+
+button:active {
+
+  transform:
+    scale(.97);
+
+}
+
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+
+  outline:
+    3px solid rgba(102,126,234,.18);
+
+  outline-offset:
+    2px;
+
+}
+
+
+/* =========================================================
+   App background
+========================================================= */
+
+.chat-area {
+
+  background:
+    linear-gradient(
+      180deg,
+      var(--bg) 0%,
+      var(--bg) 100%
+    );
+
+}
+
+
+/* =========================================================
+   Sidebar
+   PCをメインにした少しDiscord寄りの構造
+========================================================= */
+
+.sidebar {
+
+  position:
+    relative;
+
+  box-shadow:
+    4px 0 18px rgba(31,41,55,.025);
+
+}
+
+
+.sidebar-header {
+
+  background:
+    var(--surface);
+
+}
+
+
+.user-card {
+
+  transition:
+    transform var(--ui-transition),
+    background var(--ui-transition),
+    border-color var(--ui-transition),
+    box-shadow var(--ui-transition);
+
+}
+
+
+.user-card:hover {
+
+  transform:
+    translateY(-1px);
+
+  border-color:
+    rgba(102,126,234,.18);
+
+  box-shadow:
+    0 4px 14px rgba(31,41,55,.05);
+
+}
+
+
+/* =========================================================
+   Room buttons
+========================================================= */
+
+.room-button,
+.room-action-button {
+
+  position:
+    relative;
+
+}
+
+
+.room-button.active {
+
+  box-shadow:
+    inset 3px 0 0 var(--primary);
+
+}
+
+
+.room-button:hover,
+.room-action-button:hover {
+
+  transform:
+    translateX(2px);
+
+}
+
+
+.room-action-button {
+
+  min-height:
+    42px;
+
+}
+
+
+/* =========================================================
+   Joined rooms
+========================================================= */
+
+.joined-room {
+
+  min-height:
+    43px;
+
+}
+
+
+.joined-room:hover {
+
+  transform:
+    translateX(3px);
+
+}
+
+
+.joined-room.active {
+
+  transform:
+    translateX(2px);
+
+}
+
+
+/* =========================================================
+   Chat header
+========================================================= */
+
+.chat-header {
+
+  position:
+    relative;
+
+  z-index:
+    5;
+
+  box-shadow:
+    0 1px 8px rgba(31,41,55,.025);
+
+}
+
+
+.chat-room-icon {
+
+  transition:
+    transform var(--ui-transition),
+    background var(--ui-transition);
+
+}
+
+
+.chat-room-info:hover .chat-room-icon {
+
+  transform:
+    scale(1.04);
+
+}
+
+
+/* =========================================================
+   Messages
+   ★ ここが今回の重要部分
+========================================================= */
+
+.messages {
+
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  align-items:
+    stretch;
+
+  scroll-behavior:
+    smooth;
+
+}
+
+
+/*
+  基本：
+  他人 = 左
+
+  margin-left:auto にしないことで
+  PCでも自然に左側へ寄る
+*/
+
+.message {
+
+  align-self:
+    flex-start;
+
+  width:
+    fit-content;
+
+  max-width:
+    min(
+      var(--ui-message-max),
+      72%
+    );
+
+  margin:
+    0 0 14px;
+
+  padding:
+    10px 13px 9px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:
+    16px 16px 16px 5px;
+
+  background:
+    var(--ui-other);
+
+  box-shadow:
+    0 2px 7px rgba(31,41,55,.035);
+
+  animation:
+    messageAppear .22s ease both;
+
+}
+
+
+/*
+  ★ 自分のコメント
+
+  複数の命名パターンに対応
+*/
+
+.message.own,
+.message.mine,
+.message.self,
+.message.me,
+.message[data-own="true"],
+.message[data-self="true"],
+.message[data-user="self"] {
+
+  align-self:
+    flex-end;
+
+  margin-left:
+    auto;
+
+  margin-right:
+    0;
+
+  border:
+    1px solid rgba(102,126,234,.14);
+
+  border-radius:
+    16px 16px 5px 16px;
+
+  background:
+    var(--ui-own-soft);
+
+  color:
+    var(--text);
+
+  box-shadow:
+    0 2px 8px rgba(102,126,234,.07);
+
+}
+
+
+/* =========================================================
+   自分の吹き出しの尻尾
+========================================================= */
+
+.message::before {
+
+  left:
+    -5px;
+
+  right:
+    auto;
+
+  bottom:
+    4px;
+
+  width:
+    10px;
+
+  height:
+    10px;
+
+  border:
+    0;
+
+  border-left:
+    1px solid var(--border);
+
+  border-bottom:
+    1px solid var(--border);
+
+  background:
+    var(--ui-other);
+
+  transform:
+    rotate(45deg);
+
+}
+
+
+/*
+  自分は右側に尻尾
+*/
+
+.message.own::before,
+.message.mine::before,
+.message.self::before,
+.message.me::before,
+.message[data-own="true"]::before,
+.message[data-self="true"]::before,
+.message[data-user="self"]::before {
+
+  left:
+    auto;
+
+  right:
+    -5px;
+
+  border:
+    0;
+
+  border-right:
+    1px solid rgba(102,126,234,.14);
+
+  border-bottom:
+    1px solid rgba(102,126,234,.14);
+
+  background:
+    var(--ui-own-soft);
+
+  transform:
+    rotate(-45deg);
+
+}
+
+
+/* =========================================================
+   Message hover
+========================================================= */
+
+.message:hover {
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 5px 15px rgba(31,41,55,.075);
+
+}
+
+
+.message.own:hover,
+.message.mine:hover,
+.message.self:hover,
+.message.me:hover,
+.message[data-own="true"]:hover,
+.message[data-self="true"]:hover,
+.message[data-user="self"]:hover {
+
+  box-shadow:
+    0 5px 16px rgba(102,126,234,.11);
+
+}
+
+
+/* =========================================================
+   Message header
+   Discordっぽく少し情報を整理
+========================================================= */
+
+.message-header {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    7px;
+
+  margin-bottom:
+    4px;
+
+}
+
+
+/*
+  他人の名前
+*/
+
+.message-user {
+
+  color:
+    var(--primary);
+
+  font-size:
+    11px;
+
+  font-weight:
+    800;
+
+}
+
+
+/*
+  自分の名前は少し落ち着かせる
+*/
+
+.message.own .message-user,
+.message.mine .message-user,
+.message.self .message-user,
+.message.me .message-user,
+.message[data-own="true"] .message-user,
+.message[data-self="true"] .message-user,
+.message[data-user="self"] .message-user {
+
+  color:
+    var(--primary-dark);
+
+}
+
+
+.message-time {
+
+  color:
+    var(--text-muted);
+
+  font-size:
+    9px;
+
+}
+
+
+/* =========================================================
+   Message content
+========================================================= */
+
+.message-content {
+
+  position:
+    relative;
+
+  font-size:
+    14px;
+
+  line-height:
+    1.65;
+
+}
+
+
+.message-text {
+
+  white-space:
+    pre-wrap;
+
+}
+
+
+/* =========================================================
+   Message actions
+   ★ Discord風の控えめな操作UI
+========================================================= */
+
+.message-actions {
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    2px;
+
+  margin-top:
+    7px;
+
+  padding-top:
+    0;
+
+  border-top:
+    0;
+
+  opacity:
+    .72;
+
+}
+
+
+.message:hover .message-actions {
+
+  opacity:
+    1;
+
+}
+
+
+.message-actions button {
+
+  min-width:
+    28px;
+
+  height:
+    27px;
+
+  padding:
+    0 7px;
+
+  border:
+    0;
+
+  border-radius:
+    7px;
+
+  background:
+    transparent;
+
+  color:
+    var(--text-muted);
+
+  font-size:
+    10px;
+
+}
+
+
+.message-actions button:hover {
+
+  background:
+    rgba(102,126,234,.08);
+
+  color:
+    var(--primary);
+
+  transform:
+    translateY(-1px);
+
+}
+
+
+.message-actions .delete-action:hover {
+
+  color:
+    var(--danger);
+
+  background:
+    rgba(224,82,82,.08);
+
+}
+
+
+/* =========================================================
+   Reply
+   ★ ここを大きく変更
+   LINEの引用 + DiscordのReply風
+========================================================= */
+
+.message-reply-info {
+
+  position:
+    relative;
+
+  display:
+    block;
+
+  margin:
+    0 0 8px;
+
+  padding:
+    7px 10px 7px 12px;
+
+  border:
+    0;
+
+  border-left:
+    3px solid var(--primary);
+
+  border-radius:
+    7px;
+
+  background:
+    var(--ui-reply);
+
+  color:
+    var(--text-soft);
+
+  font-size:
+    10px;
+
+  line-height:
+    1.45;
+
+  cursor:
+    pointer;
+
+  overflow:
+    hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+
+  transition:
+    background var(--ui-transition),
+    border-color var(--ui-transition),
+    transform var(--ui-transition);
+
+}
+
+
+/*
+  Reply hover
+*/
+
+.message-reply-info:hover {
+
+  background:
+    var(--primary-light);
+
+  color:
+    var(--primary);
+
+  transform:
+    translateX(2px);
+
+}
+
+
+/*
+  自分の返信
+*/
+
+.message.own .message-reply-info,
+.message.mine .message-reply-info,
+.message.self .message-reply-info,
+.message.me .message-reply-info,
+.message[data-own="true"] .message-reply-info,
+.message[data-self="true"] .message-reply-info,
+.message[data-user="self"] .message-reply-info {
+
+  background:
+    rgba(102,126,234,.09);
+
+}
+
+
+/* =========================================================
+   Reply Preview
+   ★ 入力欄上の返信UI
+========================================================= */
+
+.reply-preview {
+
+  left:
+    24px;
+
+  right:
+    24px;
+
+  bottom:
+    78px;
+
+  max-width:
+    var(--ui-chat-max);
+
+  padding:
+    10px 12px 10px 14px;
+
+  border:
+    1px solid rgba(102,126,234,.16);
+
+  border-left:
+    4px solid var(--primary);
+
+  border-radius:
+    12px;
+
+  background:
+    var(--surface);
+
+  color:
+    var(--text);
+
+  box-shadow:
+    0 8px 24px rgba(31,41,55,.09);
+
+  backdrop-filter:
+    blur(10px);
+
+  animation:
+    replyPreviewIn .2s ease both;
+
+}
+
+
+/*
+  返信プレビュー内のボタン
+*/
+
+.reply-preview button {
+
+  flex:
+    0 0 auto;
+
+  width:
+    28px;
+
+  height:
+    28px;
+
+  border:
+    0;
+
+  border-radius:
+    8px;
+
+  background:
+    var(--surface-hover);
+
+  color:
+    var(--text-soft);
+
+}
+
+
+.reply-preview button:hover {
+
+  background:
+    rgba(224,82,82,.09);
+
+  color:
+    var(--danger);
+
+  transform:
+    rotate(4deg);
+
+}
+
+
+/* =========================================================
+   New message
+========================================================= */
+
+.new-message-button {
+
+  border:
+    1px solid rgba(102,126,234,.18);
+
+  background:
+    var(--surface);
+
+  backdrop-filter:
+    blur(8px);
+
+  animation:
+    floatingIn .22s ease both;
+
+}
+
+
+.new-message-button:hover {
+
+  transform:
+    translateY(-2px);
+
+}
+
+
+/* =========================================================
+   Scroll buttons
+========================================================= */
+
+.scroll-buttons {
+
+  gap:
+    7px;
+
+}
+
+
+.scroll-button {
+
+  width:
+    36px;
+
+  height:
+    36px;
+
+  backdrop-filter:
+    blur(8px);
+
+}
+
+
+.scroll-button:hover {
+
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 5px 15px rgba(31,41,55,.10);
+
+}
+
+
+/* =========================================================
+   Message input
+   ★ Discordっぽい入力欄 + LINEの使いやすさ
+========================================================= */
+
+.message-input-area {
+
+  padding:
+    12px 24px 18px;
+
+}
+
+
+.message-form {
+
+  min-height:
+    52px;
+
+  padding:
+    5px 5px 5px 10px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius:
+    15px;
+
+  box-shadow:
+    0 5px 20px rgba(31,41,55,.065);
+
+}
+
+
+.message-form input {
+
+  height:
+    42px;
+
+  padding:
+    0 9px;
+
+  font-size:
+    14px;
+
+}
+
+
+.message-form input::placeholder {
+
+  color:
+    var(--text-muted);
+
+}
+
+
+.message-form:focus-within {
+
+  border-color:
+    rgba(102,126,234,.45);
+
+  box-shadow:
+    0 7px 25px rgba(31,41,55,.08),
+    0 0 0 3px rgba(102,126,234,.07);
+
+}
+
+
+.send-button {
+
+  flex:
+    0 0 42px;
+
+  width:
+    42px;
+
+  height:
+    42px;
+
+  border-radius:
+    11px;
+
+}
+
+
+.send-button:hover {
+
+  transform:
+    translateY(-2px) scale(1.02);
+
+  box-shadow:
+    0 5px 14px rgba(102,126,234,.25);
+
+}
+
+
+/* =========================================================
+   Modal
+   ★ アプリ全体と統一
+========================================================= */
+
+.modal {
+
+  background:
+    rgba(15,18,25,.46);
+
+  backdrop-filter:
+    blur(7px);
+
+  animation:
+    modalBackdrop .18s ease both;
+
+}
+
+
+.modal-content {
+
+  border:
+    1px solid rgba(229,232,239,.9);
+
+  border-radius:
+    18px;
+
+  box-shadow:
+    0 25px 80px rgba(0,0,0,.18);
+
+  animation:
+    modalIn .22s cubic-bezier(.2,.8,.2,1) both;
+
+}
+
+
+.modal-header {
+
+  min-height:
+    62px;
+
+  padding:
+    15px 20px;
+
+}
+
+
+.modal-body {
+
+  padding:
+    20px;
+
+}
+
+
+.modal-footer {
+
+  padding:
+    14px 20px;
+
+}
+
+
+.modal-close {
+
+  transition:
+    background var(--ui-transition),
+    color var(--ui-transition),
+    transform var(--ui-transition);
+
+}
+
+
+.modal-close:hover {
+
+  transform:
+    rotate(5deg);
+
+}
+
+
+/* =========================================================
+   Unified form controls
+========================================================= */
+
+.input-group input,
+.settings-group input,
+.settings-group select {
+
+  height:
+    46px;
+
+  border-radius:
+    11px;
+
+}
+
+
+.input-group input:hover,
+.settings-group input:hover,
+.settings-group select:hover {
+
+  border-color:
+    #d6dae4;
+
+}
+
+
+/* =========================================================
+   Auth animation
+========================================================= */
+
+.auth-panel {
+
+  animation:
+    authPanelIn .3s cubic-bezier(.2,.8,.2,1) both;
+
+}
+
+
+.logo-area h1 {
+
+  animation:
+    logoIn .5s cubic-bezier(.2,.8,.2,1) both;
+
+}
+
+
+/* =========================================================
+   Desktop message width
+========================================================= */
+
+@media (min-width: 1000px) {
+
+  .message {
+
+    max-width:
+      min(
+        var(--ui-message-max),
+        68%
+      );
+
+  }
+
+}
+
+
+/* =========================================================
+   Tablet
+========================================================= */
+
+@media (max-width: 760px) {
+
+  :root {
+
+    --sidebar-width:
+      235px;
+
+  }
+
+
+  .sidebar-header {
+
+    height:
+      64px;
+
+  }
+
+
+  .user-card {
+
+    margin:
+      12px;
+
+  }
+
+
+  .chat-header {
+
+    min-height:
+      64px;
+
+    padding:
+      0 16px;
+
+  }
+
+
+  .messages {
+
+    padding:
+      18px 16px 120px;
+
+  }
+
+
+  .message {
+
+    max-width:
+      78%;
+
+    margin-bottom:
+      12px;
+
+  }
+
+
+  .message-input-area {
+
+    padding:
+      9px 12px 14px;
+
+  }
+
+
+  .message-form {
+
+    min-height:
+      50px;
+
+  }
+
+
+  .reply-preview {
+
+    left:
+      12px;
+
+    right:
+      12px;
+
+    bottom:
+      70px;
+
+  }
+
+}
+
+
+/* =========================================================
+   Smartphone
+   ★ 560px以下はかなり操作性重視
+========================================================= */
+
+@media (max-width: 560px) {
+
+  /*
+    サイドバーは既存仕様に合わせて非表示
+  */
+
+  .sidebar {
+
+    display:
+      none;
+
+  }
+
+
+  .chat-header {
+
+    min-height:
+      60px;
+
+    padding:
+      0 12px;
+
+  }
+
+
+  .chat-room-info {
+
+    gap:
+      9px;
+
+  }
+
+
+  .chat-room-icon {
+
+    width:
+      36px;
+
+    height:
+      36px;
+
+    border-radius:
+      10px;
+
+    font-size:
+      17px;
+
+  }
+
+
+  .chat-room-info h2 {
+
+    font-size:
+      15px;
+
+  }
+
+
+  .room-subtitle {
+
+    font-size:
+      10px;
+
+  }
+
+
+  /*
+    メッセージ
+  */
+
+  .messages {
+
+    padding:
+      14px 9px 112px;
+
+  }
+
+
+  .message {
+
+    max-width:
+      84%;
+
+    padding:
+      9px 11px 8px;
+
+    margin-bottom:
+      10px;
+
+    border-radius:
+      15px 15px 15px 5px;
+
+  }
+
+
+  .message.own,
+  .message.mine,
+  .message.self,
+  .message.me,
+  .message[data-own="true"],
+  .message[data-self="true"],
+  .message[data-user="self"] {
+
+    border-radius:
+      15px 15px 5px 15px;
+
+  }
+
+
+  .message-user {
+
+    font-size:
+      10px;
+
+  }
+
+
+  .message-time {
+
+    font-size:
+      8px;
+
+  }
+
+
+  .message-content {
+
+    font-size:
+      13px;
+
+    line-height:
+      1.6;
+
+  }
+
+
+  /*
+    スマホでは操作ボタンを少し大きく
+  */
+
+  .message-actions {
+
+    gap:
+      3px;
+
+    margin-top:
+      5px;
+
+  }
+
+
+  .message-actions button {
+
+    min-width:
+      30px;
+
+    height:
+      29px;
+
+    padding:
+      0 7px;
+
+    font-size:
+      10px;
+
+  }
+
+
+  /*
+    返信
+  */
+
+  .message-reply-info {
+
+    margin-bottom:
+      6px;
+
+    padding:
+      6px 8px 6px 10px;
+
+    font-size:
+      9px;
+
+  }
+
+
+  /*
+    入力欄
+  */
+
+  .message-input-area {
+
+    padding:
+      8px 9px 11px;
+
+  }
+
+
+  .message-form {
+
+    min-height:
+      48px;
+
+    padding:
+      4px 4px 4px 9px;
+
+    border-radius:
+      14px;
+
+  }
+
+
+  .message-form input {
+
+    height:
+      40px;
+
+    font-size:
+      13px;
+
+  }
+
+
+  .send-button {
+
+    width:
+      40px;
+
+    height:
+      40px;
+
+    flex-basis:
+      40px;
+
+    border-radius:
+      10px;
+
+    font-size:
+      16px;
+
+  }
+
+
+  /*
+    返信プレビュー
+  */
+
+  .reply-preview {
+
+    left:
+      9px;
+
+    right:
+      9px;
+
+    bottom:
+      65px;
+
+    padding:
+      8px 9px 8px 11px;
+
+    border-radius:
+      11px;
+
+    font-size:
+      10px;
+
+  }
+
+
+  /*
+    新着ボタン
+  */
+
+  .new-message-button {
+
+    right:
+      12px;
+
+    bottom:
+      76px;
+
+    padding:
+      8px 12px;
+
+    font-size:
+      11px;
+
+  }
+
+
+  /*
+    スクロールボタン
+  */
+
+  .scroll-buttons {
+
+    right:
+      9px;
+
+    bottom:
+      125px;
+
+  }
+
+
+  .scroll-button {
+
+    width:
+      32px;
+
+    height:
+      32px;
+
+  }
+
+
+  /*
+    モーダル
+  */
+
+  .modal {
+
+    padding:
+      10px;
+
+  }
+
+
+  .modal-content {
+
+    max-width:
+      100%;
+
+    border-radius:
+      16px;
+
+  }
+
+
+  .modal-header {
+
+    padding:
+      14px 16px;
+
+  }
+
+
+  .modal-body {
+
+    padding:
+      17px 16px;
+
+  }
+
+
+  .modal-footer {
+
+    padding:
+      12px 16px;
+
+    gap:
+      8px;
+
+  }
+
+
+  .modal-footer .primary-button,
+  .modal-footer .secondary-button,
+  .modal-footer .danger-button {
+
+    min-height:
+      42px;
+
+  }
+
+
+  /*
+    設定モーダル
+  */
+
+  .settings-content {
+
+    width:
+      100%;
+
+  }
+
+
+  .setting-row {
+
+    gap:
+      12px;
+
+  }
+
+
+  .setting-title {
+
+    font-size:
+      13px;
+
+  }
+
+
+  .setting-description {
+
+    font-size:
+      10px;
+
+  }
+
+}
+
+
+/* =========================================================
+   Very small smartphone
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .message {
+
+    max-width:
+      88%;
+
+  }
+
+
+  .message-content {
+
+    font-size:
+      12.5px;
+
+  }
+
+
+  .message-actions button {
+
+    min-width:
+      28px;
+
+    padding:
+      0 5px;
+
+  }
+
+
+  .chat-room-info h2 {
+
+    font-size:
+      14px;
+
+  }
+
+}
+
+
+/* =========================================================
+   Dark mode
+========================================================= */
+
+body.dark-mode {
+
+  --ui-other:
+    #242730;
+
+  --ui-reply:
+    #2d3039;
+
+}
+
+
+body.dark-mode .message {
+
+  background:
+    var(--ui-other);
+
+  border-color:
+    var(--border);
+
+}
+
+
+body.dark-mode .message::before {
+
+  background:
+    var(--ui-other);
+
+  border-color:
+    var(--border);
+
+}
+
+
+body.dark-mode .message.own,
+body.dark-mode .message.mine,
+body.dark-mode .message.self,
+body.dark-mode .message.me,
+body.dark-mode .message[data-own="true"],
+body.dark-mode .message[data-self="true"],
+body.dark-mode .message[data-user="self"] {
+
+  background:
+    rgba(129,146,245,.14);
+
+  border-color:
+    rgba(129,146,245,.22);
+
+}
+
+
+body.dark-mode
+.message.own::before,
+body.dark-mode
+.message.mine::before,
+body.dark-mode
+.message.self::before,
+body.dark-mode
+.message.me::before,
+body.dark-mode
+.message[data-own="true"]::before,
+body.dark-mode
+.message[data-self="true"]::before,
+body.dark-mode
+.message[data-user="self"]::before {
+
+  background:
+    rgba(129,146,245,.14);
+
+  border-color:
+    rgba(129,146,245,.22);
+
+}
+
+
+body.dark-mode .message-reply-info {
+
+  background:
+    var(--ui-reply);
+
+}
+
+
+body.dark-mode .message-reply-info:hover {
+
+  background:
+    rgba(129,146,245,.13);
+
+}
+
+
+body.dark-mode .message-form {
+
+  background:
+    var(--surface);
+
+}
+
+
+body.dark-mode .modal-content {
+
+  box-shadow:
+    0 25px 80px rgba(0,0,0,.4);
+
+}
+
+
+/* =========================================================
+   Gray mode
+========================================================= */
+
+body.gray-mode {
+
+  --ui-own:
+    #6d737d;
+
+  --ui-own-dark:
+    #5d636d;
+
+  --ui-own-soft:
+    #eceef0;
+
+}
+
+
+body.dark-mode.gray-mode {
+
+  --ui-own:
+    #9ca3ad;
+
+  --ui-own-dark:
+    #858c96;
+
+  --ui-own-soft:
+    rgba(156,163,173,.14);
+
+}
+
+
+/* =========================================================
+   Animations
+========================================================= */
+
+@keyframes messageAppear {
+
+  from {
+
+    opacity:
+      0;
+
+    transform:
+      translateY(6px) scale(.985);
+
+  }
+
+  to {
+
+    opacity:
+      1;
+
+    transform:
+      translateY(0) scale(1);
+
+  }
+
+}
+
+
+@keyframes replyPreviewIn {
+
+  from {
+
+    opacity:
+      0;
+
+    transform:
+      translateY(8px);
+
+  }
+
+  to {
+
+    opacity:
+      1;
+
+    transform:
+      translateY(0);
+
+  }
+
+}
+
+
+@keyframes floatingIn {
+
+  from {
+
+    opacity:
+      0;
+
+    transform:
+      translateY(8px) scale(.97);
+
+  }
+
+  to {
+
+    opacity:
+      1;
+
+    transform:
+      translateY(0) scale(1);
+
+  }
+
+}
+
+
+@keyframes modalBackdrop {
+
+  from {
+
+    opacity:
+      0;
+
+  }
+
+  to {
+
+    opacity:
+      1;
+
+  }
+
+}
+
+
+@keyframes modalIn {
+
+  from {
+
+    opacity:
+      0;
+
+    transform:
+      translateY(12px) scale(.97);
+
+  }
+
+  to {
+
+    opacity:
+      1;
+
+    transform:
+      translateY(0) scale(1);
+
+  }
+
+}
+
+
+@keyframes authPanelIn {
+
+  from {
+
+    opacity:
+      0;
+
+    transform:
+      translateY(12px);
+
+  }
+
+  to {
+
+    opacity:
+      1;
+
+    transform:
+      translateY(0);
+
+  }
+
+}
+
+
+@keyframes logoIn {
+
+  from {
+
+    opacity:
+      0;
+
+    transform:
+      translateY(8px) scale(.96);
+
+  }
+
+  to {
+
+    opacity:
+      1;
+
+    transform:
+      translateY(0) scale(1);
+
+  }
+
+}
+
+
+/* =========================================================
+   Reduced Motion
+   アニメーションが苦手な環境への配慮
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+
+    animation-duration:
+      .01ms !important;
+
+    animation-iteration-count:
+      1 !important;
+
+    scroll-behavior:
+      auto !important;
+
+    transition-duration:
+      .01ms !important;
+
+  }
+
+}
