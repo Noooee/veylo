@@ -134,8 +134,6 @@ document.addEventListener("DOMContentLoaded", () => {
       "confirmCreateButton"
     );
 
-  // HTML側に cancelCreateButton が2つあるので
-  // querySelectorAllで全部取得する
   const cancelCreateButtons =
     document.querySelectorAll(
       "#cancelCreateButton"
@@ -473,10 +471,14 @@ document.addEventListener("DOMContentLoaded", () => {
     let data = {};
 
     try {
+
       data =
         await response.json();
+
     } catch {
+
       data = {};
+
     }
 
     if (!response.ok) {
@@ -580,7 +582,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==================================================
-  // Socket接続
+  // Socket
   // ==================================================
 
   function connectSocket() {
@@ -588,9 +590,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (socket) {
 
       try {
+
         socket.disconnect();
+
       } catch {
+
         // ignore
+
       }
 
     }
@@ -601,7 +607,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
     // ==================================================
-    // 接続
+    // Connect
     // ==================================================
 
     socket.on(
@@ -617,7 +623,6 @@ document.addEventListener("DOMContentLoaded", () => {
           true
         );
 
-        // サーバーに最新の部屋一覧を要求
         socket.emit(
           "get my rooms"
         );
@@ -626,7 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // 切断
+    // Disconnect
     // ==================================================
 
     socket.on(
@@ -646,7 +651,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // 接続エラー
+    // Connection Error
     // ==================================================
 
     socket.on(
@@ -677,7 +682,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // 自分の部屋一覧
+    // My Rooms
     // ==================================================
 
     socket.on(
@@ -699,7 +704,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // 部屋作成成功
+    // Room Created
     // ==================================================
 
     socket.on(
@@ -721,7 +726,6 @@ document.addEventListener("DOMContentLoaded", () => {
         currentRoomId =
           room.id;
 
-        // 部屋一覧に即追加
         addOrUpdateMyRoom(
           room
         );
@@ -734,7 +738,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // 部屋参加成功
+    // Room Joined
     // ==================================================
 
     socket.on(
@@ -768,7 +772,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // 自分の部屋を開いた
+    // Room Opened
     // ==================================================
 
     socket.on(
@@ -800,7 +804,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // 雑談に参加
+    // Casual
     // ==================================================
 
     socket.on(
@@ -823,7 +827,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // 過去メッセージ
+    // Previous Messages
     // ==================================================
 
     socket.on(
@@ -840,7 +844,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // 新規メッセージ
+    // New Message
     // ==================================================
 
     socket.on(
@@ -852,8 +856,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (
-          message.room !==
-          currentRoomId
+          String(message.room) !==
+          String(currentRoomId)
         ) {
 
           return;
@@ -885,7 +889,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // メッセージ編集
+    // Message Edited
     // ==================================================
 
     socket.on(
@@ -904,7 +908,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // メッセージ削除
+    // Message Deleted
     // ==================================================
 
     socket.on(
@@ -917,12 +921,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const element =
           document.querySelector(
-            `[data-message-id="${CSS.escape(String(data.id))}"]`
+            `[data-message-id="${CSS.escape(
+              String(data.id)
+            )}"]`
           );
 
         if (element) {
 
-          element.remove();
+          element.classList.add(
+            "message-removing"
+          );
+
+          setTimeout(
+            () => {
+
+              element.remove();
+
+            },
+            180
+          );
 
         }
 
@@ -930,7 +947,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // 部屋削除
+    // Room Deleted
     // ==================================================
 
     socket.on(
@@ -951,7 +968,6 @@ document.addEventListener("DOMContentLoaded", () => {
           roomId
         );
 
-        // ローカル一覧から削除
         myRooms =
           myRooms.filter(
             room =>
@@ -961,7 +977,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         renderJoinedRooms();
 
-        // 今開いていた部屋なら雑談へ
         if (
           String(currentRoomId) ===
           roomId
@@ -982,8 +997,6 @@ document.addEventListener("DOMContentLoaded", () => {
           messages.innerHTML =
             "";
 
-          // サーバー側でも雑談へ移動済みだが
-          // 念のため
           if (
             socket.connected
           ) {
@@ -1000,7 +1013,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     // ==================================================
-    // エラー
+    // Errors
     // ==================================================
 
     socket.on(
@@ -1100,7 +1113,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==================================================
-  // 部屋一覧
+  // Rooms
   // ==================================================
 
   function setMyRooms(
@@ -1160,11 +1173,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (index >= 0) {
 
-      myRooms[index] =
-        {
-          ...myRooms[index],
-          ...room
-        };
+      myRooms[index] = {
+        ...myRooms[index],
+        ...room
+      };
 
     } else {
 
@@ -1186,13 +1198,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     joinedRooms.innerHTML =
       "";
-
-    // ==================================================
-    // 重要
-    //
-    // 雑談はHTML側に最初からあるので、
-    // ここでは作成/参加した部屋だけ描画する。
-    // ==================================================
 
     if (
       myRooms.length === 0
@@ -1217,7 +1222,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
-    // 作成日時順
     const rooms =
       [...myRooms].sort(
         (a, b) => {
@@ -1260,10 +1264,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
 
-      // ==================================================
-      // 部屋本体
-      // ==================================================
-
       const main =
         document.createElement(
           "button"
@@ -1276,7 +1276,10 @@ document.addEventListener("DOMContentLoaded", () => {
         "joined-room-main";
 
       main.innerHTML = `
-        <span class="joined-room-icon">🏠</span>
+        <span class="joined-room-icon">
+          🏠
+        </span>
+
         <span class="joined-room-name">
           ${escapeHtml(room.name)}
         </span>
@@ -1296,10 +1299,6 @@ document.addEventListener("DOMContentLoaded", () => {
       button.appendChild(
         main
       );
-
-      // ==================================================
-      // 自分が作成した部屋なら削除ボタン
-      // ==================================================
 
       const ownerId =
         room.ownerId !== null &&
@@ -1365,7 +1364,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==================================================
-  // 部屋を開く
+  // Open Room
   // ==================================================
 
   function openMyRoom(
@@ -1395,7 +1394,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!room) {
 
       console.warn(
-        "Room not found in local list:",
+        "Room not found:",
         roomId
       );
 
@@ -1415,8 +1414,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateCurrentRoomUI();
 
-    messages.innerHTML =
-      "";
+    clearMessages();
 
     socket.emit(
       "open my room",
@@ -1429,7 +1427,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==================================================
-  // 部屋削除
+  // Delete Room
   // ==================================================
 
   function deleteRoom(
@@ -1477,13 +1475,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==================================================
-  // 現在の部屋UI
+  // Current Room UI
   // ==================================================
 
   function updateCurrentRoomUI() {
 
     const isCasual =
-      currentRoomId ===
+      String(currentRoomId) ===
       "casual";
 
     if (isCasual) {
@@ -1556,14 +1554,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
-    // サイドバーを再描画して
-    // 現在の部屋をactiveにする
     renderJoinedRooms();
 
   }
 
   // ==================================================
-  // 雑談
+  // Casual
   // ==================================================
 
   function joinCasualRoom() {
@@ -1589,8 +1585,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateCurrentRoomUI();
 
-    messages.innerHTML =
-      "";
+    clearMessages();
 
     socket.emit(
       "join casual"
@@ -1624,7 +1619,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       setTimeout(
         () => {
+
           roomNameInput.focus();
+
         },
         50
       );
@@ -1712,7 +1709,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       );
 
-      // 少しだけ待ってから戻す
       setTimeout(
         () => {
 
@@ -1778,7 +1774,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       setTimeout(
         () => {
+
           inviteCodeInput.focus();
+
         },
         50
       );
@@ -1909,7 +1907,7 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   // ==================================================
-  // Invite Code Copy
+  // Invite Code
   // ==================================================
 
   inviteCode?.addEventListener(
@@ -1994,8 +1992,8 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
 
       if (
-        message.room !==
-        currentRoomId
+        String(message.room) !==
+        String(currentRoomId)
       ) {
 
         continue;
@@ -2024,6 +2022,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   }
 
+  // ==================================================
+  // Append Message
+  // ==================================================
+
   function appendMessage(
     message,
     scroll = true
@@ -2034,8 +2036,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (
-      message.room !==
-      currentRoomId
+      String(message.room) !==
+      String(currentRoomId)
     ) {
 
       return;
@@ -2053,6 +2055,10 @@ document.addEventListener("DOMContentLoaded", () => {
     wrapper.dataset.messageId =
       String(message.id);
 
+    // ----------------------------------------------
+    // 自分 / 他人
+    // ----------------------------------------------
+
     const isOwn =
       currentUser &&
       Number(message.userId) ===
@@ -2064,73 +2070,158 @@ document.addEventListener("DOMContentLoaded", () => {
         "own"
       );
 
+    } else {
+
+      wrapper.classList.add(
+        "other"
+      );
+
     }
 
-    const replyHtml =
-      message.replyToId
-        ? `
-          <div class="message-reply">
-            <div class="message-reply-user">
-              ↪ ${escapeHtml(
-                message.replyToUsername ||
-                ""
-              )}
-            </div>
+    // ----------------------------------------------
+    // Avatar
+    // ----------------------------------------------
 
-            <div class="message-reply-text">
+    const username =
+      message.username ||
+      "Unknown";
+
+    const avatarLetter =
+      username
+        .trim()
+        .charAt(0)
+        .toUpperCase() ||
+      "U";
+
+    // ----------------------------------------------
+    // Reply Card
+    // ----------------------------------------------
+
+    const hasReply =
+      message.replyToId !== null &&
+      message.replyToId !== undefined &&
+      String(message.replyToId) !== "";
+
+    const replyHtml =
+      hasReply
+        ? `
+          <button
+            type="button"
+            class="message-reply-card"
+            data-action="reply-jump"
+            title="返信元のコメントを見る"
+          >
+
+            <span class="reply-card-bar"></span>
+
+            <span class="reply-card-inner">
+
+              <span class="reply-card-label">
+                ↩ 返信
+              </span>
+
+              <span class="reply-card-user">
+                ${escapeHtml(
+                  message.replyToUsername ||
+                  "ユーザー"
+                )}
+              </span>
+
+              <span class="reply-card-text">
+                ${escapeHtml(
+                  message.replyToText ||
+                  "元のメッセージ"
+                )}
+              </span>
+
+            </span>
+
+            <span class="reply-card-arrow">
+              ›
+            </span>
+
+          </button>
+        `
+        : "";
+
+    // ----------------------------------------------
+    // Header
+    // ----------------------------------------------
+
+    const headerHtml =
+      !isOwn
+        ? `
+          <div class="message-header">
+
+            <span class="message-username">
               ${escapeHtml(
-                message.replyToText ||
-                ""
+                username
               )}
-            </div>
+            </span>
+
+            <span class="message-time">
+              ${formatTime(
+                message.createdAt
+              )}
+            </span>
+
+            ${
+              message.edited
+                ? `
+                  <span class="message-edited">
+                    編集済み
+                  </span>
+                `
+                : ""
+            }
+
           </div>
         `
         : "";
 
-    wrapper.innerHTML = `
-      ${replyHtml}
+    // ----------------------------------------------
+    // Own Meta
+    // ----------------------------------------------
 
-      <div class="message-header">
+    const ownMetaHtml =
+      isOwn
+        ? `
+          <div class="message-meta">
 
-        <span class="message-username">
-          ${escapeHtml(
-            message.username ||
-            "Unknown"
-          )}
-        </span>
+            ${
+              message.edited
+                ? `
+                  <span class="message-edited">
+                    編集済み
+                  </span>
+                `
+                : ""
+            }
 
-        <span class="message-time">
-          ${formatTime(
-            message.createdAt
-          )}
-        </span>
+            <span class="message-time">
+              ${formatTime(
+                message.createdAt
+              )}
+            </span>
 
-        ${
-          message.edited
-            ? `
-              <span class="message-edited">
-                編集済み
-              </span>
-            `
-            : ""
-        }
+          </div>
+        `
+        : "";
 
-      </div>
+    // ----------------------------------------------
+    // Actions
+    // ----------------------------------------------
 
-      <div class="message-text">
-        ${escapeHtml(
-          message.text
-        )}
-      </div>
-
+    const actionsHtml = `
       <div class="message-actions">
 
         <button
           type="button"
           class="message-reply-button"
           data-action="reply"
+          title="このコメントに返信"
         >
-          返信
+          ↩ 返信
         </button>
 
         ${
@@ -2158,6 +2249,45 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
 
+    // ----------------------------------------------
+    // HTML
+    // ----------------------------------------------
+
+    wrapper.innerHTML = `
+
+      <div class="message-avatar">
+        ${escapeHtml(
+          avatarLetter
+        )}
+      </div>
+
+      <div class="message-body">
+
+        ${headerHtml}
+
+        <div class="message-bubble">
+
+          ${replyHtml}
+
+          <div class="message-text">
+            ${escapeHtml(
+              message.text
+            )}
+          </div>
+
+          ${ownMetaHtml}
+
+        </div>
+
+        ${actionsHtml}
+
+      </div>
+    `;
+
+    // ----------------------------------------------
+    // Reply
+    // ----------------------------------------------
+
     wrapper
       .querySelector(
         '[data-action="reply"]'
@@ -2172,6 +2302,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
         }
       );
+
+    // ----------------------------------------------
+    // Reply Jump
+    // ----------------------------------------------
+
+    wrapper
+      .querySelector(
+        '[data-action="reply-jump"]'
+      )
+      ?.addEventListener(
+        "click",
+        (event) => {
+
+          event.preventDefault();
+
+          event.stopPropagation();
+
+          jumpToMessage(
+            message.replyToId
+          );
+
+        }
+      );
+
+    // ----------------------------------------------
+    // Edit
+    // ----------------------------------------------
 
     wrapper
       .querySelector(
@@ -2188,6 +2345,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       );
 
+    // ----------------------------------------------
+    // Delete
+    // ----------------------------------------------
+
     wrapper
       .querySelector(
         '[data-action="delete"]'
@@ -2203,9 +2364,31 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       );
 
+    // ----------------------------------------------
+    // Append
+    // ----------------------------------------------
+
     messages.appendChild(
       wrapper
     );
+
+    // ----------------------------------------------
+    // Animation
+    // ----------------------------------------------
+
+    requestAnimationFrame(
+      () => {
+
+        wrapper.classList.add(
+          "message-visible"
+        );
+
+      }
+    );
+
+    // ----------------------------------------------
+    // Scroll
+    // ----------------------------------------------
 
     if (scroll) {
 
@@ -2223,6 +2406,70 @@ document.addEventListener("DOMContentLoaded", () => {
 
   }
 
+  // ==================================================
+  // Jump to Reply Target
+  // ==================================================
+
+  function jumpToMessage(
+    messageId
+  ) {
+
+    if (
+      !messages ||
+      messageId === null ||
+      messageId === undefined
+    ) {
+
+      return;
+
+    }
+
+    const target =
+      messages.querySelector(
+        `[data-message-id="${CSS.escape(
+          String(messageId)
+        )}"]`
+      );
+
+    if (!target) {
+
+      return;
+
+    }
+
+    target.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+
+    target.classList.remove(
+      "message-highlight"
+    );
+
+    // CSS animation再発火
+    void target.offsetWidth;
+
+    target.classList.add(
+      "message-highlight"
+    );
+
+    setTimeout(
+      () => {
+
+        target.classList.remove(
+          "message-highlight"
+        );
+
+      },
+      1000
+    );
+
+  }
+
+  // ==================================================
+  // Update Message
+  // ==================================================
+
   function updateMessageElement(
     message
   ) {
@@ -2233,7 +2480,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const element =
       messages.querySelector(
-        `[data-message-id="${CSS.escape(String(message.id))}"]`
+        `[data-message-id="${CSS.escape(
+          String(message.id)
+        )}"]`
       );
 
     if (!element) {
@@ -2275,7 +2524,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       element
         .querySelector(
-          ".message-header"
+          ".message-header, .message-meta"
         )
         ?.appendChild(
           editedElement
@@ -2293,6 +2542,10 @@ document.addEventListener("DOMContentLoaded", () => {
     message
   ) {
 
+    if (!message) {
+      return;
+    }
+
     replyToMessage =
       message;
 
@@ -2305,14 +2558,20 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     replyPreview.innerHTML = `
+
+      <span class="reply-preview-line"></span>
+
       <div class="reply-preview-content">
+
+        <div class="reply-preview-label">
+          ↩ 返信
+        </div>
 
         <div class="reply-preview-title">
           ${escapeHtml(
             message.username ||
-            ""
+            "ユーザー"
           )}
-          に返信
         </div>
 
         <div class="reply-preview-text">
@@ -2328,6 +2587,7 @@ document.addEventListener("DOMContentLoaded", () => {
         type="button"
         class="reply-preview-close"
         id="cancelReplyButton"
+        title="返信をキャンセル"
       >
         ×
       </button>
@@ -2365,7 +2625,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==================================================
-  // Send message
+  // Send Message
   // ==================================================
 
   messageForm?.addEventListener(
@@ -2431,7 +2691,7 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   // ==================================================
-  // Edit message
+  // Edit Message
   // ==================================================
 
   function editMessage(
@@ -2469,6 +2729,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
+    if (text.length > 5000) {
+
+      alert(
+        "メッセージが長すぎます。"
+      );
+
+      return;
+
+    }
+
     if (
       !socket ||
       !socket.connected
@@ -2491,7 +2761,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==================================================
-  // Delete message
+  // Delete Message
   // ==================================================
 
   function deleteMessage(
@@ -2823,6 +3093,10 @@ document.addEventListener("DOMContentLoaded", () => {
           ownerId: null
         };
 
+        clearReply();
+
+        clearMessages();
+
         showScreen(
           "auth"
         );
@@ -3068,7 +3342,7 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   // ==================================================
-  // Auth navigation
+  // Auth Navigation
   // ==================================================
 
   showRegisterButton?.addEventListener(
@@ -3116,7 +3390,7 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   // ==================================================
-  // Modal outside click
+  // Modal Outside Click
   // ==================================================
 
   createModal?.addEventListener(
@@ -3168,7 +3442,7 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   // ==================================================
-  // ESCでモーダルを閉じる
+  // ESC
   // ==================================================
 
   document.addEventListener(
@@ -3190,11 +3464,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       closeSettings();
 
+      clearReply();
+
     }
   );
 
   // ==================================================
-  // 初期化
+  // Initialize
   // ==================================================
 
   async function init() {
