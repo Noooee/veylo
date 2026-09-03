@@ -95,6 +95,12 @@ document.addEventListener("DOMContentLoaded", () => {
       "joinedRooms"
     );
 
+  const userSearchButton =
+    document.getElementById("userSearchButton");
+
+  const dmList =
+    document.getElementById("dmList");
+
   const roomName =
     document.getElementById(
       "roomName"
@@ -167,6 +173,25 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(
       "#cancelJoinButton"
     );
+
+  // ==================================================
+  // User Search / DM modal
+  // ==================================================
+
+  const userSearchModal =
+    document.getElementById("userSearchModal");
+
+  const closeUserSearchButton =
+    document.getElementById("closeUserSearchButton");
+
+  const userSearchInput =
+    document.getElementById("userSearchInput");
+
+  const userSearchMessage =
+    document.getElementById("userSearchMessage");
+
+  const userSearchResults =
+    document.getElementById("userSearchResults");
 
   // ==================================================
   // Settings
@@ -265,6 +290,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentUser = null;
 
   let currentRoomId = "casual";
+
+  let currentChatType = "room";
+
+  let dmListData = [];
 
   let currentRoom = {
     id: "casual",
@@ -627,6 +656,8 @@ document.addEventListener("DOMContentLoaded", () => {
           "get my rooms"
         );
 
+        socket.emit("get my dms");
+
       }
     );
 
@@ -720,6 +751,8 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
+        currentChatType = "room";
+
         currentRoom =
           room;
 
@@ -753,6 +786,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!room) {
           return;
         }
+
+        currentChatType = "room";
 
         currentRoom =
           room;
@@ -788,6 +823,8 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
+        currentChatType = "room";
+
         currentRoom =
           room;
 
@@ -811,6 +848,8 @@ document.addEventListener("DOMContentLoaded", () => {
       "casual joined",
       () => {
 
+        currentChatType = "room";
+
         currentRoomId =
           "casual";
 
@@ -825,6 +864,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
     );
+
+    // ==================================================
+    // My DMs
+    // ==================================================
+
+    socket.on("my dms", (list) => {
+      dmListData = Array.isArray(list) ? list : [];
+      renderDMList();
+    });
+
+    socket.on("dm opened", (dm) => {
+      if (!dm) return;
+
+      currentChatType = "dm";
+      currentRoomId = dm.id;
+      currentRoom = {
+        id: dm.id,
+        name: dm.otherUserName || "DM",
+        inviteCode: null,
+        ownerId: null,
+        otherUserId: dm.otherUserId
+      };
+
+      updateCurrentRoomUI();
+      clearMessages();
+      clearReply();
+    });
+
+    socket.on("dm previous messages", (list) => {
+      renderMessages(Array.isArray(list) ? list : []);
+    });
+
+    socket.on("dm message", (message) => {
+      if (!message || String(message.room) !== String(currentRoomId) || currentChatType !== "dm") return;
+      const shouldScroll = isNearBottom();
+      appendMessage(message);
+      if (shouldScroll) scrollToBottom(true);
+    });
+
+    socket.on("dm error", (data) => {
+      alert(data?.message || "DMを開けませんでした。");
+    });
+
+    socket.on("dm message error", (data) => {
+      alert(data?.message || "DMを送信できませんでした。");
+    });
 
     // ==================================================
     // Previous Messages
@@ -1406,6 +1491,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
+    currentChatType = "room";
+
     currentRoomId =
       room.id;
 
@@ -1480,83 +1567,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateCurrentRoomUI() {
 
-    const isCasual =
-      String(currentRoomId) ===
-      "casual";
+    if (currentChatType === "dm") {
+      if (roomName) roomName.textContent = currentRoom?.name || "DM";
+      if (roomIcon) roomIcon.textContent = "✉️";
+      if (inviteArea) inviteArea.classList.add("hidden");
+      casualRoomButton?.classList.remove("active");
+      renderJoinedRooms();
+      renderDMList();
+      return;
+    }
+
+    const isCasual = String(currentRoomId) === "casual";
 
     if (isCasual) {
-
-      if (roomName) {
-
-        roomName.textContent =
-          "雑談";
-
-      }
-
-      if (roomIcon) {
-
-        roomIcon.textContent =
-          "💬";
-
-      }
-
-      if (inviteArea) {
-
-        inviteArea.classList.add(
-          "hidden"
-        );
-
-      }
-
-      casualRoomButton?.classList.add(
-        "active"
-      );
-
+      if (roomName) roomName.textContent = "雑談";
+      if (roomIcon) roomIcon.textContent = "💬";
+      if (inviteArea) inviteArea.classList.add("hidden");
+      casualRoomButton?.classList.add("active");
     } else {
-
-      if (roomName) {
-
-        roomName.textContent =
-          currentRoom?.name ||
-          "ルーム";
-
-      }
-
-      if (roomIcon) {
-
-        roomIcon.textContent =
-          "🏠";
-
-      }
-
-      if (
-        inviteArea &&
-        currentRoom?.inviteCode
-      ) {
-
-        inviteArea.classList.remove(
-          "hidden"
-        );
-
-      }
-
-      if (inviteCode) {
-
-        inviteCode.textContent =
-          currentRoom?.inviteCode ||
-          "------";
-
-      }
-
-      casualRoomButton?.classList.remove(
-        "active"
-      );
-
+      if (roomName) roomName.textContent = currentRoom?.name || "ルーム";
+      if (roomIcon) roomIcon.textContent = "🏠";
+      if (inviteArea && currentRoom?.inviteCode) inviteArea.classList.remove("hidden");
+      if (inviteCode) inviteCode.textContent = currentRoom?.inviteCode || "------";
+      casualRoomButton?.classList.remove("active");
     }
 
     renderJoinedRooms();
-
+    renderDMList();
   }
+
 
   // ==================================================
   // Casual
@@ -1572,6 +1611,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
 
     }
+
+    currentChatType = "room";
 
     currentRoomId =
       "casual";
@@ -1597,6 +1638,104 @@ document.addEventListener("DOMContentLoaded", () => {
     "click",
     joinCasualRoom
   );
+
+  // ==================================================
+  // DM / User Search
+  // ==================================================
+
+  function openUserSearchModal() {
+    userSearchModal?.classList.remove("hidden");
+    if (userSearchMessage) userSearchMessage.textContent = "";
+    if (userSearchResults) userSearchResults.innerHTML = "";
+    if (userSearchInput) {
+      userSearchInput.value = "";
+      setTimeout(() => userSearchInput.focus(), 50);
+    }
+  }
+
+  function closeUserSearchModal() {
+    userSearchModal?.classList.add("hidden");
+  }
+
+  async function searchUsers() {
+    const q = String(userSearchInput?.value || "").trim();
+    if (!q) {
+      if (userSearchMessage) userSearchMessage.textContent = "ユーザー名を入力してください。";
+      if (userSearchResults) userSearchResults.innerHTML = "";
+      return;
+    }
+
+    try {
+      if (userSearchMessage) userSearchMessage.textContent = "検索中…";
+      const data = await api(`/api/users/search?q=${encodeURIComponent(q)}`);
+      renderUserSearchResults(Array.isArray(data?.users) ? data.users : []);
+    } catch (error) {
+      if (userSearchMessage) userSearchMessage.textContent = error.message || "検索できませんでした。";
+    }
+  }
+
+  function renderUserSearchResults(users) {
+    if (!userSearchResults) return;
+    userSearchResults.innerHTML = "";
+    if (users.length === 0) {
+      if (userSearchMessage) userSearchMessage.textContent = "ユーザーが見つかりませんでした。";
+      return;
+    }
+    if (userSearchMessage) userSearchMessage.textContent = `${users.length}件見つかりました。`;
+    for (const item of users) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "user-search-result";
+      button.innerHTML = `<span class="user-search-avatar">${escapeHtml((item.name || "U").charAt(0).toUpperCase())}</span><span class="user-search-name">${escapeHtml(item.name)}</span><span class="user-search-arrow">›</span>`;
+      button.addEventListener("click", () => startDM(item.id));
+      userSearchResults.appendChild(button);
+    }
+  }
+
+  function startDM(userId) {
+    if (!socket || !socket.connected) {
+      alert("サーバーに接続されていません。");
+      return;
+    }
+    socket.emit("start dm", { userId });
+    closeUserSearchModal();
+  }
+
+  function openDM(conversationId) {
+    if (!socket || !socket.connected) return;
+    socket.emit("open dm", { conversationId });
+  }
+
+  function renderDMList() {
+    if (!dmList) return;
+    dmList.innerHTML = "";
+    if (dmListData.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "dm-empty";
+      empty.textContent = "まだDMはありません";
+      dmList.appendChild(empty);
+      return;
+    }
+    for (const dm of dmListData) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "dm-button";
+      if (String(currentRoomId) === String(dm.id) && currentChatType === "dm") button.classList.add("active");
+      const initial = (dm.otherUserName || "U").charAt(0).toUpperCase();
+      button.innerHTML = `<span class="dm-avatar">${escapeHtml(initial)}</span><span class="dm-info"><span class="dm-name">${escapeHtml(dm.otherUserName || "ユーザー")}</span><span class="dm-last-message">${escapeHtml(dm.lastMessage || "新しいDM")}</span></span>`;
+      button.addEventListener("click", () => openDM(dm.id));
+      dmList.appendChild(button);
+    }
+  }
+
+  userSearchButton?.addEventListener("click", openUserSearchModal);
+  closeUserSearchButton?.addEventListener("click", closeUserSearchModal);
+  userSearchInput?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") { event.preventDefault(); searchUsers(); }
+  });
+  userSearchModal?.addEventListener("click", (event) => {
+    if (event.target === userSearchModal) closeUserSearchModal();
+  });
 
   // ==================================================
   // Create Modal
@@ -2212,42 +2351,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // Actions
     // ----------------------------------------------
 
-    const actionsHtml = `
-      <div class="message-actions">
-
-        <button
-          type="button"
-          class="message-reply-button"
-          data-action="reply"
-          title="このコメントに返信"
-        >
-          ↩ 返信
-        </button>
-
-        ${
-          isOwn
-            ? `
-              <button
-                type="button"
-                class="message-edit-button"
-                data-action="edit"
-              >
-                編集
-              </button>
-
-              <button
-                type="button"
-                class="message-delete-button"
-                data-action="delete"
-              >
-                削除
-              </button>
-            `
-            : ""
-        }
-
-      </div>
-    `;
+    const actionsHtml = message.isDm
+      ? ""
+      : `
+        <div class="message-actions">
+          <button type="button" class="message-reply-button" data-action="reply" title="このコメントに返信">↩ 返信</button>
+          ${
+            isOwn
+              ? `
+                <button type="button" class="message-edit-button" data-action="edit">編集</button>
+                <button type="button" class="message-delete-button" data-action="delete">削除</button>
+              `
+              : ""
+          }
+        </div>
+      `;
 
     // ----------------------------------------------
     // HTML
@@ -2667,20 +2785,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
 
-      socket.emit(
-        "chat message",
-        {
-          room:
-            currentRoomId,
-
-          text,
-
-          replyToId:
-            replyToMessage
-              ? replyToMessage.id
-              : null
-        }
-      );
+      if (currentChatType === "dm") {
+        socket.emit("dm message", {
+          conversationId: currentRoomId,
+          text
+        });
+      } else {
+        socket.emit(
+          "chat message",
+          {
+            room: currentRoomId,
+            text,
+            replyToId: replyToMessage ? replyToMessage.id : null
+          }
+        );
+      }
 
       messageInput.value =
         "";
@@ -3082,6 +3201,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         myRooms =
           [];
+
+        dmListData = [];
+        renderDMList();
+
+        currentChatType = "room";
 
         currentRoomId =
           "casual";
