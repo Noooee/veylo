@@ -416,6 +416,28 @@
 
 
           <!-- ================================
+               ダイレクトメッセージ
+          ================================= -->
+
+          <div class="dm-section">
+
+            <div class="dm-section-header">
+              <span>ダイレクトメッセージ</span>
+              <button
+                id="userSearchButton"
+                type="button"
+                class="dm-add-button"
+                title="ユーザーを検索"
+              >
+                ＋
+              </button>
+            </div>
+
+            <div id="dmList" class="dm-list"></div>
+
+          </div>
+
+          <!-- ================================
                参加中の部屋
           ================================= -->
 
@@ -626,6 +648,27 @@
 
   </div>
 
+
+  <!-- ==================================================
+       ユーザー検索モーダル
+  ================================================== -->
+
+  <div id="userSearchModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>ユーザーを検索</h2>
+        <button id="closeUserSearchButton" type="button" class="modal-close">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="userSearchInput">ユーザー名</label>
+          <input id="userSearchInput" type="text" maxlength="50" autocomplete="off" placeholder="ユーザー名を入力">
+        </div>
+        <div id="userSearchMessage" class="form-message"></div>
+        <div id="userSearchResults" class="user-search-results"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- ==================================================
        部屋作成モーダル
