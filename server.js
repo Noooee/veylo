@@ -435,6 +435,47 @@ async function initDatabase() {
   `);
 
   // ==================================================
+  // Direct Messages
+  // ==================================================
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS dm_conversations (
+      id TEXT PRIMARY KEY,
+      user1_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      user2_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (user1_id, user2_id),
+      CHECK (user1_id < user2_id)
+    )
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS dm_conversations_user1_idx
+    ON dm_conversations(user1_id)
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS dm_conversations_user2_idx
+    ON dm_conversations(user2_id)
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS dm_messages (
+      id BIGSERIAL PRIMARY KEY,
+      conversation_id TEXT NOT NULL REFERENCES dm_conversations(id) ON DELETE CASCADE,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      username TEXT NOT NULL,
+      text TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS dm_messages_conversation_created_idx
+    ON dm_messages(conversation_id, created_at)
+  `);
+
+  // ==================================================
   // Password Reset
   // ==================================================
 
@@ -700,6 +741,101 @@ app.get(
 
     }
 
+  }
+);
+
+// ==================================================
+// ユーザー検索
+// ==================================================
+
+app.get(
+  "/api/users/search",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+      const q = String(req.query.q || "").trim();
+
+      if (!q) {
+        return res.json({ users: [] });
+      }
+
+      const result = await pool.query(
+        `
+        SELECT id, name
+        FROM users
+        WHERE id <> $1
+          AND name ILIKE $2
+        ORDER BY name ASC
+        LIMIT 20
+        `,
+        [req.session.userId, `%${q}%`]
+      );
+
+      return res.json({
+        users: result.rows.map(row => ({
+          id: Number(row.id),
+          name: row.name
+        }))
+      });
+    } catch (error) {
+      console.error("/api/users/search error:", error);
+      return res.status(500).json({
+        message: "ユーザーを検索できませんでした。"
+      });
+    }
+  }
+);
+
+// ==================================================
+// ダイレクトメッセージ一覧
+// ==================================================
+
+app.get(
+  "/api/dms",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+      const result = await pool.query(
+        `
+        SELECT
+          c.id,
+          CASE WHEN c.user1_id = $1 THEN c.user2_id ELSE c.user1_id END AS other_user_id,
+          CASE WHEN c.user1_id = $1 THEN u2.name ELSE u1.name END AS other_user_name,
+          m.text AS last_message,
+          m.created_at AS last_message_at
+        FROM dm_conversations c
+        INNER JOIN users u1 ON u1.id = c.user1_id
+        INNER JOIN users u2 ON u2.id = c.user2_id
+        LEFT JOIN LATERAL (
+          SELECT text, created_at
+          FROM dm_messages
+          WHERE conversation_id = c.id
+          ORDER BY created_at DESC, id DESC
+          LIMIT 1
+        ) m ON TRUE
+        WHERE c.user1_id = $1 OR c.user2_id = $1
+        ORDER BY COALESCE(m.created_at, c.created_at) DESC
+        `,
+        [req.session.userId]
+      );
+
+      return res.json({
+        dms: result.rows.map(row => ({
+          id: row.id,
+          otherUserId: Number(row.other_user_id),
+          otherUserName: row.other_user_name,
+          lastMessage: row.last_message || "",
+          lastMessageAt: row.last_message_at || null
+        }))
+      });
+    } catch (error) {
+      console.error("/api/dms error:", error);
+      return res.status(500).json({
+        message: "DM一覧を取得できませんでした。"
+      });
+    }
   }
 );
 
@@ -1738,6 +1874,8 @@ io.on(
     const user =
       userResult.rows[0];
 
+    socket.userId = Number(user.id);
+
     console.log(
       "Socket user authenticated:",
       JSON.stringify(user.name),
@@ -1789,6 +1927,180 @@ io.on(
           user.id
         );
 
+      }
+    );
+
+    socket.on(
+      "get my dms",
+      async () => {
+        await sendMyDMs(socket, user.id);
+      }
+    );
+
+    socket.on(
+      "start dm",
+      async (data) => {
+        try {
+          const targetUserId = Number(data?.userId);
+
+          if (!Number.isInteger(targetUserId) || targetUserId <= 0) {
+            socket.emit("dm error", { message: "ユーザーを選択してください。" });
+            return;
+          }
+
+          if (targetUserId === Number(user.id)) {
+            socket.emit("dm error", { message: "自分自身にはDMできません。" });
+            return;
+          }
+
+          const target = await pool.query(
+            `SELECT id, name FROM users WHERE id = $1 LIMIT 1`,
+            [targetUserId]
+          );
+
+          if (target.rows.length === 0) {
+            socket.emit("dm error", { message: "ユーザーが見つかりません。" });
+            return;
+          }
+
+          const user1 = Math.min(Number(user.id), targetUserId);
+          const user2 = Math.max(Number(user.id), targetUserId);
+          const conversationId = `dm_${user1}_${user2}`;
+
+          await pool.query(
+            `
+            INSERT INTO dm_conversations (id, user1_id, user2_id)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (user1_id, user2_id) DO NOTHING
+            `,
+            [conversationId, user1, user2]
+          );
+
+          leaveCurrentRooms(socket);
+          socket.join(conversationId);
+
+          socket.emit("dm opened", {
+            id: conversationId,
+            otherUserId: targetUserId,
+            otherUserName: target.rows[0].name
+          });
+
+          await sendPreviousDMMessages(socket, conversationId);
+          await sendMyDMs(socket, user.id);
+        } catch (error) {
+          console.error("start dm error:", error);
+          socket.emit("dm error", { message: "DMを開けませんでした。" });
+        }
+      }
+    );
+
+    socket.on(
+      "open dm",
+      async (data) => {
+        try {
+          const conversationId = String(data?.conversationId || "").trim();
+
+          if (!conversationId) {
+            socket.emit("dm error", { message: "DMを選択してください。" });
+            return;
+          }
+
+          const result = await pool.query(
+            `
+            SELECT
+              c.id,
+              CASE WHEN c.user1_id = $1 THEN c.user2_id ELSE c.user1_id END AS other_user_id,
+              CASE WHEN c.user1_id = $1 THEN u2.name ELSE u1.name END AS other_user_name
+            FROM dm_conversations c
+            INNER JOIN users u1 ON u1.id = c.user1_id
+            INNER JOIN users u2 ON u2.id = c.user2_id
+            WHERE c.id = $2
+              AND (c.user1_id = $1 OR c.user2_id = $1)
+            LIMIT 1
+            `,
+            [user.id, conversationId]
+          );
+
+          if (result.rows.length === 0) {
+            socket.emit("dm error", { message: "このDMにはアクセスできません。" });
+            return;
+          }
+
+          const dm = result.rows[0];
+          leaveCurrentRooms(socket);
+          socket.join(conversationId);
+
+          socket.emit("dm opened", {
+            id: dm.id,
+            otherUserId: Number(dm.other_user_id),
+            otherUserName: dm.other_user_name
+          });
+
+          await sendPreviousDMMessages(socket, conversationId);
+        } catch (error) {
+          console.error("open dm error:", error);
+          socket.emit("dm error", { message: "DMを開けませんでした。" });
+        }
+      }
+    );
+
+    socket.on(
+      "dm message",
+      async (data) => {
+        try {
+          const conversationId = String(data?.conversationId || "").trim();
+          const text = String(data?.text || "").trim();
+
+          if (!conversationId || !text) return;
+
+          if (text.length > 5000) {
+            socket.emit("dm message error", { message: "メッセージが長すぎます。" });
+            return;
+          }
+
+          const access = await pool.query(
+            `
+            SELECT 1
+            FROM dm_conversations
+            WHERE id = $1
+              AND (user1_id = $2 OR user2_id = $2)
+            LIMIT 1
+            `,
+            [conversationId, user.id]
+          );
+
+          if (access.rows.length === 0 || !socket.rooms.has(conversationId)) {
+            socket.emit("dm message error", { message: "このDMには参加していません。" });
+            return;
+          }
+
+          const result = await pool.query(
+            `
+            INSERT INTO dm_messages (conversation_id, user_id, username, text)
+            VALUES ($1, $2, $3, $4)
+            RETURNING id, conversation_id, user_id, username, text, created_at
+            `,
+            [conversationId, user.id, user.name, text]
+          );
+
+          const row = result.rows[0];
+          const message = {
+            id: `dm-${row.id}`,
+            room: row.conversation_id,
+            userId: Number(row.user_id),
+            username: row.username,
+            text: row.text,
+            createdAt: row.created_at,
+            edited: false,
+            isDm: true
+          };
+
+          io.to(conversationId).emit("dm message", message);
+          await sendMyDMsToUsers(conversationId);
+        } catch (error) {
+          console.error("dm message error:", error);
+          socket.emit("dm message error", { message: "DMを送信できませんでした。" });
+        }
       }
     );
 
@@ -3160,6 +3472,99 @@ async function sendMyRooms(
 
   }
 
+}
+
+// ==================================================
+// DM一覧
+// ==================================================
+
+async function sendMyDMs(socket, userId) {
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        c.id,
+        CASE WHEN c.user1_id = $1 THEN c.user2_id ELSE c.user1_id END AS other_user_id,
+        CASE WHEN c.user1_id = $1 THEN u2.name ELSE u1.name END AS other_user_name,
+        m.text AS last_message,
+        m.created_at AS last_message_at
+      FROM dm_conversations c
+      INNER JOIN users u1 ON u1.id = c.user1_id
+      INNER JOIN users u2 ON u2.id = c.user2_id
+      LEFT JOIN LATERAL (
+        SELECT text, created_at
+        FROM dm_messages
+        WHERE conversation_id = c.id
+        ORDER BY created_at DESC, id DESC
+        LIMIT 1
+      ) m ON TRUE
+      WHERE c.user1_id = $1 OR c.user2_id = $1
+      ORDER BY COALESCE(m.created_at, c.created_at) DESC
+      `,
+      [userId]
+    );
+
+    socket.emit("my dms", result.rows.map(row => ({
+      id: row.id,
+      otherUserId: Number(row.other_user_id),
+      otherUserName: row.other_user_name,
+      lastMessage: row.last_message || "",
+      lastMessageAt: row.last_message_at || null
+    })));
+  } catch (error) {
+    console.error("sendMyDMs error:", error);
+    socket.emit("my dms", []);
+  }
+}
+
+async function sendPreviousDMMessages(socket, conversationId) {
+  try {
+    const result = await pool.query(
+      `
+      SELECT id, conversation_id, user_id, username, text, created_at
+      FROM dm_messages
+      WHERE conversation_id = $1
+      ORDER BY created_at ASC, id ASC
+      LIMIT 1000
+      `,
+      [conversationId]
+    );
+
+    socket.emit("dm previous messages", result.rows.map(row => ({
+      id: `dm-${row.id}`,
+      room: row.conversation_id,
+      userId: Number(row.user_id),
+      username: row.username,
+      text: row.text,
+      createdAt: row.created_at,
+      edited: false,
+      isDm: true
+    })));
+  } catch (error) {
+    console.error("sendPreviousDMMessages error:", error);
+    socket.emit("dm previous messages", []);
+  }
+}
+
+async function sendMyDMsToUsers(conversationId) {
+  try {
+    const result = await pool.query(
+      `SELECT user1_id, user2_id FROM dm_conversations WHERE id = $1 LIMIT 1`,
+      [conversationId]
+    );
+    if (result.rows.length === 0) return;
+
+    const ids = [Number(result.rows[0].user1_id), Number(result.rows[0].user2_id)];
+    for (const id of ids) {
+      for (const connectedSocket of io.sockets.sockets.values()) {
+        if (connectedSocket.userId && Number(connectedSocket.userId) === id) {
+          await sendMyDMs(connectedSocket, id);
+        }
+      }
+    }
+  } catch (error) {
+    console.error("sendMyDMsToUsers error:", error);
+  }
 }
 
 // ==================================================
