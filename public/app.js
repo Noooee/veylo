@@ -71,6 +71,49 @@ document.addEventListener("DOMContentLoaded", () => {
       "settingsUsernameInput"
     );
 
+  const userAvatarImage =
+    document.getElementById("userAvatarImage");
+
+  // ==================================================
+  // Profile Modal
+  // ==================================================
+
+  const profileModal =
+    document.getElementById("profileModal");
+
+  const closeProfileButton =
+    document.getElementById("closeProfileButton");
+
+  const profileAvatar =
+    document.getElementById("profileAvatar");
+
+  const profileAvatarImage =
+    document.getElementById("profileAvatarImage");
+
+  const profileAvatarFallback =
+    document.getElementById("profileAvatarFallback");
+
+  const profileAvatarInput =
+    document.getElementById("profileAvatarInput");
+
+  const profileAvatarButton =
+    document.getElementById("profileAvatarButton");
+
+  const removeAvatarButton =
+    document.getElementById("removeAvatarButton");
+
+  const profileNameInput =
+    document.getElementById("profileNameInput");
+
+  const profileBioInput =
+    document.getElementById("profileBioInput");
+
+  const profileMessage =
+    document.getElementById("profileMessage");
+
+  const saveProfileButton =
+    document.getElementById("saveProfileButton");
+
   // ==================================================
   // Rooms
   // ==================================================
@@ -307,6 +350,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let replyToMessage = null;
 
   let isLoadingMessages = false;
+
+  let pendingAvatarData = undefined; // undefined=変更なし, null=削除, string=新しい画像
 
   // ==================================================
   // Utilities
@@ -588,6 +633,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   }
 
+  function renderUserAvatar(avatarData) {
+
+    if (!userAvatarImage) {
+      return;
+    }
+
+    if (avatarData) {
+
+      userAvatarImage.src = avatarData;
+      userAvatarImage.classList.remove("hidden");
+
+    } else {
+
+      userAvatarImage.src = "";
+      userAvatarImage.classList.add("hidden");
+
+    }
+
+  }
+
   function updateUserUI() {
 
     if (!currentUser) {
@@ -608,7 +673,220 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
+    renderUserAvatar(currentUser.avatarData);
+
   }
+
+  // ==================================================
+  // Profile Modal
+  // ==================================================
+
+  function openProfileModal() {
+
+    if (!profileModal || !currentUser) {
+      return;
+    }
+
+    pendingAvatarData = undefined;
+
+    if (profileNameInput) {
+      profileNameInput.value = currentUser.name || "";
+    }
+
+    if (profileBioInput) {
+      profileBioInput.value = currentUser.bio || "";
+    }
+
+    if (profileMessage) {
+      profileMessage.textContent = "";
+    }
+
+    updateProfileAvatarPreview(currentUser.avatarData);
+
+    profileModal.classList.remove("hidden");
+
+  }
+
+  function closeProfileModal() {
+
+    profileModal?.classList.add("hidden");
+
+  }
+
+  function updateProfileAvatarPreview(avatarData) {
+
+    if (avatarData) {
+
+      if (profileAvatarImage) {
+        profileAvatarImage.src = avatarData;
+        profileAvatarImage.classList.remove("hidden");
+      }
+
+      profileAvatarFallback?.classList.add("hidden");
+
+      removeAvatarButton?.classList.remove("hidden");
+
+    } else {
+
+      if (profileAvatarImage) {
+        profileAvatarImage.src = "";
+        profileAvatarImage.classList.add("hidden");
+      }
+
+      profileAvatarFallback?.classList.remove("hidden");
+
+      removeAvatarButton?.classList.add("hidden");
+
+    }
+
+  }
+
+  usernameInput?.addEventListener("click", openProfileModal);
+
+  usernameInput?.addEventListener("keydown", (event) => {
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openProfileModal();
+    }
+
+  });
+
+  closeProfileButton?.addEventListener("click", closeProfileModal);
+
+  profileModal?.addEventListener("click", (event) => {
+
+    if (event.target === profileModal) {
+      closeProfileModal();
+    }
+
+  });
+
+  profileAvatarButton?.addEventListener("click", () => {
+
+    profileAvatarInput?.click();
+
+  });
+
+  profileAvatarInput?.addEventListener("change", () => {
+
+    const file = profileAvatarInput.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      if (profileMessage) {
+        profileMessage.textContent = "画像ファイルを選択してください。";
+      }
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      if (profileMessage) {
+        profileMessage.textContent = "画像は2MB以下にしてください。";
+      }
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+
+      pendingAvatarData = String(reader.result);
+
+      updateProfileAvatarPreview(pendingAvatarData);
+
+      if (profileMessage) {
+        profileMessage.textContent = "";
+      }
+
+    };
+
+    reader.onerror = () => {
+
+      if (profileMessage) {
+        profileMessage.textContent = "画像を読み込めませんでした。";
+      }
+
+    };
+
+    reader.readAsDataURL(file);
+
+  });
+
+  removeAvatarButton?.addEventListener("click", () => {
+
+    pendingAvatarData = null;
+
+    updateProfileAvatarPreview(null);
+
+  });
+
+  saveProfileButton?.addEventListener("click", async () => {
+
+    const name = String(profileNameInput?.value || "").trim();
+    const bio = String(profileBioInput?.value || "").trim();
+
+    if (!name) {
+      if (profileMessage) {
+        profileMessage.textContent = "名前を入力してください。";
+      }
+      return;
+    }
+
+    saveProfileButton.disabled = true;
+
+    if (profileMessage) {
+      profileMessage.textContent = "保存中...";
+    }
+
+    try {
+
+      const data = await api("/api/profile", {
+        method: "PUT",
+        body: JSON.stringify({ name, bio })
+      });
+
+      currentUser = data.user;
+
+      if (pendingAvatarData === null) {
+
+        const avatarResult = await api("/api/profile/avatar", {
+          method: "DELETE"
+        });
+
+        currentUser = avatarResult.user;
+
+      } else if (typeof pendingAvatarData === "string") {
+
+        const avatarResult = await api("/api/profile/avatar", {
+          method: "POST",
+          body: JSON.stringify({ avatarData: pendingAvatarData })
+        });
+
+        currentUser = avatarResult.user;
+
+      }
+
+      updateUserUI();
+
+      closeProfileModal();
+
+    } catch (error) {
+
+      if (profileMessage) {
+        profileMessage.textContent = error.message || "保存できませんでした。";
+      }
+
+    } finally {
+
+      saveProfileButton.disabled = false;
+
+    }
+
+  });
 
   // ==================================================
   // Socket
@@ -3587,6 +3865,8 @@ document.addEventListener("DOMContentLoaded", () => {
       closeJoinModal();
 
       closeSettings();
+
+      closeProfileModal();
 
       clearReply();
 
