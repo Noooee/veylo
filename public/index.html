@@ -321,8 +321,9 @@
 
         <div class="user-card">
 
-          <div class="user-avatar">
-            <span>●</span>
+          <div class="user-avatar" aria-hidden="true">
+            <img id="userAvatarImage" class="user-avatar-image hidden" alt="">
+            <span>U</span>
           </div>
 
           <div class="user-info">
@@ -331,12 +332,15 @@
               ログイン中
             </div>
 
-            <input
+            <div
               id="usernameInput"
               class="username-display"
-              type="text"
-              readonly
+              role="button"
+              tabindex="0"
+              aria-label="プロフィールを開く"
             >
+              ユーザー
+            </div>
 
           </div>
 
@@ -666,6 +670,50 @@
         </div>
         <div id="userSearchMessage" class="form-message"></div>
         <div id="userSearchResults" class="user-search-results"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================
+       プロフィールモーダル
+  ================================================== -->
+
+  <div id="profileModal" class="modal hidden">
+    <div class="modal-content profile-content">
+      <div class="modal-header">
+        <h2>プロフィール</h2>
+        <button id="closeProfileButton" type="button" class="modal-close">×</button>
+      </div>
+
+      <div class="modal-body profile-body">
+        <div class="profile-avatar-editor">
+          <div id="profileAvatar" class="profile-avatar">
+            <img id="profileAvatarImage" class="profile-avatar-image hidden" alt="プロフィールアイコン">
+            <span id="profileAvatarFallback">U</span>
+          </div>
+          <div class="profile-avatar-actions">
+            <input id="profileAvatarInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden">
+            <button id="profileAvatarButton" type="button" class="secondary-button">アイコンを変更</button>
+            <button id="removeAvatarButton" type="button" class="text-button hidden">アイコンを削除</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="profileNameInput">名前</label>
+          <input id="profileNameInput" type="text" maxlength="50" autocomplete="off">
+        </div>
+
+        <div class="input-group">
+          <label for="profileBioInput">自己紹介</label>
+          <textarea id="profileBioInput" maxlength="300" rows="5" placeholder="好きなこと、ひとことなどを書いてみましょう！"></textarea>
+          <div class="profile-character-hint">300文字まで</div>
+        </div>
+
+        <div id="profileMessage" class="form-message"></div>
+
+        <div class="profile-footer-actions">
+          <button id="saveProfileButton" type="button" class="primary-button">保存する</button>
+        </div>
       </div>
     </div>
   </div>
