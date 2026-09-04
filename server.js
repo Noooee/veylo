@@ -29,6 +29,9 @@ const SESSION_SECRET =
   process.env.SESSION_SECRET ||
   "veylo-development-secret";
 
+const MAX_AVATAR_BASE64_LENGTH =
+  2 * 1024 * 1024 * 1.4; // 元画像 約2MBまで許可(Base64化で約1.4倍に膨張)
+
 // ==================================================
 // Express
 // ==================================================
@@ -75,7 +78,7 @@ const pool =
 
 app.use(
   express.json({
-    limit: "1mb"
+    limit: "3mb" // Base64アイコンを受け取るため引き上げ
   })
 );
 
@@ -188,6 +191,16 @@ async function initDatabase() {
   await pool.query(`
     ALTER TABLE users
     DROP CONSTRAINT IF EXISTS users_email_key
+  `);
+
+  await pool.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS bio TEXT NOT NULL DEFAULT ''
+  `);
+
+  await pool.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS avatar_data TEXT NULL
   `);
 
   // ==================================================
@@ -578,7 +591,9 @@ function sanitizeUser(user) {
   return {
     id: user.id,
     email: user.email,
-    name: user.name
+    name: user.name,
+    bio: user.bio || "",
+    avatarData: user.avatar_data || null
   };
 
 }
@@ -693,7 +708,9 @@ app.get(
           SELECT
             id,
             email,
-            name
+            name,
+            bio,
+            avatar_data
           FROM users
           WHERE id = $1
           `,
@@ -762,7 +779,7 @@ app.get(
 
       const result = await pool.query(
         `
-        SELECT id, name
+        SELECT id, name, bio, avatar_data
         FROM users
         WHERE id <> $1
           AND name ILIKE $2
@@ -775,7 +792,9 @@ app.get(
       return res.json({
         users: result.rows.map(row => ({
           id: Number(row.id),
-          name: row.name
+          name: row.name,
+          bio: row.bio || "",
+          avatarData: row.avatar_data || null
         }))
       });
     } catch (error) {
@@ -1045,7 +1064,9 @@ app.post(
           RETURNING
             id,
             email,
-            name
+            name,
+            bio,
+            avatar_data
           `,
           [
             email,
@@ -1163,7 +1184,9 @@ app.post(
             id,
             email,
             name,
-            password_hash
+            password_hash,
+            bio,
+            avatar_data
           FROM users
           WHERE name = $1
           LIMIT 1
@@ -1332,6 +1355,173 @@ app.post(
 
       }
     );
+
+  }
+);
+
+// ==================================================
+// プロフィール更新(名前・自己紹介)
+// ==================================================
+
+app.put(
+  "/api/profile",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+
+      const name = normalizeName(req.body.name);
+      const bio = String(req.body.bio || "").trim();
+
+      if (!name) {
+        return res.status(400).json({
+          message: "名前を入力してください。"
+        });
+      }
+
+      if (name.length > 50) {
+        return res.status(400).json({
+          message: "名前は50文字以内にしてください。"
+        });
+      }
+
+      if (bio.length > 300) {
+        return res.status(400).json({
+          message: "自己紹介は300文字以内にしてください。"
+        });
+      }
+
+      // 自分以外で名前が重複していないか確認
+      const nameExists = await pool.query(
+        `
+        SELECT id
+        FROM users
+        WHERE name = $1
+          AND id <> $2
+        LIMIT 1
+        `,
+        [name, req.session.userId]
+      );
+
+      if (nameExists.rows.length > 0) {
+        return res.status(409).json({
+          message: "この名前は既に使用されています。別の名前を入力してください。"
+        });
+      }
+
+      const result = await pool.query(
+        `
+        UPDATE users
+        SET name = $1, bio = $2
+        WHERE id = $3
+        RETURNING id, email, name, bio, avatar_data
+        `,
+        [name, bio, req.session.userId]
+      );
+
+      return res.json({
+        user: sanitizeUser(result.rows[0])
+      });
+
+    } catch (error) {
+
+      console.error("/api/profile error:", error);
+
+      return res.status(500).json({
+        message: "プロフィールを更新できませんでした。"
+      });
+
+    }
+
+  }
+);
+
+// ==================================================
+// アイコン更新
+// ==================================================
+
+app.post(
+  "/api/profile/avatar",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+
+      const avatarData = String(req.body.avatarData || "");
+
+      if (!avatarData.startsWith("data:image/")) {
+        return res.status(400).json({
+          message: "画像形式が正しくありません。"
+        });
+      }
+
+      if (avatarData.length > MAX_AVATAR_BASE64_LENGTH) {
+        return res.status(413).json({
+          message: "画像が大きすぎます。2MB以下の画像を選んでください。"
+        });
+      }
+
+      const result = await pool.query(
+        `
+        UPDATE users
+        SET avatar_data = $1
+        WHERE id = $2
+        RETURNING id, email, name, bio, avatar_data
+        `,
+        [avatarData, req.session.userId]
+      );
+
+      return res.json({
+        user: sanitizeUser(result.rows[0])
+      });
+
+    } catch (error) {
+
+      console.error("/api/profile/avatar error:", error);
+
+      return res.status(500).json({
+        message: "アイコンを更新できませんでした。"
+      });
+
+    }
+
+  }
+);
+
+// ==================================================
+// アイコン削除
+// ==================================================
+
+app.delete(
+  "/api/profile/avatar",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+
+      const result = await pool.query(
+        `
+        UPDATE users
+        SET avatar_data = NULL
+        WHERE id = $1
+        RETURNING id, email, name, bio, avatar_data
+        `,
+        [req.session.userId]
+      );
+
+      return res.json({
+        user: sanitizeUser(result.rows[0])
+      });
+
+    } catch (error) {
+
+      console.error("/api/profile/avatar delete error:", error);
+
+      return res.status(500).json({
+        message: "アイコンを削除できませんでした。"
+      });
+
+    }
 
   }
 );
