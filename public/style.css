@@ -1290,7 +1290,7 @@ select:focus-visible {
 
 /* ==================================================
    Message Bubble
-   閾ｪ辟ｶ縺ｪLINE鬚ｨ蜷ｹ縺榊�縺�
+   自然なLINE風吹き出し
 ================================================== */
 
 .message {
@@ -1350,7 +1350,7 @@ select:focus-visible {
 
 
 /*
-  閾ｪ辟ｶ縺ｪ蜷ｹ縺榊�縺励�蟆ｻ蟆ｾ
+  自然な吹き出しの尻尾
 */
 
 .message::before {
@@ -1399,8 +1399,8 @@ select:focus-visible {
 /* ==================================================
    Optional Own Message Support
 
-   JS蛛ｴ縺ｧ .own / .mine / .self 縺ｮ縺�★繧後°繧�
-   莉倥￠縺溷�ｴ蜷医↓蜿ｳ蛛ｴ縺ｸ螟画峩縺ｧ縺阪∪縺吶�
+   JS側で .own / .mine / .self のいずれかを
+   付けた場合に右側へ変更できます。
 ================================================== */
 
 .message.own,
@@ -2680,8 +2680,8 @@ body.gray-mode .logo-area h1 {
 
 
   /*
-    繧ｹ繝槭�縺ｧ縺ｯ繧ｵ繧､繝峨ヰ繝ｼ繧帝國縺励※
-    繝√Ε繝�ヨ繧貞�髱｢陦ｨ遉ｺ
+    スマホではサイドバーを隠して
+    チャットを全面表示
   */
 
   .sidebar {
@@ -2745,8 +2745,8 @@ body.gray-mode .logo-area h1 {
 
 
   /*
-    繧ｹ繝槭�縺ｧ縺ｯ蜷ｹ縺榊�縺励ｒ
-    逕ｻ髱｢縺�▲縺ｱ縺�↓縺励☆縺弱↑縺�
+    スマホでは吹き出しを
+    画面いっぱいにしすぎない
   */
 
   .message {
@@ -3007,7 +3007,7 @@ body.gray-mode .logo-area h1 {
 
 
   /*
-    險ｭ螳夂判髱｢
+    設定画面
   */
 
   .settings-content {
@@ -3096,8 +3096,8 @@ body.gray-mode .logo-area h1 {
 
 
   /*
-    iOS縺ｧ蜈･蜉帶凾縺ｫ繧ｺ繝ｼ繝�縺輔ｌ縺ｪ縺�ｈ縺�
-    16px莉･荳翫ｒ遒ｺ菫�
+    iOSで入力時にズームされないよう
+    16px以上を確保
   */
 
   .message-form input {
@@ -3154,7 +3154,7 @@ body.gray-mode .logo-area h1 {
 
 /* ==================================================
    Reduced Motion
-   繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ縺瑚協謇九↑繝ｦ繝ｼ繧ｶ繝ｼ縺ｸ縺ｮ驟肴�
+   アニメーションが苦手なユーザーへの配慮
 ================================================== */
 
 @media (prefers-reduced-motion: reduce) {
@@ -3173,7 +3173,7 @@ body.gray-mode .logo-area h1 {
 
 /* =========================================================
    Veylo UI Upgrade
-   LINE ﾃ� Discord
+   LINE × Discord
    PC FIRST / Mobile Friendly
 ========================================================= */
 
@@ -3290,7 +3290,7 @@ select:focus-visible {
 
 /* =========================================================
    Sidebar
-   PC繧偵Γ繧､繝ｳ縺ｫ縺励◆蟆代＠Discord蟇�ｊ縺ｮ讒矩�
+   PCをメインにした少しDiscord寄りの構造
 ========================================================= */
 
 .sidebar {
@@ -3440,7 +3440,7 @@ select:focus-visible {
 
 /* =========================================================
    Messages
-   笘� 縺薙％縺御ｻ雁屓縺ｮ驥崎ｦ�Κ蛻�
+   ★ ここが今回の重要部分
 ========================================================= */
 
 .messages {
@@ -3461,11 +3461,11 @@ select:focus-visible {
 
 
 /*
-  蝓ｺ譛ｬ��
-  莉紋ｺｺ = 蟾ｦ
+  基本：
+  他人 = 左
 
-  margin-left:auto 縺ｫ縺励↑縺�％縺ｨ縺ｧ
-  PC縺ｧ繧り�辟ｶ縺ｫ蟾ｦ蛛ｴ縺ｸ蟇�ｋ
+  margin-left:auto にしないことで
+  PCでも自然に左側へ寄る
 */
 
 .message {
@@ -3507,9 +3507,9 @@ select:focus-visible {
 
 
 /*
-  笘� 閾ｪ蛻��繧ｳ繝｡繝ｳ繝�
+  ★ 自分のコメント
 
-  隍�焚縺ｮ蜻ｽ蜷阪ヱ繧ｿ繝ｼ繝ｳ縺ｫ蟇ｾ蠢�
+  複数の命名パターンに対応
 */
 
 .message.own,
@@ -3548,7 +3548,7 @@ select:focus-visible {
 
 
 /* =========================================================
-   閾ｪ蛻��蜷ｹ縺榊�縺励�蟆ｻ蟆ｾ
+   自分の吹き出しの尻尾
 ========================================================= */
 
 .message::before {
@@ -3587,7 +3587,7 @@ select:focus-visible {
 
 
 /*
-  閾ｪ蛻��蜿ｳ蛛ｴ縺ｫ蟆ｻ蟆ｾ
+  自分は右側に尻尾
 */
 
 .message.own::before,
@@ -3653,7 +3653,7 @@ select:focus-visible {
 
 /* =========================================================
    Message header
-   Discord縺｣縺ｽ縺丞ｰ代＠諠��ｱ繧呈紛逅�
+   Discordっぽく少し情報を整理
 ========================================================= */
 
 .message-header {
@@ -3674,7 +3674,7 @@ select:focus-visible {
 
 
 /*
-  莉紋ｺｺ縺ｮ蜷榊燕
+  他人の名前
 */
 
 .message-user {
@@ -3692,7 +3692,7 @@ select:focus-visible {
 
 
 /*
-  閾ｪ蛻��蜷榊燕縺ｯ蟆代＠關ｽ縺｡逹縺九○繧�
+  自分の名前は少し落ち着かせる
 */
 
 .message.own .message-user,
@@ -3748,7 +3748,7 @@ select:focus-visible {
 
 /* =========================================================
    Message actions
-   笘� Discord鬚ｨ縺ｮ謗ｧ縺医ａ縺ｪ謫堺ｽ弑I
+   ★ Discord風の控えめな操作UI
 ========================================================= */
 
 .message-actions {
@@ -3841,8 +3841,8 @@ select:focus-visible {
 
 /* =========================================================
    Reply
-   笘� 縺薙％繧貞､ｧ縺阪￥螟画峩
-   LINE縺ｮ蠑慕畑 + Discord縺ｮReply鬚ｨ
+   ★ ここを大きく変更
+   LINEの引用 + DiscordのReply風
 ========================================================= */
 
 .message-reply-info {
@@ -3919,7 +3919,7 @@ select:focus-visible {
 
 
 /*
-  閾ｪ蛻��霑比ｿ｡
+  自分の返信
 */
 
 .message.own .message-reply-info,
@@ -3938,7 +3938,7 @@ select:focus-visible {
 
 /* =========================================================
    Reply Preview
-   笘� 蜈･蜉帶ｬ�ｸ翫�霑比ｿ｡UI
+   ★ 入力欄上の返信UI
 ========================================================= */
 
 .reply-preview {
@@ -3986,7 +3986,7 @@ select:focus-visible {
 
 
 /*
-  霑比ｿ｡繝励Ξ繝薙Η繝ｼ蜀��繝懊ち繝ｳ
+  返信プレビュー内のボタン
 */
 
 .reply-preview button {
@@ -4097,7 +4097,7 @@ select:focus-visible {
 
 /* =========================================================
    Message input
-   笘� Discord縺｣縺ｽ縺��蜉帶ｬ� + LINE縺ｮ菴ｿ縺�ｄ縺吶＆
+   ★ Discordっぽい入力欄 + LINEの使いやすさ
 ========================================================= */
 
 .message-input-area {
@@ -4192,7 +4192,7 @@ select:focus-visible {
 
 /* =========================================================
    Modal
-   笘� 繧｢繝励Μ蜈ｨ菴薙→邨ｱ荳
+   ★ アプリ全体と統一
 ========================================================= */
 
 .modal {
@@ -4431,13 +4431,13 @@ select:focus-visible {
 
 /* =========================================================
    Smartphone
-   笘� 560px莉･荳九�縺九↑繧頑桃菴懈ｧ驥崎ｦ�
+   ★ 560px以下はかなり操作性重視
 ========================================================= */
 
 @media (max-width: 560px) {
 
   /*
-    繧ｵ繧､繝峨ヰ繝ｼ縺ｯ譌｢蟄倅ｻ墓ｧ倥↓蜷医ｏ縺帙※髱櫁｡ｨ遉ｺ
+    サイドバーは既存仕様に合わせて非表示
   */
 
   .sidebar {
@@ -4501,7 +4501,7 @@ select:focus-visible {
 
 
   /*
-    繝｡繝�そ繝ｼ繧ｸ
+    メッセージ
   */
 
   .messages {
@@ -4571,7 +4571,7 @@ select:focus-visible {
 
 
   /*
-    繧ｹ繝槭�縺ｧ縺ｯ謫堺ｽ懊�繧ｿ繝ｳ繧貞ｰ代＠螟ｧ縺阪￥
+    スマホでは操作ボタンを少し大きく
   */
 
   .message-actions {
@@ -4603,7 +4603,7 @@ select:focus-visible {
 
 
   /*
-    霑比ｿ｡
+    返信
   */
 
   .message-reply-info {
@@ -4621,7 +4621,7 @@ select:focus-visible {
 
 
   /*
-    蜈･蜉帶ｬ�
+    入力欄
   */
 
   .message-input-area {
@@ -4678,7 +4678,7 @@ select:focus-visible {
 
 
   /*
-    霑比ｿ｡繝励Ξ繝薙Η繝ｼ
+    返信プレビュー
   */
 
   .reply-preview {
@@ -4705,7 +4705,7 @@ select:focus-visible {
 
 
   /*
-    譁ｰ逹繝懊ち繝ｳ
+    新着ボタン
   */
 
   .new-message-button {
@@ -4726,7 +4726,7 @@ select:focus-visible {
 
 
   /*
-    繧ｹ繧ｯ繝ｭ繝ｼ繝ｫ繝懊ち繝ｳ
+    スクロールボタン
   */
 
   .scroll-buttons {
@@ -4752,7 +4752,7 @@ select:focus-visible {
 
 
   /*
-    繝｢繝ｼ繝繝ｫ
+    モーダル
   */
 
   .modal {
@@ -4812,7 +4812,7 @@ select:focus-visible {
 
 
   /*
-    險ｭ螳壹Δ繝ｼ繝繝ｫ
+    設定モーダル
   */
 
   .settings-content {
@@ -5209,7 +5209,7 @@ body.dark-mode.gray-mode {
 
 /* =========================================================
    Reduced Motion
-   繧｢繝九Γ繝ｼ繧ｷ繝ｧ繝ｳ縺瑚協謇九↑迺ｰ蠅�∈縺ｮ驟肴�
+   アニメーションが苦手な環境への配慮
 ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
@@ -5407,9 +5407,9 @@ body.dark-mode .user-search-result:hover {
 
 
 /* =========================================================
-   Veylo 窶� DM / User Card / Theme polish
-   譌｢蟄倥� style.css 縺ｮ荳逡ｪ荳九↓霑ｽ蜉�縺励※縺上□縺輔＞縲�
-   譌｢蟄倥ユ繝ｼ繝槫､画焚繧貞━蜈医＠縲∫┌縺��ｴ蜷医�繝輔か繝ｼ繝ｫ繝舌ャ繧ｯ縺励∪縺吶�
+   Veylo — DM / User Card / Theme polish
+   既存の style.css の一番下に追加してください。
+   既存テーマ変数を優先し、無い場合はフォールバックします。
 ========================================================= */
 
 :root {
@@ -5583,7 +5583,7 @@ body.dark-mode .user-search-result:hover {
 }
 
 /* -----------------------------
-   DM messages: LINE ﾃ� Discord feel
+   DM messages: LINE × Discord feel
 ----------------------------- */
 .message.own .message-content {
   border-radius: 18px 18px 5px 18px;
@@ -5943,7 +5943,7 @@ body.dark-mode.gray-mode .primary-button {
 }
 
 /* =========================================================
-   Veylo Final 窶� profile/name visibility polish
+   Veylo Final — profile/name visibility polish
 ========================================================= */
 
 .username-display {
@@ -5979,5 +5979,374 @@ body.dark-mode .username-display:focus-visible {
 @media (max-width: 560px) {
   .username-display {
     max-width: 150px;
+  }
+}
+
+/* =========================================================
+   ★ アイコン表示・メッセージレイアウト 修正パッチ
+   （Discord風：アバター + ヘッダー + 本文）
+
+   app.js が生成する実際のクラス名に対して、
+   これまで対応するCSSが存在しなかった箇所を補う。
+========================================================= */
+
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.user-avatar,
+.dm-avatar,
+.user-search-avatar,
+.message-avatar,
+.profile-avatar {
+  overflow: hidden;
+  position: relative;
+}
+
+/* ---------------------------------------------------------
+   メッセージ本体：アバター + ヘッダー + 本文 の横並び
+--------------------------------------------------------- */
+
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  width: 100%;
+  max-width: 720px;
+  margin: 0 0 16px;
+  padding: 6px 10px;
+
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+
+  animation: messageAppear .22s ease both;
+}
+
+.message:hover {
+  background: var(--ui-other, rgba(0,0,0,.02));
+}
+
+.message.own,
+.message.mine,
+.message.self,
+.message.me,
+.message[data-own="true"],
+.message[data-self="true"],
+.message[data-user="self"] {
+  align-self: stretch;
+  margin-left: 0;
+  margin-right: 0;
+  flex-direction: row;
+}
+
+.message.own::before,
+.message.mine::before,
+.message.self::before,
+.message.me::before {
+  display: none;
+}
+
+/* 全テーマ・全パターンの「吹き出しの尻尾」を無効化
+   （行アイコン型レイアウトでは不要かつ表示が崩れる原因になっていた） */
+.message::before,
+.message.own::before,
+.message.mine::before,
+.message.self::before,
+.message.me::before,
+.message[data-own="true"]::before,
+.message[data-self="true"]::before,
+.message[data-user="self"]::before,
+body.dark-mode .message::before,
+body.dark-mode .message.own::before,
+body.dark-mode .message.mine::before,
+body.dark-mode .message.self::before,
+body.dark-mode .message.me::before,
+body.dark-mode .message[data-own="true"]::before,
+body.dark-mode .message[data-self="true"]::before,
+body.dark-mode .message[data-user="self"]::before,
+body.gray-mode .message::before,
+body.gray-mode .message.own::before,
+body.gray-mode .message.mine::before,
+body.gray-mode .message.self::before,
+body.gray-mode .message.me::before {
+  display: none !important;
+  content: none !important;
+}
+
+.message-avatar {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(135deg, var(--primary-light), #e5e8ff);
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.message-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.message-username {
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.message.own .message-username {
+  color: var(--primary-dark);
+}
+
+.message-edited {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.message-bubble {
+  position: relative;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text, inherit);
+}
+
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.message-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---------------------------------------------------------
+   返信カード（Discord風の引用プレビュー）
+--------------------------------------------------------- */
+
+.message-reply-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  width: 100%;
+  max-width: 100%;
+  margin: 0 0 6px;
+  padding: 6px 10px;
+
+  border: 0;
+  border-radius: 7px;
+  background: var(--ui-reply, var(--primary-light));
+  color: var(--text-soft);
+
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+
+  transition: background .15s ease, transform .15s ease;
+}
+
+.message-reply-card:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  transform: translateX(2px);
+}
+
+.reply-card-bar {
+  flex: 0 0 auto;
+  width: 3px;
+  align-self: stretch;
+  border-radius: 2px;
+  background: var(--primary);
+}
+
+.reply-card-inner {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.reply-card-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.reply-card-user {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.reply-card-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.reply-card-arrow {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------
+   アクションボタンの微調整
+--------------------------------------------------------- */
+
+.message-delete-button:hover {
+  color: var(--danger);
+  background: rgba(224,82,82,.08);
+}
+
+@media (max-width: 560px) {
+  .message {
+    max-width: 100%;
+    gap: 8px;
+  }
+
+  .message-avatar {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* ---------------------------------------------------------
+   設定：危険な操作（アカウント削除）
+--------------------------------------------------------- */
+
+.settings-group.danger-zone {
+  border: 1px solid rgba(224,82,82,.25);
+  border-radius: 10px;
+  padding: 12px;
+  background: rgba(224,82,82,.04);
+}
+
+.settings-group.danger-zone .setting-title {
+  color: var(--danger);
+}
+
+
+/* =========================================================
+   Veylo FIX PATCH 2026-09
+   - Discord風のコンパクトなメッセージアイコン
+   - 設定モーダルの中央部分だけスクロール
+   - 小さい画面でもヘッダー/フッターを固定
+========================================================= */
+
+.message-avatar {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  flex: 0 0 36px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+}
+
+.message-avatar .avatar-image,
+.message-avatar .avatar-fallback {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+}
+
+.message {
+  gap: 10px !important;
+  margin-bottom: 6px !important;
+  padding: 4px 8px !important;
+  max-width: 900px !important;
+}
+
+.message-body {
+  min-width: 0 !important;
+}
+
+.message-username {
+  font-size: 13px !important;
+}
+
+.message-bubble,
+.message-text {
+  font-size: 14px !important;
+  line-height: 1.55 !important;
+}
+
+/* 設定だけをスクロール領域にする */
+#settingsModal .settings-content {
+  width: min(500px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#settingsModal .settings-content .modal-header,
+#settingsModal .settings-content .modal-footer {
+  flex: 0 0 auto;
+}
+
+#settingsModal .settings-content .modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 560px) {
+  .message {
+    gap: 8px !important;
+    padding: 3px 4px !important;
+  }
+
+  .message-avatar,
+  .message-avatar .avatar-image,
+  .message-avatar .avatar-fallback {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .message-avatar {
+    min-width: 32px !important;
+    flex-basis: 32px !important;
+  }
+
+  #settingsModal {
+    padding: 8px !important;
+  }
+
+  #settingsModal .settings-content {
+    width: 100%;
+    max-height: calc(100vh - 16px);
   }
 }
