@@ -1014,6 +1014,136 @@
 
         </div>
 
+
+        <!-- 通知音 -->
+
+        <div class="settings-group">
+
+          <div class="setting-row">
+
+            <div>
+
+              <div class="setting-title">
+                通知音
+              </div>
+
+              <div class="setting-description">
+                新しいメッセージが届いたときに音を鳴らします
+              </div>
+
+            </div>
+
+            <button
+              id="notificationSoundToggleButton"
+              type="button"
+              class="toggle-button"
+            >
+              OFF
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- デスクトップ通知 -->
+
+        <div class="settings-group">
+
+          <div class="setting-row">
+
+            <div>
+
+              <div class="setting-title">
+                デスクトップ通知
+              </div>
+
+              <div class="setting-description">
+                他のタブを見ているときに通知を表示します
+              </div>
+
+            </div>
+
+            <button
+              id="desktopNotificationToggleButton"
+              type="button"
+              class="toggle-button"
+            >
+              OFF
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- パスワード変更 -->
+
+        <div class="settings-group">
+
+          <div class="setting-title">
+            パスワード変更
+          </div>
+
+          <input
+            id="currentPasswordInput"
+            type="password"
+            placeholder="現在のパスワード"
+            autocomplete="current-password"
+          >
+
+          <input
+            id="newPasswordInput"
+            type="password"
+            placeholder="新しいパスワード（8文字以上）"
+            autocomplete="new-password"
+          >
+
+          <div id="passwordChangeMessage" class="form-message"></div>
+
+          <button
+            id="changePasswordButton"
+            type="button"
+            class="secondary-button"
+          >
+            パスワードを変更
+          </button>
+
+        </div>
+
+
+        <!-- アカウント削除 -->
+
+        <div class="settings-group danger-zone">
+
+          <div class="setting-title">
+            アカウント削除
+          </div>
+
+          <div class="setting-description">
+            アカウントとすべてのメッセージ・部屋・DMが完全に削除されます。この操作は取り消せません。
+          </div>
+
+          <input
+            id="deleteAccountPasswordInput"
+            type="password"
+            placeholder="確認のためパスワードを入力"
+            autocomplete="current-password"
+            class="hidden"
+          >
+
+          <div id="deleteAccountMessage" class="form-message"></div>
+
+          <button
+            id="deleteAccountButton"
+            type="button"
+            class="danger-button"
+          >
+            アカウントを削除する
+          </button>
+
+        </div>
+
       </div>
 
 
