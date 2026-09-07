@@ -75,7 +75,7 @@ const pool =
 
 app.use(
   express.json({
-    limit: "4mb"
+    limit: "6mb"
   })
 );
 
@@ -140,7 +140,10 @@ const io =
       cors: {
         origin: true,
         credentials: true
-      }
+      },
+      // 画像添付メッセージ（Base64）を送受信できるよう
+      // デフォルトの1MB上限を引き上げる
+      maxHttpBufferSize: 5 * 1024 * 1024
     }
   );
 
@@ -440,6 +443,12 @@ async function initDatabase() {
   `);
 
   await pool.query(`
+    ALTER TABLE messages
+    ADD COLUMN IF NOT EXISTS
+    image TEXT NULL
+  `);
+
+  await pool.query(`
     CREATE INDEX IF NOT EXISTS
     messages_room_created_idx
     ON messages(room, created_at)
@@ -484,6 +493,12 @@ async function initDatabase() {
   await pool.query(`
     CREATE INDEX IF NOT EXISTS dm_messages_conversation_created_idx
     ON dm_messages(conversation_id, created_at)
+  `);
+
+  await pool.query(`
+    ALTER TABLE dm_messages
+    ADD COLUMN IF NOT EXISTS
+    image TEXT NULL
   `);
 
   // ==================================================
@@ -577,6 +592,32 @@ function hashToken(token) {
 }
 
 // ==================================================
+// 画像バリデーション（アイコン・チャット添付共通）
+// ==================================================
+
+function isValidImageDataUrl(value, maxLength) {
+
+  if (value === null || value === undefined || value === "") {
+    return true;
+  }
+
+  if (typeof value !== "string") {
+    return false;
+  }
+
+  if (!/^data:image\/(png|jpeg|jpg|webp|gif);base64,/.test(value)) {
+    return false;
+  }
+
+  if (value.length > maxLength) {
+    return false;
+  }
+
+  return true;
+
+}
+
+// ==================================================
 // User format
 // ==================================================
 
@@ -640,6 +681,8 @@ function formatMessage(row) {
     avatar: row.avatar || null,
 
     text: row.text,
+
+    image: row.image || null,
 
     replyToId:
       row.reply_to_id,
@@ -2346,11 +2389,17 @@ io.on(
         try {
           const conversationId = String(data?.conversationId || "").trim();
           const text = String(data?.text || "").trim();
+          const image = data?.image ? String(data.image) : null;
 
-          if (!conversationId || !text) return;
+          if (!conversationId || (!text && !image)) return;
 
           if (text.length > 5000) {
             socket.emit("dm message error", { message: "メッセージが長すぎます。" });
+            return;
+          }
+
+          if (!isValidImageDataUrl(image, 3000000)) {
+            socket.emit("dm message error", { message: "画像を送信できませんでした。形式またはサイズを確認してください。" });
             return;
           }
 
@@ -2372,11 +2421,11 @@ io.on(
 
           const result = await pool.query(
             `
-            INSERT INTO dm_messages (conversation_id, user_id, username, text)
-            VALUES ($1, $2, $3, $4)
-            RETURNING id, conversation_id, user_id, username, text, created_at
+            INSERT INTO dm_messages (conversation_id, user_id, username, text, image)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id, conversation_id, user_id, username, text, image, created_at
             `,
-            [conversationId, user.id, user.name, text]
+            [conversationId, user.id, user.name, text, image]
           );
 
           const row = result.rows[0];
@@ -2387,6 +2436,7 @@ io.on(
             username: row.username,
             avatar: user.avatar || null,
             text: row.text,
+            image: row.image || null,
             createdAt: row.created_at,
             edited: false,
             isDm: true
@@ -2421,9 +2471,14 @@ io.on(
               data?.text || ""
             ).trim();
 
+          const image =
+            data?.image
+              ? String(data.image)
+              : null;
+
           if (
             !room ||
-            !text
+            (!text && !image)
           ) {
 
             return;
@@ -2439,6 +2494,20 @@ io.on(
               {
                 message:
                   "メッセージが長すぎます。"
+              }
+            );
+
+            return;
+
+          }
+
+          if (!isValidImageDataUrl(image, 3000000)) {
+
+            socket.emit(
+              "message send error",
+              {
+                message:
+                  "画像を送信できませんでした。形式またはサイズを確認してください。"
               }
             );
 
@@ -2557,6 +2626,7 @@ io.on(
                 user_id,
                 username,
                 text,
+                image,
                 reply_to_id,
                 reply_to_username,
                 reply_to_text
@@ -2568,7 +2638,8 @@ io.on(
                 $4,
                 $5,
                 $6,
-                $7
+                $7,
+                $8
               )
               RETURNING
                 id,
@@ -2576,6 +2647,7 @@ io.on(
                 user_id,
                 username,
                 text,
+                image,
                 reply_to_id,
                 reply_to_username,
                 reply_to_text,
@@ -2587,6 +2659,7 @@ io.on(
                 user.id,
                 user.name,
                 text,
+                image,
                 replyToId,
                 replyToUsername,
                 replyToText
@@ -3832,6 +3905,7 @@ async function sendPreviousDMMessages(socket, conversationId) {
         dm.user_id,
         dm.username,
         dm.text,
+        dm.image,
         dm.created_at,
         u.avatar AS avatar
       FROM dm_messages dm
@@ -3850,6 +3924,7 @@ async function sendPreviousDMMessages(socket, conversationId) {
       username: row.username,
       avatar: row.avatar || null,
       text: row.text,
+      image: row.image || null,
       createdAt: row.created_at,
       edited: false,
       isDm: true
@@ -3928,6 +4003,7 @@ async function sendPreviousMessages(
           m.user_id,
           m.username,
           m.text,
+          m.image,
           m.reply_to_id,
           m.reply_to_username,
           m.reply_to_text,
@@ -3939,12 +4015,13 @@ async function sendPreviousMessages(
         LEFT JOIN users u ON u.id = m.user_id
 
         WHERE m.room = $1
+          AND m.created_at >=
+            NOW() - INTERVAL '24 hours'
 
         ORDER BY
-          m.created_at ASC,
-          m.id ASC
+          m.created_at ASC
 
-        LIMIT 2000
+        LIMIT 1000
         `,
         [
           room
@@ -3980,14 +4057,45 @@ async function sendPreviousMessages(
 
 async function cleanupOldMessages() {
 
-  // メッセージはユーザーが削除しない限り保持します。
-  // 以前の「24時間で自動削除」は、ページ更新後にコメントが
-  // 消えたように見える原因になるため廃止しました。
-  return;
+  try {
+
+    const result =
+      await pool.query(
+        `
+        DELETE FROM messages
+
+        WHERE created_at <
+          NOW() - INTERVAL '24 hours'
+        `
+      );
+
+    if (
+      result.rowCount > 0
+    ) {
+
+      console.log(
+        `古いメッセージを ${result.rowCount} 件削除しました。`
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "cleanupOldMessages error:",
+      error
+    );
+
+  }
 
 }
 
-
+setInterval(
+  cleanupOldMessages,
+  10 *
+  60 *
+  1000
+);
 
 // ==================================================
 // Health Check
