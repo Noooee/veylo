@@ -285,6 +285,33 @@ document.addEventListener("DOMContentLoaded", () => {
       "languageSelect"
     );
 
+  const notificationSoundToggleButton =
+    document.getElementById("notificationSoundToggleButton");
+
+  const desktopNotificationToggleButton =
+    document.getElementById("desktopNotificationToggleButton");
+
+  const currentPasswordInput =
+    document.getElementById("currentPasswordInput");
+
+  const newPasswordInput =
+    document.getElementById("newPasswordInput");
+
+  const passwordChangeMessage =
+    document.getElementById("passwordChangeMessage");
+
+  const changePasswordButton =
+    document.getElementById("changePasswordButton");
+
+  const deleteAccountPasswordInput =
+    document.getElementById("deleteAccountPasswordInput");
+
+  const deleteAccountMessage =
+    document.getElementById("deleteAccountMessage");
+
+  const deleteAccountButton =
+    document.getElementById("deleteAccountButton");
+
   // ==================================================
   // Chat
   // ==================================================
@@ -1010,6 +1037,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     socket.on("dm message", (message) => {
       if (!message || String(message.room) !== String(currentRoomId) || currentChatType !== "dm") return;
+      notifyIncomingMessage(message);
       const shouldScroll = isNearBottom();
       appendMessage(message);
       if (shouldScroll) scrollToBottom(true);
@@ -1063,6 +1091,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const shouldScroll =
           isNearBottom();
+
+        notifyIncomingMessage(
+          message
+        );
 
         appendMessage(
           message
@@ -3422,6 +3454,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
+    const soundEnabled =
+      localStorage.getItem("veylo-notification-sound") === "true";
+
+    if (notificationSoundToggleButton) {
+      notificationSoundToggleButton.textContent = soundEnabled ? "ON" : "OFF";
+    }
+
+    const desktopEnabled =
+      localStorage.getItem("veylo-desktop-notifications") === "true";
+
+    if (desktopNotificationToggleButton) {
+      desktopNotificationToggleButton.textContent = desktopEnabled ? "ON" : "OFF";
+    }
+
   }
 
   function applyTheme(
@@ -3501,6 +3547,227 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
   );
+
+  // ==================================================
+  // 通知音 / デスクトップ通知
+  // ==================================================
+
+  function playNotificationSound() {
+
+    try {
+
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+
+      const ctx = new AudioCtx();
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.value = 880;
+
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 0.35);
+
+      oscillator.onended = () => ctx.close();
+
+    } catch (error) {
+
+      console.error("notification sound error:", error);
+
+    }
+
+  }
+
+  function showDesktopNotification(title, body) {
+
+    if (!("Notification" in window)) return;
+    if (Notification.permission !== "granted") return;
+
+    try {
+
+      const notification = new Notification(title, {
+        body: body || "",
+        icon: "/favicon.ico"
+      });
+
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+      };
+
+    } catch (error) {
+
+      console.error("desktop notification error:", error);
+
+    }
+
+  }
+
+  function notifyIncomingMessage(message) {
+
+    if (!message || !currentUser) return;
+    if (Number(message.userId) === Number(currentUser.id)) return;
+
+    const isBackground =
+      document.hidden || !document.hasFocus();
+
+    if (!isBackground) return;
+
+    if (localStorage.getItem("veylo-notification-sound") === "true") {
+      playNotificationSound();
+    }
+
+    if (localStorage.getItem("veylo-desktop-notifications") === "true") {
+      showDesktopNotification(
+        message.username || "Veylo",
+        message.text || "新しいメッセージ"
+      );
+    }
+
+  }
+
+  notificationSoundToggleButton?.addEventListener("click", () => {
+
+    const enabled =
+      !(localStorage.getItem("veylo-notification-sound") === "true");
+
+    localStorage.setItem("veylo-notification-sound", String(enabled));
+
+    notificationSoundToggleButton.textContent = enabled ? "ON" : "OFF";
+
+    if (enabled) {
+      playNotificationSound();
+    }
+
+  });
+
+  desktopNotificationToggleButton?.addEventListener("click", async () => {
+
+    const enabling =
+      !(localStorage.getItem("veylo-desktop-notifications") === "true");
+
+    if (enabling) {
+
+      if (!("Notification" in window)) {
+        alert("お使いのブラウザはデスクトップ通知に対応していません。");
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+
+      if (permission !== "granted") {
+        alert("通知が許可されませんでした。ブラウザの設定をご確認ください。");
+        return;
+      }
+
+    }
+
+    localStorage.setItem("veylo-desktop-notifications", String(enabling));
+
+    desktopNotificationToggleButton.textContent = enabling ? "ON" : "OFF";
+
+  });
+
+  // ==================================================
+  // パスワード変更
+  // ==================================================
+
+  changePasswordButton?.addEventListener("click", async () => {
+
+    const currentPassword = String(currentPasswordInput?.value || "");
+    const newPassword = String(newPasswordInput?.value || "");
+
+    if (!currentPassword || !newPassword) {
+      if (passwordChangeMessage) passwordChangeMessage.textContent = "すべての項目を入力してください。";
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      if (passwordChangeMessage) passwordChangeMessage.textContent = "新しいパスワードは8文字以上で入力してください。";
+      return;
+    }
+
+    try {
+
+      if (passwordChangeMessage) passwordChangeMessage.textContent = "変更しています…";
+
+      await api("/api/password", {
+        method: "PUT",
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+
+      if (passwordChangeMessage) passwordChangeMessage.textContent = "パスワードを変更しました。";
+
+      if (currentPasswordInput) currentPasswordInput.value = "";
+      if (newPasswordInput) newPasswordInput.value = "";
+
+    } catch (error) {
+
+      if (passwordChangeMessage) passwordChangeMessage.textContent = error.message || "変更できませんでした。";
+
+    }
+
+  });
+
+  // ==================================================
+  // アカウント削除
+  // ==================================================
+
+  deleteAccountButton?.addEventListener("click", async () => {
+
+    if (deleteAccountPasswordInput?.classList.contains("hidden")) {
+
+      deleteAccountPasswordInput.classList.remove("hidden");
+      deleteAccountPasswordInput.focus();
+
+      if (deleteAccountMessage) {
+        deleteAccountMessage.textContent = "確認のためパスワードを入力し、もう一度クリックしてください。";
+      }
+
+      return;
+
+    }
+
+    const password = String(deleteAccountPasswordInput?.value || "");
+
+    if (!password) {
+      if (deleteAccountMessage) deleteAccountMessage.textContent = "パスワードを入力してください。";
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "本当にアカウントを削除しますか？この操作は取り消せません。"
+    );
+
+    if (!confirmed) return;
+
+    try {
+
+      if (deleteAccountMessage) deleteAccountMessage.textContent = "削除しています…";
+
+      await api("/api/account", {
+        method: "DELETE",
+        body: JSON.stringify({ password })
+      });
+
+      if (socket) socket.disconnect();
+
+      window.location.reload();
+
+    } catch (error) {
+
+      if (deleteAccountMessage) deleteAccountMessage.textContent = error.message || "削除できませんでした。";
+
+    }
+
+  });
 
   saveSettingsButton?.addEventListener(
     "click",
