@@ -1051,7 +1051,7 @@ app.get(
 
       const result = await pool.query(
         `
-        SELECT id, name, avatar
+        SELECT id, name, avatar, bio
         FROM users
         WHERE id <> $1
           AND name ILIKE $2
@@ -1065,7 +1065,8 @@ app.get(
         users: result.rows.map(row => ({
           id: Number(row.id),
           name: row.name,
-          avatar: row.avatar || null
+          avatar: row.avatar || null,
+          bio: row.bio || ""
         }))
       });
     } catch (error) {
