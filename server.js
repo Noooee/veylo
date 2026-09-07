@@ -879,6 +879,161 @@ app.put(
 );
 
 // ==================================================
+// パスワード変更
+// ==================================================
+
+app.put(
+  "/api/password",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+
+      const currentPassword =
+        String(req.body?.currentPassword || "");
+
+      const newPassword =
+        String(req.body?.newPassword || "");
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({
+          message: "現在のパスワードと新しいパスワードを入力してください。"
+        });
+      }
+
+      if (newPassword.length < 8) {
+        return res.status(400).json({
+          message: "新しいパスワードは8文字以上で入力してください。"
+        });
+      }
+
+      const result = await pool.query(
+        `
+        SELECT id, password_hash
+        FROM users
+        WHERE id = $1
+        LIMIT 1
+        `,
+        [req.session.userId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          message: "ユーザーが見つかりません。"
+        });
+      }
+
+      const valid = await bcrypt.compare(
+        currentPassword,
+        result.rows[0].password_hash
+      );
+
+      if (!valid) {
+        return res.status(401).json({
+          message: "現在のパスワードが正しくありません。"
+        });
+      }
+
+      const newHash = await bcrypt.hash(newPassword, 12);
+
+      await pool.query(
+        `
+        UPDATE users
+        SET password_hash = $1
+        WHERE id = $2
+        `,
+        [newHash, req.session.userId]
+      );
+
+      return res.json({
+        message: "パスワードを変更しました。"
+      });
+
+    } catch (error) {
+
+      console.error("/api/password error:", error);
+
+      return res.status(500).json({
+        message: "パスワードを変更できませんでした。"
+      });
+
+    }
+
+  }
+);
+
+// ==================================================
+// アカウント削除
+// ==================================================
+
+app.delete(
+  "/api/account",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+
+      const password =
+        String(req.body?.password || "");
+
+      if (!password) {
+        return res.status(400).json({
+          message: "確認のためパスワードを入力してください。"
+        });
+      }
+
+      const result = await pool.query(
+        `
+        SELECT id, password_hash
+        FROM users
+        WHERE id = $1
+        LIMIT 1
+        `,
+        [req.session.userId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          message: "ユーザーが見つかりません。"
+        });
+      }
+
+      const valid = await bcrypt.compare(
+        password,
+        result.rows[0].password_hash
+      );
+
+      if (!valid) {
+        return res.status(401).json({
+          message: "パスワードが正しくありません。"
+        });
+      }
+
+      await pool.query(
+        `DELETE FROM users WHERE id = $1`,
+        [req.session.userId]
+      );
+
+      req.session.destroy(() => {});
+
+      return res.json({
+        message: "アカウントを削除しました。"
+      });
+
+    } catch (error) {
+
+      console.error("/api/account error:", error);
+
+      return res.status(500).json({
+        message: "アカウントを削除できませんでした。"
+      });
+
+    }
+
+  }
+);
+
+// ==================================================
 // ユーザー検索
 // ==================================================
 
