@@ -74,6 +74,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const userAvatarImage =
     document.getElementById("userAvatarImage");
 
+  const userAvatarWrapper =
+    document.querySelector(".user-avatar");
+
   // ==================================================
   // Profile Modal
   // ==================================================
@@ -113,6 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const saveProfileButton =
     document.getElementById("saveProfileButton");
+
+  let pendingAvatarDataUrl = undefined;
 
   // ==================================================
   // Rooms
@@ -351,8 +356,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let isLoadingMessages = false;
 
-  let pendingAvatarData = undefined; // undefined=変更なし, null=削除, string=新しい画像
-
   // ==================================================
   // Utilities
   // ==================================================
@@ -365,6 +368,28 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+
+  }
+
+  // ==================================================
+  // アイコン画像 / 頭文字フォールバック 共通ヘルパー
+  // ==================================================
+
+  function avatarInnerHtml(avatarUrl, name) {
+
+    const letter =
+      String(name || "U")
+        .trim()
+        .charAt(0)
+        .toUpperCase() || "U";
+
+    if (avatarUrl) {
+
+      return `<img src="${escapeHtml(avatarUrl)}" alt="" class="avatar-image">`;
+
+    }
+
+    return `<span class="avatar-fallback">${escapeHtml(letter)}</span>`;
 
   }
 
@@ -633,26 +658,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   }
 
-  function renderUserAvatar(avatarData) {
-
-    if (!userAvatarImage) {
-      return;
-    }
-
-    if (avatarData) {
-
-      userAvatarImage.src = avatarData;
-      userAvatarImage.classList.remove("hidden");
-
-    } else {
-
-      userAvatarImage.src = "";
-      userAvatarImage.classList.add("hidden");
-
-    }
-
-  }
-
   function updateUserUI() {
 
     if (!currentUser) {
@@ -661,7 +666,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (usernameInput) {
 
-      usernameInput.value =
+      usernameInput.textContent =
         currentUser.name;
 
     }
@@ -673,220 +678,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
-    renderUserAvatar(currentUser.avatarData);
+    if (userAvatarImage) {
 
-  }
+      if (currentUser.avatar) {
 
-  // ==================================================
-  // Profile Modal
-  // ==================================================
+        userAvatarImage.src =
+          currentUser.avatar;
 
-  function openProfileModal() {
+        userAvatarImage.classList.remove(
+          "hidden"
+        );
 
-    if (!profileModal || !currentUser) {
-      return;
-    }
+      } else {
 
-    pendingAvatarData = undefined;
+        userAvatarImage.src = "";
 
-    if (profileNameInput) {
-      profileNameInput.value = currentUser.name || "";
-    }
+        userAvatarImage.classList.add(
+          "hidden"
+        );
 
-    if (profileBioInput) {
-      profileBioInput.value = currentUser.bio || "";
-    }
-
-    if (profileMessage) {
-      profileMessage.textContent = "";
-    }
-
-    updateProfileAvatarPreview(currentUser.avatarData);
-
-    profileModal.classList.remove("hidden");
-
-  }
-
-  function closeProfileModal() {
-
-    profileModal?.classList.add("hidden");
-
-  }
-
-  function updateProfileAvatarPreview(avatarData) {
-
-    if (avatarData) {
-
-      if (profileAvatarImage) {
-        profileAvatarImage.src = avatarData;
-        profileAvatarImage.classList.remove("hidden");
       }
 
-      profileAvatarFallback?.classList.add("hidden");
+    }
 
-      removeAvatarButton?.classList.remove("hidden");
+    if (userAvatarWrapper) {
 
-    } else {
+      const fallback =
+        userAvatarWrapper.querySelector(
+          "span:not(.user-avatar-image)"
+        );
 
-      if (profileAvatarImage) {
-        profileAvatarImage.src = "";
-        profileAvatarImage.classList.add("hidden");
+      if (fallback) {
+
+        fallback.textContent =
+          (currentUser.name || "U")
+            .trim()
+            .charAt(0)
+            .toUpperCase() || "U";
+
       }
-
-      profileAvatarFallback?.classList.remove("hidden");
-
-      removeAvatarButton?.classList.add("hidden");
 
     }
 
   }
-
-  usernameInput?.addEventListener("click", openProfileModal);
-
-  usernameInput?.addEventListener("keydown", (event) => {
-
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      openProfileModal();
-    }
-
-  });
-
-  closeProfileButton?.addEventListener("click", closeProfileModal);
-
-  profileModal?.addEventListener("click", (event) => {
-
-    if (event.target === profileModal) {
-      closeProfileModal();
-    }
-
-  });
-
-  profileAvatarButton?.addEventListener("click", () => {
-
-    profileAvatarInput?.click();
-
-  });
-
-  profileAvatarInput?.addEventListener("change", () => {
-
-    const file = profileAvatarInput.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      if (profileMessage) {
-        profileMessage.textContent = "画像ファイルを選択してください。";
-      }
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      if (profileMessage) {
-        profileMessage.textContent = "画像は2MB以下にしてください。";
-      }
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-
-      pendingAvatarData = String(reader.result);
-
-      updateProfileAvatarPreview(pendingAvatarData);
-
-      if (profileMessage) {
-        profileMessage.textContent = "";
-      }
-
-    };
-
-    reader.onerror = () => {
-
-      if (profileMessage) {
-        profileMessage.textContent = "画像を読み込めませんでした。";
-      }
-
-    };
-
-    reader.readAsDataURL(file);
-
-  });
-
-  removeAvatarButton?.addEventListener("click", () => {
-
-    pendingAvatarData = null;
-
-    updateProfileAvatarPreview(null);
-
-  });
-
-  saveProfileButton?.addEventListener("click", async () => {
-
-    const name = String(profileNameInput?.value || "").trim();
-    const bio = String(profileBioInput?.value || "").trim();
-
-    if (!name) {
-      if (profileMessage) {
-        profileMessage.textContent = "名前を入力してください。";
-      }
-      return;
-    }
-
-    saveProfileButton.disabled = true;
-
-    if (profileMessage) {
-      profileMessage.textContent = "保存中...";
-    }
-
-    try {
-
-      const data = await api("/api/profile", {
-        method: "PUT",
-        body: JSON.stringify({ name, bio })
-      });
-
-      currentUser = data.user;
-
-      if (pendingAvatarData === null) {
-
-        const avatarResult = await api("/api/profile/avatar", {
-          method: "DELETE"
-        });
-
-        currentUser = avatarResult.user;
-
-      } else if (typeof pendingAvatarData === "string") {
-
-        const avatarResult = await api("/api/profile/avatar", {
-          method: "POST",
-          body: JSON.stringify({ avatarData: pendingAvatarData })
-        });
-
-        currentUser = avatarResult.user;
-
-      }
-
-      updateUserUI();
-
-      closeProfileModal();
-
-    } catch (error) {
-
-      if (profileMessage) {
-        profileMessage.textContent = error.message || "保存できませんでした。";
-      }
-
-    } finally {
-
-      saveProfileButton.disabled = false;
-
-    }
-
-  });
 
   // ==================================================
   // Socket
@@ -1964,7 +1798,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "user-search-result";
-      button.innerHTML = `<span class="user-search-avatar">${escapeHtml((item.name || "U").charAt(0).toUpperCase())}</span><span class="user-search-name">${escapeHtml(item.name)}</span><span class="user-search-arrow">›</span>`;
+      button.innerHTML = `<span class="user-search-avatar">${avatarInnerHtml(item.avatar, item.name)}</span><span class="user-search-name">${escapeHtml(item.name)}</span><span class="user-search-arrow">›</span>`;
       button.addEventListener("click", () => startDM(item.id));
       userSearchResults.appendChild(button);
     }
@@ -2000,7 +1834,7 @@ document.addEventListener("DOMContentLoaded", () => {
       button.className = "dm-button";
       if (String(currentRoomId) === String(dm.id) && currentChatType === "dm") button.classList.add("active");
       const initial = (dm.otherUserName || "U").charAt(0).toUpperCase();
-      button.innerHTML = `<span class="dm-avatar">${escapeHtml(initial)}</span><span class="dm-info"><span class="dm-name">${escapeHtml(dm.otherUserName || "ユーザー")}</span><span class="dm-last-message">${escapeHtml(dm.lastMessage || "新しいDM")}</span></span>`;
+      button.innerHTML = `<span class="dm-avatar">${avatarInnerHtml(dm.otherUserAvatar, dm.otherUserName)}</span><span class="dm-info"><span class="dm-name">${escapeHtml(dm.otherUserName || "ユーザー")}</span><span class="dm-last-message">${escapeHtml(dm.lastMessage || "新しいDM")}</span></span>`;
       button.addEventListener("click", () => openDM(dm.id));
       dmList.appendChild(button);
     }
@@ -2652,8 +2486,9 @@ document.addEventListener("DOMContentLoaded", () => {
     wrapper.innerHTML = `
 
       <div class="message-avatar">
-        ${escapeHtml(
-          avatarLetter
+        ${avatarInnerHtml(
+          message.avatar,
+          username
         )}
       </div>
 
@@ -3294,6 +3129,249 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   );
 
+  // ==================================================
+  // Profile Modal（アイコン・自己紹介）
+  // ==================================================
+
+  function openProfileModal() {
+
+    if (!profileModal || !currentUser) {
+      return;
+    }
+
+    pendingAvatarDataUrl = undefined;
+
+    if (profileNameInput) {
+      profileNameInput.value = currentUser.name || "";
+    }
+
+    if (profileBioInput) {
+      profileBioInput.value = currentUser.bio || "";
+    }
+
+    if (profileMessage) {
+      profileMessage.textContent = "";
+    }
+
+    setProfilePreview(currentUser.avatar || null, currentUser.name);
+
+    profileModal.classList.remove("hidden");
+
+  }
+
+  function closeProfileModal() {
+    profileModal?.classList.add("hidden");
+  }
+
+  function setProfilePreview(avatarUrl, name) {
+
+    const letter =
+      (name || "U")
+        .trim()
+        .charAt(0)
+        .toUpperCase() || "U";
+
+    if (profileAvatarFallback) {
+      profileAvatarFallback.textContent = letter;
+    }
+
+    if (profileAvatarImage) {
+
+      if (avatarUrl) {
+
+        profileAvatarImage.src = avatarUrl;
+        profileAvatarImage.classList.remove("hidden");
+
+        if (profileAvatarFallback) {
+          profileAvatarFallback.classList.add("hidden");
+        }
+
+        removeAvatarButton?.classList.remove("hidden");
+
+      } else {
+
+        profileAvatarImage.src = "";
+        profileAvatarImage.classList.add("hidden");
+
+        if (profileAvatarFallback) {
+          profileAvatarFallback.classList.remove("hidden");
+        }
+
+        removeAvatarButton?.classList.add("hidden");
+
+      }
+
+    }
+
+  }
+
+  function resizeImageFile(file) {
+
+    return new Promise((resolve, reject) => {
+
+      const reader = new FileReader();
+
+      reader.onerror = () => reject(new Error("画像を読み込めませんでした。"));
+
+      reader.onload = () => {
+
+        const img = new Image();
+
+        img.onerror = () => reject(new Error("画像を読み込めませんでした。"));
+
+        img.onload = () => {
+
+          const maxSize = 256;
+          let { width, height } = img;
+
+          if (width > height) {
+
+            if (width > maxSize) {
+              height = Math.round(height * (maxSize / width));
+              width = maxSize;
+            }
+
+          } else {
+
+            if (height > maxSize) {
+              width = Math.round(width * (maxSize / height));
+              height = maxSize;
+            }
+
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+
+          resolve(canvas.toDataURL("image/jpeg", 0.85));
+
+        };
+
+        img.src = reader.result;
+
+      };
+
+      reader.readAsDataURL(file);
+
+    });
+
+  }
+
+  profileAvatarButton?.addEventListener("click", () => {
+    profileAvatarInput?.click();
+  });
+
+  profileAvatarInput?.addEventListener("change", async () => {
+
+    const file = profileAvatarInput.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      if (profileMessage) profileMessage.textContent = "画像ファイルを選んでください。";
+      return;
+    }
+
+    try {
+
+      const dataUrl = await resizeImageFile(file);
+      pendingAvatarDataUrl = dataUrl;
+      setProfilePreview(dataUrl, profileNameInput?.value || currentUser?.name);
+
+      if (profileMessage) profileMessage.textContent = "";
+
+    } catch (error) {
+
+      if (profileMessage) profileMessage.textContent = error.message || "画像を処理できませんでした。";
+
+    } finally {
+
+      profileAvatarInput.value = "";
+
+    }
+
+  });
+
+  removeAvatarButton?.addEventListener("click", () => {
+
+    pendingAvatarDataUrl = null;
+    setProfilePreview(null, profileNameInput?.value || currentUser?.name);
+
+  });
+
+  saveProfileButton?.addEventListener("click", async () => {
+
+    const name = String(profileNameInput?.value || "").trim();
+    const bio = String(profileBioInput?.value || "");
+
+    if (!name) {
+      if (profileMessage) profileMessage.textContent = "名前を入力してください。";
+      return;
+    }
+
+    const payload = { name, bio };
+
+    if (pendingAvatarDataUrl !== undefined) {
+      payload.avatar = pendingAvatarDataUrl;
+    }
+
+    try {
+
+      if (profileMessage) profileMessage.textContent = "保存しています…";
+
+      const data = await api("/api/profile", {
+        method: "PUT",
+        body: JSON.stringify(payload)
+      });
+
+      if (data?.user) {
+        currentUser = data.user;
+        updateUserUI();
+      }
+
+      pendingAvatarDataUrl = undefined;
+
+      if (profileMessage) profileMessage.textContent = "保存しました。";
+
+      setTimeout(closeProfileModal, 400);
+
+    } catch (error) {
+
+      if (profileMessage) profileMessage.textContent = error.message || "保存できませんでした。";
+
+    }
+
+  });
+
+  usernameInput?.addEventListener("click", openProfileModal);
+
+  usernameInput?.addEventListener("keydown", (event) => {
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openProfileModal();
+    }
+
+  });
+
+  userAvatarWrapper?.addEventListener("click", openProfileModal);
+
+  closeProfileButton?.addEventListener("click", closeProfileModal);
+
+  profileModal?.addEventListener("click", (event) => {
+
+    if (event.target === profileModal) {
+      closeProfileModal();
+    }
+
+  });
+
   function loadSettings() {
 
     const dark =
@@ -3865,8 +3943,6 @@ document.addEventListener("DOMContentLoaded", () => {
       closeJoinModal();
 
       closeSettings();
-
-      closeProfileModal();
 
       clearReply();
 
