@@ -257,7 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const closeSettingsButtons =
     document.querySelectorAll(
-      "#closeSettingsButton"
+      "[data-close-settings]"
     );
 
   const saveSettingsButton =
@@ -279,6 +279,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById(
       "grayToggleButton"
     );
+
+  const themeSelect =
+    document.getElementById("themeSelect");
 
   const languageSelect =
     document.getElementById(
@@ -1830,7 +1833,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "user-search-result";
-      button.innerHTML = `<span class="user-search-avatar">${avatarInnerHtml(item.avatar, item.name)}</span><span class="user-search-name">${escapeHtml(item.name)}</span><span class="user-search-arrow">›</span>`;
+      button.innerHTML = `<span class="user-search-avatar">${avatarInnerHtml(item.avatar, item.name)}</span><span class="user-search-name-wrap"><span class="user-search-name">${escapeHtml(item.name)}</span>${item.bio ? `<span class="user-search-bio">${escapeHtml(item.bio)}</span>` : ""}</span><span class="user-search-arrow">›</span>`;
       button.addEventListener("click", () => startDM(item.id));
       userSearchResults.appendChild(button);
     }
@@ -3186,6 +3189,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     setProfilePreview(currentUser.avatar || null, currentUser.name);
+    const count = document.getElementById("profileBioCount");
+    if (count) count.textContent = `${String(currentUser.bio || "").length}/300`;
 
     profileModal.classList.remove("hidden");
 
@@ -3337,8 +3342,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   });
 
+  profileBioInput?.addEventListener("input", () => {
+    const count = document.getElementById("profileBioCount");
+    if (count) count.textContent = `${String(profileBioInput.value || "").length}/300`;
+  });
+
   saveProfileButton?.addEventListener("click", async () => {
 
+    if (saveProfileButton.disabled) return;
     const name = String(profileNameInput?.value || "").trim();
     const bio = String(profileBioInput?.value || "");
 
@@ -3356,6 +3367,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
 
       if (profileMessage) profileMessage.textContent = "保存しています…";
+      saveProfileButton.disabled = true;
 
       const data = await api("/api/profile", {
         method: "PUT",
@@ -3377,6 +3389,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (profileMessage) profileMessage.textContent = error.message || "保存できませんでした。";
 
+    } finally {
+      saveProfileButton.disabled = false;
     }
 
   });
@@ -3404,54 +3418,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
   });
 
+  function getThemeMode() {
+
+    const saved = localStorage.getItem("veylo-theme");
+
+    if (saved === "light" || saved === "gray" || saved === "dark") {
+      return saved;
+    }
+
+    // 旧バージョンの保存形式も自動移行
+    if (localStorage.getItem("veylo-dark-mode") === "true") return "dark";
+    if (localStorage.getItem("veylo-gray-mode") === "true") return "gray";
+
+    return "light";
+  }
+
+  function applyThemeMode(mode) {
+
+    const safeMode =
+      mode === "dark" || mode === "gray" || mode === "light"
+        ? mode
+        : "light";
+
+    document.body.classList.remove("dark-mode", "gray-mode");
+
+    if (safeMode === "dark") {
+      document.body.classList.add("dark-mode");
+    } else if (safeMode === "gray") {
+      document.body.classList.add("gray-mode");
+    }
+
+    localStorage.setItem("veylo-theme", safeMode);
+    // 旧キーも同期して、既存コードや古い端末状態との互換性を維持
+    localStorage.setItem("veylo-dark-mode", String(safeMode === "dark"));
+    localStorage.setItem("veylo-gray-mode", String(safeMode === "gray"));
+
+    if (themeSelect) themeSelect.value = safeMode;
+  }
+
   function loadSettings() {
 
-    const dark =
-      localStorage.getItem(
-        "veylo-dark-mode"
-      ) === "true";
-
-    const gray =
-      localStorage.getItem(
-        "veylo-gray-mode"
-      ) === "true";
-
-    applyTheme(
-      dark
-    );
-
-    applyGrayMode(
-      gray
-    );
-
-    if (themeToggleButton) {
-
-      themeToggleButton.textContent =
-        dark
-          ? "ON"
-          : "OFF";
-
-    }
-
-    if (grayToggleButton) {
-
-      grayToggleButton.textContent =
-        gray
-          ? "ON"
-          : "OFF";
-
-    }
+    const theme = getThemeMode();
+    applyThemeMode(theme);
 
     const language =
-      localStorage.getItem(
-        "veylo-language"
-      ) || "ja";
+      localStorage.getItem("veylo-language") || "ja";
 
     if (languageSelect) {
-
-      languageSelect.value =
-        language;
-
+      languageSelect.value = language;
     }
 
     const soundEnabled =
@@ -3459,6 +3473,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (notificationSoundToggleButton) {
       notificationSoundToggleButton.textContent = soundEnabled ? "ON" : "OFF";
+      notificationSoundToggleButton.classList.toggle("active", soundEnabled);
     }
 
     const desktopEnabled =
@@ -3466,87 +3481,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (desktopNotificationToggleButton) {
       desktopNotificationToggleButton.textContent = desktopEnabled ? "ON" : "OFF";
+      desktopNotificationToggleButton.classList.toggle("active", desktopEnabled);
     }
 
   }
 
-  function applyTheme(
-    enabled
-  ) {
-
-    document.body.classList.toggle(
-      "dark-mode",
-      Boolean(enabled)
-    );
-
-  }
-
-  function applyGrayMode(
-    enabled
-  ) {
-
-    document.body.classList.toggle(
-      "gray-mode",
-      Boolean(enabled)
-    );
-
-  }
-
-  themeToggleButton?.addEventListener(
-    "click",
-    () => {
-
-      const enabled =
-        !(
-          localStorage.getItem(
-            "veylo-dark-mode"
-          ) === "true"
-        );
-
-      localStorage.setItem(
-        "veylo-dark-mode",
-        String(enabled)
-      );
-
-      applyTheme(
-        enabled
-      );
-
-      themeToggleButton.textContent =
-        enabled
-          ? "ON"
-          : "OFF";
-
-    }
-  );
-
-  grayToggleButton?.addEventListener(
-    "click",
-    () => {
-
-      const enabled =
-        !(
-          localStorage.getItem(
-            "veylo-gray-mode"
-          ) === "true"
-        );
-
-      localStorage.setItem(
-        "veylo-gray-mode",
-        String(enabled)
-      );
-
-      applyGrayMode(
-        enabled
-      );
-
-      grayToggleButton.textContent =
-        enabled
-          ? "ON"
-          : "OFF";
-
-    }
-  );
+  themeSelect?.addEventListener("change", () => {
+    applyThemeMode(themeSelect.value);
+  });
 
   // ==================================================
   // 通知音 / デスクトップ通知
