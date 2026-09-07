@@ -1051,7 +1051,7 @@ app.get(
 
       const result = await pool.query(
         `
-        SELECT id, name, avatar, bio
+        SELECT id, name, avatar
         FROM users
         WHERE id <> $1
           AND name ILIKE $2
@@ -1065,8 +1065,7 @@ app.get(
         users: result.rows.map(row => ({
           id: Number(row.id),
           name: row.name,
-          avatar: row.avatar || null,
-          bio: row.bio || ""
+          avatar: row.avatar || null
         }))
       });
     } catch (error) {
@@ -3940,13 +3939,12 @@ async function sendPreviousMessages(
         LEFT JOIN users u ON u.id = m.user_id
 
         WHERE m.room = $1
-          AND m.created_at >=
-            NOW() - INTERVAL '24 hours'
 
         ORDER BY
-          m.created_at ASC
+          m.created_at ASC,
+          m.id ASC
 
-        LIMIT 1000
+        LIMIT 2000
         `,
         [
           room
@@ -3982,45 +3980,14 @@ async function sendPreviousMessages(
 
 async function cleanupOldMessages() {
 
-  try {
-
-    const result =
-      await pool.query(
-        `
-        DELETE FROM messages
-
-        WHERE created_at <
-          NOW() - INTERVAL '24 hours'
-        `
-      );
-
-    if (
-      result.rowCount > 0
-    ) {
-
-      console.log(
-        `古いメッセージを ${result.rowCount} 件削除しました。`
-      );
-
-    }
-
-  } catch (error) {
-
-    console.error(
-      "cleanupOldMessages error:",
-      error
-    );
-
-  }
+  // メッセージはユーザーが削除しない限り保持します。
+  // 以前の「24時間で自動削除」は、ページ更新後にコメントが
+  // 消えたように見える原因になるため廃止しました。
+  return;
 
 }
 
-setInterval(
-  cleanupOldMessages,
-  10 *
-  60 *
-  1000
-);
+
 
 // ==================================================
 // Health Check
