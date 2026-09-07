@@ -29,9 +29,6 @@ const SESSION_SECRET =
   process.env.SESSION_SECRET ||
   "veylo-development-secret";
 
-const MAX_AVATAR_BASE64_LENGTH =
-  2 * 1024 * 1024 * 1.4; // 元画像 約2MBまで許可(Base64化で約1.4倍に膨張)
-
 // ==================================================
 // Express
 // ==================================================
@@ -78,7 +75,7 @@ const pool =
 
 app.use(
   express.json({
-    limit: "3mb" // Base64アイコンを受け取るため引き上げ
+    limit: "4mb"
   })
 );
 
@@ -193,14 +190,15 @@ async function initDatabase() {
     DROP CONSTRAINT IF EXISTS users_email_key
   `);
 
+  // プロフィール用カラム（アイコン・自己紹介）
   await pool.query(`
     ALTER TABLE users
-    ADD COLUMN IF NOT EXISTS bio TEXT NOT NULL DEFAULT ''
+    ADD COLUMN IF NOT EXISTS avatar TEXT
   `);
 
   await pool.query(`
     ALTER TABLE users
-    ADD COLUMN IF NOT EXISTS avatar_data TEXT NULL
+    ADD COLUMN IF NOT EXISTS bio TEXT NOT NULL DEFAULT ''
   `);
 
   // ==================================================
@@ -592,8 +590,8 @@ function sanitizeUser(user) {
     id: user.id,
     email: user.email,
     name: user.name,
-    bio: user.bio || "",
-    avatarData: user.avatar_data || null
+    avatar: user.avatar || null,
+    bio: user.bio || ""
   };
 
 }
@@ -638,6 +636,8 @@ function formatMessage(row) {
     userId: row.user_id,
 
     username: row.username,
+
+    avatar: row.avatar || null,
 
     text: row.text,
 
@@ -709,8 +709,8 @@ app.get(
             id,
             email,
             name,
-            bio,
-            avatar_data
+            avatar,
+            bio
           FROM users
           WHERE id = $1
           `,
@@ -762,6 +762,123 @@ app.get(
 );
 
 // ==================================================
+// プロフィール更新（アイコン・自己紹介・名前）
+// ==================================================
+
+app.put(
+  "/api/profile",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+
+      const name =
+        req.body?.name !== undefined
+          ? String(req.body.name).trim()
+          : undefined;
+
+      const bio =
+        req.body?.bio !== undefined
+          ? String(req.body.bio).slice(0, 300)
+          : undefined;
+
+      const avatar =
+        req.body?.avatar !== undefined
+          ? req.body.avatar
+          : undefined;
+
+      if (name !== undefined) {
+
+        if (!name || name.length > 50) {
+          return res.status(400).json({
+            message: "名前は1〜50文字で入力してください。"
+          });
+        }
+
+      }
+
+      if (
+        avatar !== null &&
+        avatar !== undefined &&
+        typeof avatar === "string" &&
+        avatar.length > 0
+      ) {
+
+        if (!/^data:image\/(png|jpeg|jpg|webp|gif);base64,/.test(avatar)) {
+          return res.status(400).json({
+            message: "アイコンの画像形式が正しくありません。"
+          });
+        }
+
+        if (avatar.length > 700000) {
+          return res.status(400).json({
+            message: "アイコン画像が大きすぎます。もう少し小さい画像を選んでください。"
+          });
+        }
+
+      }
+
+      const fields = [];
+      const values = [];
+      let index = 1;
+
+      if (name !== undefined) {
+        fields.push(`name = $${index++}`);
+        values.push(name);
+      }
+
+      if (bio !== undefined) {
+        fields.push(`bio = $${index++}`);
+        values.push(bio);
+      }
+
+      if (avatar !== undefined) {
+        fields.push(`avatar = $${index++}`);
+        values.push(avatar === null || avatar === "" ? null : avatar);
+      }
+
+      if (fields.length === 0) {
+        return res.status(400).json({
+          message: "更新する項目がありません。"
+        });
+      }
+
+      values.push(req.session.userId);
+
+      const result = await pool.query(
+        `
+        UPDATE users
+        SET ${fields.join(", ")}
+        WHERE id = $${index}
+        RETURNING id, email, name, avatar, bio
+        `,
+        values
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          message: "ユーザーが見つかりません。"
+        });
+      }
+
+      return res.json({
+        user: sanitizeUser(result.rows[0])
+      });
+
+    } catch (error) {
+
+      console.error("/api/profile error:", error);
+
+      return res.status(500).json({
+        message: "プロフィールを更新できませんでした。"
+      });
+
+    }
+
+  }
+);
+
+// ==================================================
 // ユーザー検索
 // ==================================================
 
@@ -779,7 +896,7 @@ app.get(
 
       const result = await pool.query(
         `
-        SELECT id, name, bio, avatar_data
+        SELECT id, name, avatar
         FROM users
         WHERE id <> $1
           AND name ILIKE $2
@@ -793,8 +910,7 @@ app.get(
         users: result.rows.map(row => ({
           id: Number(row.id),
           name: row.name,
-          bio: row.bio || "",
-          avatarData: row.avatar_data || null
+          avatar: row.avatar || null
         }))
       });
     } catch (error) {
@@ -1065,8 +1181,8 @@ app.post(
             id,
             email,
             name,
-            bio,
-            avatar_data
+            avatar,
+            bio
           `,
           [
             email,
@@ -1185,8 +1301,8 @@ app.post(
             email,
             name,
             password_hash,
-            bio,
-            avatar_data
+            avatar,
+            bio
           FROM users
           WHERE name = $1
           LIMIT 1
@@ -1355,173 +1471,6 @@ app.post(
 
       }
     );
-
-  }
-);
-
-// ==================================================
-// プロフィール更新(名前・自己紹介)
-// ==================================================
-
-app.put(
-  "/api/profile",
-  requireLogin,
-  async (req, res) => {
-
-    try {
-
-      const name = normalizeName(req.body.name);
-      const bio = String(req.body.bio || "").trim();
-
-      if (!name) {
-        return res.status(400).json({
-          message: "名前を入力してください。"
-        });
-      }
-
-      if (name.length > 50) {
-        return res.status(400).json({
-          message: "名前は50文字以内にしてください。"
-        });
-      }
-
-      if (bio.length > 300) {
-        return res.status(400).json({
-          message: "自己紹介は300文字以内にしてください。"
-        });
-      }
-
-      // 自分以外で名前が重複していないか確認
-      const nameExists = await pool.query(
-        `
-        SELECT id
-        FROM users
-        WHERE name = $1
-          AND id <> $2
-        LIMIT 1
-        `,
-        [name, req.session.userId]
-      );
-
-      if (nameExists.rows.length > 0) {
-        return res.status(409).json({
-          message: "この名前は既に使用されています。別の名前を入力してください。"
-        });
-      }
-
-      const result = await pool.query(
-        `
-        UPDATE users
-        SET name = $1, bio = $2
-        WHERE id = $3
-        RETURNING id, email, name, bio, avatar_data
-        `,
-        [name, bio, req.session.userId]
-      );
-
-      return res.json({
-        user: sanitizeUser(result.rows[0])
-      });
-
-    } catch (error) {
-
-      console.error("/api/profile error:", error);
-
-      return res.status(500).json({
-        message: "プロフィールを更新できませんでした。"
-      });
-
-    }
-
-  }
-);
-
-// ==================================================
-// アイコン更新
-// ==================================================
-
-app.post(
-  "/api/profile/avatar",
-  requireLogin,
-  async (req, res) => {
-
-    try {
-
-      const avatarData = String(req.body.avatarData || "");
-
-      if (!avatarData.startsWith("data:image/")) {
-        return res.status(400).json({
-          message: "画像形式が正しくありません。"
-        });
-      }
-
-      if (avatarData.length > MAX_AVATAR_BASE64_LENGTH) {
-        return res.status(413).json({
-          message: "画像が大きすぎます。2MB以下の画像を選んでください。"
-        });
-      }
-
-      const result = await pool.query(
-        `
-        UPDATE users
-        SET avatar_data = $1
-        WHERE id = $2
-        RETURNING id, email, name, bio, avatar_data
-        `,
-        [avatarData, req.session.userId]
-      );
-
-      return res.json({
-        user: sanitizeUser(result.rows[0])
-      });
-
-    } catch (error) {
-
-      console.error("/api/profile/avatar error:", error);
-
-      return res.status(500).json({
-        message: "アイコンを更新できませんでした。"
-      });
-
-    }
-
-  }
-);
-
-// ==================================================
-// アイコン削除
-// ==================================================
-
-app.delete(
-  "/api/profile/avatar",
-  requireLogin,
-  async (req, res) => {
-
-    try {
-
-      const result = await pool.query(
-        `
-        UPDATE users
-        SET avatar_data = NULL
-        WHERE id = $1
-        RETURNING id, email, name, bio, avatar_data
-        `,
-        [req.session.userId]
-      );
-
-      return res.json({
-        user: sanitizeUser(result.rows[0])
-      });
-
-    } catch (error) {
-
-      console.error("/api/profile/avatar delete error:", error);
-
-      return res.status(500).json({
-        message: "アイコンを削除できませんでした。"
-      });
-
-    }
 
   }
 );
@@ -2029,7 +1978,9 @@ io.on(
           SELECT
             id,
             email,
-            name
+            name,
+            avatar,
+            bio
           FROM users
           WHERE id = $1
           `,
@@ -2279,6 +2230,7 @@ io.on(
             room: row.conversation_id,
             userId: Number(row.user_id),
             username: row.username,
+            avatar: user.avatar || null,
             text: row.text,
             createdAt: row.created_at,
             edited: false,
@@ -2490,6 +2442,9 @@ io.on(
             formatMessage(
               result.rows[0]
             );
+
+          message.avatar =
+            user.avatar || null;
 
           io
             .to(room)
@@ -3424,6 +3379,9 @@ io.on(
               result.rows[0]
             );
 
+          message.avatar =
+            user.avatar || null;
+
           io
             .to(message.room)
             .emit(
@@ -3676,6 +3634,7 @@ async function sendMyDMs(socket, userId) {
         c.id,
         CASE WHEN c.user1_id = $1 THEN c.user2_id ELSE c.user1_id END AS other_user_id,
         CASE WHEN c.user1_id = $1 THEN u2.name ELSE u1.name END AS other_user_name,
+        CASE WHEN c.user1_id = $1 THEN u2.avatar ELSE u1.avatar END AS other_user_avatar,
         m.text AS last_message,
         m.created_at AS last_message_at
       FROM dm_conversations c
@@ -3698,6 +3657,7 @@ async function sendMyDMs(socket, userId) {
       id: row.id,
       otherUserId: Number(row.other_user_id),
       otherUserName: row.other_user_name,
+      otherUserAvatar: row.other_user_avatar || null,
       lastMessage: row.last_message || "",
       lastMessageAt: row.last_message_at || null
     })));
@@ -3711,10 +3671,18 @@ async function sendPreviousDMMessages(socket, conversationId) {
   try {
     const result = await pool.query(
       `
-      SELECT id, conversation_id, user_id, username, text, created_at
-      FROM dm_messages
-      WHERE conversation_id = $1
-      ORDER BY created_at ASC, id ASC
+      SELECT
+        dm.id,
+        dm.conversation_id,
+        dm.user_id,
+        dm.username,
+        dm.text,
+        dm.created_at,
+        u.avatar AS avatar
+      FROM dm_messages dm
+      LEFT JOIN users u ON u.id = dm.user_id
+      WHERE dm.conversation_id = $1
+      ORDER BY dm.created_at ASC, dm.id ASC
       LIMIT 1000
       `,
       [conversationId]
@@ -3725,6 +3693,7 @@ async function sendPreviousDMMessages(socket, conversationId) {
       room: row.conversation_id,
       userId: Number(row.user_id),
       username: row.username,
+      avatar: row.avatar || null,
       text: row.text,
       createdAt: row.created_at,
       edited: false,
@@ -3799,25 +3768,27 @@ async function sendPreviousMessages(
       await pool.query(
         `
         SELECT
-          id,
-          room,
-          user_id,
-          username,
-          text,
-          reply_to_id,
-          reply_to_username,
-          reply_to_text,
-          edited,
-          created_at
+          m.id,
+          m.room,
+          m.user_id,
+          m.username,
+          m.text,
+          m.reply_to_id,
+          m.reply_to_username,
+          m.reply_to_text,
+          m.edited,
+          m.created_at,
+          u.avatar AS avatar
 
-        FROM messages
+        FROM messages m
+        LEFT JOIN users u ON u.id = m.user_id
 
-        WHERE room = $1
-          AND created_at >=
+        WHERE m.room = $1
+          AND m.created_at >=
             NOW() - INTERVAL '24 hours'
 
         ORDER BY
-          created_at ASC
+          m.created_at ASC
 
         LIMIT 1000
         `,
