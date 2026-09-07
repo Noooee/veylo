@@ -6063,6 +6063,33 @@ body.dark-mode .username-display:focus-visible {
   display: none;
 }
 
+/* 全テーマ・全パターンの「吹き出しの尻尾」を無効化
+   （行アイコン型レイアウトでは不要かつ表示が崩れる原因になっていた） */
+.message::before,
+.message.own::before,
+.message.mine::before,
+.message.self::before,
+.message.me::before,
+.message[data-own="true"]::before,
+.message[data-self="true"]::before,
+.message[data-user="self"]::before,
+body.dark-mode .message::before,
+body.dark-mode .message.own::before,
+body.dark-mode .message.mine::before,
+body.dark-mode .message.self::before,
+body.dark-mode .message.me::before,
+body.dark-mode .message[data-own="true"]::before,
+body.dark-mode .message[data-self="true"]::before,
+body.dark-mode .message[data-user="self"]::before,
+body.gray-mode .message::before,
+body.gray-mode .message.own::before,
+body.gray-mode .message.mine::before,
+body.gray-mode .message.self::before,
+body.gray-mode .message.me::before {
+  display: none !important;
+  content: none !important;
+}
+
 .message-avatar {
   flex: 0 0 auto;
   width: 40px;
@@ -6209,4 +6236,19 @@ body.dark-mode .username-display:focus-visible {
     width: 32px;
     height: 32px;
   }
+}
+
+/* ---------------------------------------------------------
+   設定：危険な操作（アカウント削除）
+--------------------------------------------------------- */
+
+.settings-group.danger-zone {
+  border: 1px solid rgba(224,82,82,.25);
+  border-radius: 10px;
+  padding: 12px;
+  background: rgba(224,82,82,.04);
+}
+
+.settings-group.danger-zone .setting-title {
+  color: var(--danger);
 }
