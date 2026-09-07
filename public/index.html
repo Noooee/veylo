@@ -706,7 +706,7 @@
         <div class="input-group">
           <label for="profileBioInput">自己紹介</label>
           <textarea id="profileBioInput" maxlength="300" rows="5" placeholder="好きなこと、ひとことなどを書いてみましょう！"></textarea>
-          <div class="profile-character-hint">300文字まで</div>
+          <div class="profile-character-hint"><span>300文字まで</span><span id="profileBioCount">0/300</span></div>
         </div>
 
         <div id="profileMessage" class="form-message"></div>
@@ -935,58 +935,16 @@
         <div class="settings-group">
 
           <div class="setting-row">
-
             <div>
-
-              <div class="setting-title">
-                ダークモード
-              </div>
-
-              <div class="setting-description">
-                画面を暗いテーマにします
-              </div>
-
+              <div class="setting-title">テーマ</div>
+              <div class="setting-description">ライト・グレー・ダークから選べます</div>
             </div>
 
-            <button
-              id="themeToggleButton"
-              type="button"
-              class="toggle-button"
-            >
-              OFF
-            </button>
-
-          </div>
-
-        </div>
-
-
-        <!-- グレーモード -->
-
-        <div class="settings-group">
-
-          <div class="setting-row">
-
-            <div>
-
-              <div class="setting-title">
-                グレーモード
-              </div>
-
-              <div class="setting-description">
-                色を落ち着いたグレー系にします
-              </div>
-
-            </div>
-
-            <button
-              id="grayToggleButton"
-              type="button"
-              class="toggle-button"
-            >
-              OFF
-            </button>
-
+            <select id="themeSelect" class="theme-select" aria-label="テーマ">
+              <option value="light">☀️ ライト</option>
+              <option value="gray">🩶 グレー</option>
+              <option value="dark">🌙 ダーク</option>
+            </select>
           </div>
 
         </div>
@@ -1160,7 +1118,8 @@
         <div class="modal-footer-right">
 
           <button
-            id="closeSettingsButton"
+            id="closeSettingsButtonFooter"
+            data-close-settings
             type="button"
             class="secondary-button"
           >
