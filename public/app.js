@@ -331,6 +331,23 @@ document.addEventListener("DOMContentLoaded", () => {
       "messageInput"
     );
 
+  const imageAttachButton =
+    document.getElementById("imageAttachButton");
+
+  const imageAttachInput =
+    document.getElementById("imageAttachInput");
+
+  const imageAttachPreview =
+    document.getElementById("imageAttachPreview");
+
+  const imageAttachPreviewImg =
+    document.getElementById("imageAttachPreviewImg");
+
+  const removeImageAttachButton =
+    document.getElementById("removeImageAttachButton");
+
+  let pendingImageDataUrl = null;
+
   const replyPreview =
     document.getElementById(
       "replyPreview"
@@ -796,6 +813,25 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         socket.emit("get my dms");
+
+        // 再接続・ページ更新時に、直前まで見ていた
+        // 部屋/DMのメッセージを再取得する
+        if (currentChatType === "dm") {
+
+          openDM(currentRoomId);
+
+        } else if (String(currentRoomId) === "casual") {
+
+          socket.emit("join casual");
+
+        } else {
+
+          socket.emit(
+            "open my room",
+            { roomId: currentRoomId }
+          );
+
+        }
 
       }
     );
@@ -2532,11 +2568,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
           ${replyHtml}
 
-          <div class="message-text">
-            ${escapeHtml(
-              message.text
-            )}
-          </div>
+          ${
+            message.text
+              ? `
+                <div class="message-text">
+                  ${escapeHtml(message.text)}
+                </div>
+              `
+              : ""
+          }
+
+          ${
+            message.image
+              ? `
+                <img
+                  src="${escapeHtml(message.image)}"
+                  class="message-image"
+                  alt="添付画像"
+                  data-action="open-image"
+                >
+              `
+              : ""
+          }
 
           ${ownMetaHtml}
 
@@ -2550,6 +2603,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // ----------------------------------------------
     // Reply
     // ----------------------------------------------
+
+    wrapper
+      .querySelector(
+        '[data-action="open-image"]'
+      )
+      ?.addEventListener(
+        "click",
+        (event) => {
+          window.open(event.target.src, "_blank");
+        }
+      );
 
     wrapper
       .querySelector(
@@ -2903,7 +2967,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ""
         ).trim();
 
-      if (!text) {
+      if (!text && !pendingImageDataUrl) {
         return;
       }
 
@@ -2930,10 +2994,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       }
 
+      const image = pendingImageDataUrl || undefined;
+
       if (currentChatType === "dm") {
         socket.emit("dm message", {
           conversationId: currentRoomId,
-          text
+          text,
+          image
         });
       } else {
         socket.emit(
@@ -2941,6 +3008,7 @@ document.addEventListener("DOMContentLoaded", () => {
           {
             room: currentRoomId,
             text,
+            image,
             replyToId: replyToMessage ? replyToMessage.id : null
           }
         );
@@ -2948,6 +3016,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       messageInput.value =
         "";
+
+      pendingImageDataUrl = null;
+      imageAttachPreview?.classList.add("hidden");
+      if (imageAttachPreviewImg) imageAttachPreviewImg.src = "";
 
       clearReply();
 
@@ -3237,7 +3309,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   }
 
-  function resizeImageFile(file) {
+  function resizeImageFile(file, options = {}) {
+
+    const maxSize = options.maxSize || 256;
+    const quality = options.quality || 0.85;
 
     return new Promise((resolve, reject) => {
 
@@ -3253,7 +3328,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         img.onload = () => {
 
-          const maxSize = 256;
           let { width, height } = img;
 
           if (width > height) {
@@ -3279,7 +3353,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const ctx = canvas.getContext("2d");
           ctx.drawImage(img, 0, 0, width, height);
 
-          resolve(canvas.toDataURL("image/jpeg", 0.85));
+          resolve(canvas.toDataURL("image/jpeg", quality));
 
         };
 
@@ -3295,6 +3369,57 @@ document.addEventListener("DOMContentLoaded", () => {
 
   profileAvatarButton?.addEventListener("click", () => {
     profileAvatarInput?.click();
+  });
+
+  // ==================================================
+  // チャット画像添付
+  // ==================================================
+
+  imageAttachButton?.addEventListener("click", () => {
+    imageAttachInput?.click();
+  });
+
+  imageAttachInput?.addEventListener("change", async () => {
+
+    const file = imageAttachInput.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      alert("画像ファイルを選んでください。");
+      imageAttachInput.value = "";
+      return;
+    }
+
+    try {
+
+      const dataUrl = await resizeImageFile(file, { maxSize: 1000, quality: 0.75 });
+
+      pendingImageDataUrl = dataUrl;
+
+      if (imageAttachPreviewImg) imageAttachPreviewImg.src = dataUrl;
+      imageAttachPreview?.classList.remove("hidden");
+
+    } catch (error) {
+
+      alert(error.message || "画像を処理できませんでした。");
+
+    } finally {
+
+      imageAttachInput.value = "";
+
+    }
+
+  });
+
+  removeImageAttachButton?.addEventListener("click", () => {
+
+    pendingImageDataUrl = null;
+    imageAttachPreview?.classList.add("hidden");
+    if (imageAttachPreviewImg) imageAttachPreviewImg.src = "";
+
   });
 
   profileAvatarInput?.addEventListener("change", async () => {
