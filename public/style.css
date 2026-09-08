@@ -6104,6 +6104,8 @@ body.gray-mode .message.me::before {
   color: var(--primary);
   font-size: 14px;
   font-weight: 800;
+
+  cursor: pointer;
 }
 
 .message-body {
@@ -6115,10 +6117,22 @@ body.gray-mode .message.me::before {
   color: var(--primary);
   font-size: 13px;
   font-weight: 800;
+  cursor: pointer;
 }
 
-.message.own .message-username {
-  color: var(--primary-dark);
+.message-username:hover {
+  text-decoration: underline;
+}
+
+.message-avatar:hover {
+  filter: brightness(1.06);
+  transform: scale(1.03);
+}
+
+.message-username:focus-visible,
+.message-avatar:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .message-edited {
@@ -6363,4 +6377,30 @@ body.gray-mode .message.me::before {
     max-width: 200px;
     max-height: 200px;
   }
+}
+
+/* ---------------------------------------------------------
+   ユーザープロフィール表示（Discordのユーザーカード風）
+--------------------------------------------------------- */
+
+.view-profile-name {
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.view-profile-bio {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+
+  border-radius: 10px;
+  background: var(--ui-other, rgba(0,0,0,.03));
+
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-align: left;
 }
