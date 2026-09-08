@@ -6253,100 +6253,114 @@ body.gray-mode .message.me::before {
   color: var(--danger);
 }
 
+/* ---------------------------------------------------------
+   設定画面などモーダルが画面からはみ出す場合にスクロール可能にする
+--------------------------------------------------------- */
 
-/* =========================================================
-   Veylo FIX PATCH 2026-09
-   - Discord風のコンパクトなメッセージアイコン
-   - 設定モーダルの中央部分だけスクロール
-   - 小さい画面でもヘッダー/フッターを固定
-========================================================= */
-
-.message-avatar {
-  width: 36px !important;
-  height: 36px !important;
-  min-width: 36px !important;
-  flex: 0 0 36px !important;
-  border-radius: 50% !important;
-  overflow: hidden !important;
-}
-
-.message-avatar .avatar-image,
-.message-avatar .avatar-fallback {
-  width: 36px !important;
-  height: 36px !important;
-  border-radius: 50% !important;
-}
-
-.message {
-  gap: 10px !important;
-  margin-bottom: 6px !important;
-  padding: 4px 8px !important;
-  max-width: 900px !important;
-}
-
-.message-body {
-  min-width: 0 !important;
-}
-
-.message-username {
-  font-size: 13px !important;
-}
-
-.message-bubble,
-.message-text {
-  font-size: 14px !important;
-  line-height: 1.55 !important;
-}
-
-/* 設定だけをスクロール領域にする */
-#settingsModal .settings-content {
-  width: min(500px, calc(100vw - 32px));
-  max-height: calc(100vh - 32px);
+.modal-content {
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
+  max-height: calc(100vh - 40px);
 }
 
-#settingsModal .settings-content .modal-header,
-#settingsModal .settings-content .modal-footer {
+.modal-header,
+.modal-footer {
   flex: 0 0 auto;
 }
 
-#settingsModal .settings-content .modal-body {
+.modal-body {
   flex: 1 1 auto;
-  min-height: 0;
   overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
 }
 
 @media (max-width: 560px) {
-  .message {
-    gap: 8px !important;
-    padding: 3px 4px !important;
+  .modal-content {
+    max-height: calc(100vh - 24px);
   }
+}
 
-  .message-avatar,
-  .message-avatar .avatar-image,
-  .message-avatar .avatar-fallback {
-    width: 32px !important;
-    height: 32px !important;
-  }
+/* ---------------------------------------------------------
+   画像添付・チャット内画像表示
+--------------------------------------------------------- */
 
-  .message-avatar {
-    min-width: 32px !important;
-    flex-basis: 32px !important;
-  }
+.image-attach-button {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
 
-  #settingsModal {
-    padding: 8px !important;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  #settingsModal .settings-content {
-    width: 100%;
-    max-height: calc(100vh - 16px);
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+
+  color: var(--text-soft);
+  font-size: 18px;
+  cursor: pointer;
+
+  transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+
+.image-attach-button:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.image-attach-preview {
+  position: relative;
+  display: inline-flex;
+  margin: 0 0 8px 10px;
+}
+
+.image-attach-preview img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.image-attach-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+
+  width: 20px;
+  height: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 50%;
+  background: var(--danger, #e05252);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.message-image {
+  display: block;
+  max-width: 280px;
+  max-height: 280px;
+  margin: 4px 0;
+
+  border-radius: 10px;
+  border: 1px solid var(--border);
+
+  cursor: zoom-in;
+  object-fit: cover;
+}
+
+@media (max-width: 560px) {
+  .message-image {
+    max-width: 200px;
+    max-height: 200px;
   }
 }
