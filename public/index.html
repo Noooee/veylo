@@ -621,10 +621,41 @@
 
         <div class="message-input-area">
 
+          <div id="imageAttachPreview" class="image-attach-preview hidden">
+
+            <img id="imageAttachPreviewImg" alt="添付画像プレビュー">
+
+            <button
+              type="button"
+              id="removeImageAttachButton"
+              class="image-attach-remove"
+              title="画像を取り消す"
+            >
+              ×
+            </button>
+
+          </div>
+
           <form
             id="messageForm"
             class="message-form"
           >
+
+            <input
+              id="imageAttachInput"
+              type="file"
+              accept="image/*"
+              class="hidden"
+            >
+
+            <button
+              type="button"
+              id="imageAttachButton"
+              class="image-attach-button"
+              title="画像を送信"
+            >
+              🖼
+            </button>
 
             <input
               id="messageInput"
