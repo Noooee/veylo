@@ -750,6 +750,38 @@
   </div>
 
   <!-- ==================================================
+       ユーザープロフィール表示（Discordのユーザーカード風）
+  ================================================== -->
+
+  <div id="viewProfileModal" class="modal hidden">
+    <div class="modal-content profile-content">
+      <div class="modal-header">
+        <h2>プロフィール</h2>
+        <button id="closeViewProfileButton" type="button" class="modal-close">×</button>
+      </div>
+
+      <div class="modal-body profile-body">
+
+        <div class="profile-avatar-editor">
+          <div id="viewProfileAvatar" class="profile-avatar">
+            <img id="viewProfileAvatarImage" class="profile-avatar-image hidden" alt="プロフィールアイコン">
+            <span id="viewProfileAvatarFallback">U</span>
+          </div>
+        </div>
+
+        <h3 id="viewProfileName" class="view-profile-name"></h3>
+
+        <p id="viewProfileBio" class="view-profile-bio"></p>
+
+        <div class="profile-footer-actions">
+          <button id="editOwnProfileButton" type="button" class="primary-button hidden">プロフィールを編集</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================
        部屋作成モーダル
   ================================================== -->
 
