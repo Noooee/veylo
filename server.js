@@ -1121,6 +1121,62 @@ app.get(
 );
 
 // ==================================================
+// プロフィール表示（他ユーザーの自己紹介を見る用）
+// ==================================================
+
+app.get(
+  "/api/users/:id",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+
+      const targetId = Number(req.params.id);
+
+      if (!Number.isInteger(targetId) || targetId <= 0) {
+        return res.status(400).json({
+          message: "ユーザーが見つかりません。"
+        });
+      }
+
+      const result = await pool.query(
+        `
+        SELECT id, name, avatar, bio
+        FROM users
+        WHERE id = $1
+        LIMIT 1
+        `,
+        [targetId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          message: "ユーザーが見つかりません。"
+        });
+      }
+
+      const row = result.rows[0];
+
+      return res.json({
+        user: {
+          id: Number(row.id),
+          name: row.name,
+          avatar: row.avatar || null,
+          bio: row.bio || ""
+        }
+      });
+
+    } catch (error) {
+      console.error("/api/users/:id error:", error);
+      return res.status(500).json({
+        message: "ユーザー情報を取得できませんでした。"
+      });
+    }
+
+  }
+);
+
+// ==================================================
 // ダイレクトメッセージ一覧
 // ==================================================
 
