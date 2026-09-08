@@ -120,6 +120,30 @@ document.addEventListener("DOMContentLoaded", () => {
   let pendingAvatarDataUrl = undefined;
 
   // ==================================================
+  // View Profile Modal（他ユーザーのプロフィール表示）
+  // ==================================================
+
+  const viewProfileModal =
+    document.getElementById("viewProfileModal");
+
+  const closeViewProfileButton =
+    document.getElementById("closeViewProfileButton");
+
+  const viewProfileAvatarImage =
+    document.getElementById("viewProfileAvatarImage");
+
+  const viewProfileAvatarFallback =
+    document.getElementById("viewProfileAvatarFallback");
+
+  const viewProfileName =
+    document.getElementById("viewProfileName");
+
+  const viewProfileBio =
+    document.getElementById("viewProfileBio");
+
+  const editOwnProfileButton =
+    document.getElementById("editOwnProfileButton");
+
   // Rooms
   // ==================================================
 
@@ -795,6 +819,27 @@ document.addEventListener("DOMContentLoaded", () => {
     // Connect
     // ==================================================
 
+    function requestActiveRoomData() {
+
+      if (currentChatType === "dm") {
+
+        openDM(currentRoomId);
+
+      } else if (String(currentRoomId) === "casual") {
+
+        socket.emit("join casual");
+
+      } else {
+
+        socket.emit(
+          "open my room",
+          { roomId: currentRoomId }
+        );
+
+      }
+
+    }
+
     socket.on(
       "connect",
       () => {
@@ -816,22 +861,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // 再接続・ページ更新時に、直前まで見ていた
         // 部屋/DMのメッセージを再取得する
-        if (currentChatType === "dm") {
+        requestActiveRoomData();
 
-          openDM(currentRoomId);
-
-        } else if (String(currentRoomId) === "casual") {
-
-          socket.emit("join casual");
-
-        } else {
-
-          socket.emit(
-            "open my room",
-            { roomId: currentRoomId }
-          );
-
-        }
+        // サーバー起動直後などで初期化に時間がかかる場合に備え、
+        // 少し時間を置いてもう一度リクエストする（安全策）
+        setTimeout(
+          requestActiveRoomData,
+          1000
+        );
 
       }
     );
@@ -2464,68 +2501,42 @@ document.addEventListener("DOMContentLoaded", () => {
         : "";
 
     // ----------------------------------------------
-    // Header
+    // Header（Discordと同様、自分のコメントも含め常に表示）
     // ----------------------------------------------
 
-    const headerHtml =
-      !isOwn
-        ? `
-          <div class="message-header">
+    const headerHtml = `
+      <div class="message-header">
 
-            <span class="message-username">
-              ${escapeHtml(
-                username
-              )}
-            </span>
+        <span
+          class="message-username"
+          data-action="view-profile"
+          data-user-id="${escapeHtml(String(message.userId))}"
+          tabindex="0"
+          role="button"
+        >
+          ${escapeHtml(
+            username
+          )}
+        </span>
 
-            <span class="message-time">
-              ${formatTime(
-                message.createdAt
-              )}
-            </span>
+        <span class="message-time">
+          ${formatTime(
+            message.createdAt
+          )}
+        </span>
 
-            ${
-              message.edited
-                ? `
-                  <span class="message-edited">
-                    編集済み
-                  </span>
-                `
-                : ""
-            }
+        ${
+          message.edited
+            ? `
+              <span class="message-edited">
+                編集済み
+              </span>
+            `
+            : ""
+        }
 
-          </div>
-        `
-        : "";
-
-    // ----------------------------------------------
-    // Own Meta
-    // ----------------------------------------------
-
-    const ownMetaHtml =
-      isOwn
-        ? `
-          <div class="message-meta">
-
-            ${
-              message.edited
-                ? `
-                  <span class="message-edited">
-                    編集済み
-                  </span>
-                `
-                : ""
-            }
-
-            <span class="message-time">
-              ${formatTime(
-                message.createdAt
-              )}
-            </span>
-
-          </div>
-        `
-        : "";
+      </div>
+    `;
 
     // ----------------------------------------------
     // Actions
@@ -2553,7 +2564,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     wrapper.innerHTML = `
 
-      <div class="message-avatar">
+      <div
+        class="message-avatar"
+        data-action="view-profile"
+        data-user-id="${escapeHtml(String(message.userId))}"
+        tabindex="0"
+        role="button"
+      >
         ${avatarInnerHtml(
           message.avatar,
           username
@@ -2591,8 +2608,6 @@ document.addEventListener("DOMContentLoaded", () => {
               : ""
           }
 
-          ${ownMetaHtml}
-
         </div>
 
         ${actionsHtml}
@@ -2614,6 +2629,27 @@ document.addEventListener("DOMContentLoaded", () => {
           window.open(event.target.src, "_blank");
         }
       );
+
+    wrapper
+      .querySelectorAll(
+        '[data-action="view-profile"]'
+      )
+      .forEach(el => {
+
+        el.addEventListener("click", () => {
+          openUserProfile(Number(el.dataset.userId), username, message.avatar);
+        });
+
+        el.addEventListener("keydown", (event) => {
+
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openUserProfile(Number(el.dataset.userId), username, message.avatar);
+          }
+
+        });
+
+      });
 
     wrapper
       .querySelector(
@@ -3232,6 +3268,118 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
   );
+
+  // ==================================================
+  // View Profile Modal（Discordのユーザーカードのように、
+  // アイコン/名前クリックで自己紹介を表示）
+  // ==================================================
+
+  function setViewProfilePreview(avatarUrl, name) {
+
+    const letter =
+      (name || "U")
+        .trim()
+        .charAt(0)
+        .toUpperCase() || "U";
+
+    if (viewProfileAvatarFallback) {
+      viewProfileAvatarFallback.textContent = letter;
+    }
+
+    if (viewProfileAvatarImage) {
+
+      if (avatarUrl) {
+
+        viewProfileAvatarImage.src = avatarUrl;
+        viewProfileAvatarImage.classList.remove("hidden");
+        viewProfileAvatarFallback?.classList.add("hidden");
+
+      } else {
+
+        viewProfileAvatarImage.src = "";
+        viewProfileAvatarImage.classList.add("hidden");
+        viewProfileAvatarFallback?.classList.remove("hidden");
+
+      }
+
+    }
+
+  }
+
+  function closeViewProfileModal() {
+    viewProfileModal?.classList.add("hidden");
+  }
+
+  async function openUserProfile(userId, fallbackName, fallbackAvatar) {
+
+    if (!userId || !viewProfileModal) {
+      return;
+    }
+
+    // 自分自身の場合は編集モーダルを直接開く
+    if (
+      currentUser &&
+      Number(userId) === Number(currentUser.id)
+    ) {
+
+      openProfileModal();
+
+      return;
+
+    }
+
+    if (viewProfileName) viewProfileName.textContent = fallbackName || "ユーザー";
+    if (viewProfileBio) viewProfileBio.textContent = "";
+
+    setViewProfilePreview(fallbackAvatar || null, fallbackName);
+
+    editOwnProfileButton?.classList.add("hidden");
+
+    viewProfileModal.classList.remove("hidden");
+
+    try {
+
+      const data = await api(`/api/users/${userId}`);
+
+      if (data?.user) {
+
+        if (viewProfileName) viewProfileName.textContent = data.user.name || "ユーザー";
+
+        if (viewProfileBio) {
+          viewProfileBio.textContent =
+            data.user.bio && data.user.bio.trim()
+              ? data.user.bio
+              : "自己紹介はまだありません。";
+        }
+
+        setViewProfilePreview(data.user.avatar || null, data.user.name);
+
+      }
+
+    } catch (error) {
+
+      if (viewProfileBio) {
+        viewProfileBio.textContent = "プロフィールを取得できませんでした。";
+      }
+
+    }
+
+  }
+
+  closeViewProfileButton?.addEventListener("click", closeViewProfileModal);
+
+  viewProfileModal?.addEventListener("click", (event) => {
+
+    if (event.target === viewProfileModal) {
+      closeViewProfileModal();
+    }
+
+  });
+
+  editOwnProfileButton?.addEventListener("click", () => {
+    closeViewProfileModal();
+    openProfileModal();
+  });
 
   // ==================================================
   // Profile Modal（アイコン・自己紹介）
