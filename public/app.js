@@ -405,6 +405,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentUser = null;
 
+  let lastMessageAuthorId = null;
+  let lastMessageTime = null;
+
   let currentRoomId = "casual";
 
   let currentChatType = "room";
@@ -2328,6 +2331,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     }
 
+    lastMessageAuthorId = null;
+    lastMessageTime = null;
+
   }
 
   function renderMessages(
@@ -2435,6 +2441,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ----------------------------------------------
+    // 連続投稿のグループ化（Discordと同様、
+    // 同じ人が続けて短時間に投稿した場合は
+    // アイコン・名前を省略する）
+    // ----------------------------------------------
+
+    const messageTime =
+      message.createdAt
+        ? new Date(message.createdAt).getTime()
+        : Date.now();
+
+    const hasReply =
+      message.replyToId !== null &&
+      message.replyToId !== undefined &&
+      String(message.replyToId) !== "";
+
+    const isGrouped =
+      !hasReply &&
+      lastMessageAuthorId !== null &&
+      String(lastMessageAuthorId) === String(message.userId) &&
+      lastMessageTime !== null &&
+      Math.abs(messageTime - lastMessageTime) < 5 * 60 * 1000;
+
+    if (isGrouped) {
+      wrapper.classList.add("grouped");
+    }
+
+    lastMessageAuthorId = message.userId;
+    lastMessageTime = messageTime;
+
+    // ----------------------------------------------
     // Avatar
     // ----------------------------------------------
 
@@ -2452,11 +2488,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // ----------------------------------------------
     // Reply Card
     // ----------------------------------------------
-
-    const hasReply =
-      message.replyToId !== null &&
-      message.replyToId !== undefined &&
-      String(message.replyToId) !== "";
 
     const replyHtml =
       hasReply
@@ -2501,10 +2532,14 @@ document.addEventListener("DOMContentLoaded", () => {
         : "";
 
     // ----------------------------------------------
-    // Header（Discordと同様、自分のコメントも含め常に表示）
+    // Header（Discordと同様、自分のコメントも含め常に表示。
+    // ただし連続投稿の場合は省略する）
     // ----------------------------------------------
 
-    const headerHtml = `
+    const headerHtml =
+      isGrouped
+        ? ""
+        : `
       <div class="message-header">
 
         <span
@@ -2571,10 +2606,14 @@ document.addEventListener("DOMContentLoaded", () => {
         tabindex="0"
         role="button"
       >
-        ${avatarInnerHtml(
-          message.avatar,
-          username
-        )}
+        ${
+          isGrouped
+            ? `<span class="message-hover-time">${formatTime(message.createdAt)}</span>`
+            : avatarInnerHtml(
+                message.avatar,
+                username
+              )
+        }
       </div>
 
       <div class="message-body">
@@ -2590,6 +2629,11 @@ document.addEventListener("DOMContentLoaded", () => {
               ? `
                 <div class="message-text">
                   ${escapeHtml(message.text)}
+                  ${
+                    isGrouped && message.edited
+                      ? `<span class="message-edited">（編集済み）</span>`
+                      : ""
+                  }
                 </div>
               `
               : ""
