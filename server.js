@@ -1730,101 +1730,6 @@ app.post(
 );
 
 // ==================================================
-// アカウント削除
-// ==================================================
-
-app.delete(
-  "/api/account",
-  requireLogin,
-  async (req, res) => {
-
-    try {
-
-      const userId =
-        Number(
-          req.session.userId
-        );
-
-      const result =
-        await pool.query(
-          `
-          DELETE FROM users
-          WHERE id = $1
-          RETURNING id
-          `,
-          [
-            userId
-          ]
-        );
-
-      if (
-        result.rows.length === 0
-      ) {
-
-        return res
-          .status(404)
-          .json({
-            message:
-              "アカウントが見つかりません。"
-          });
-
-      }
-
-      req.session.destroy(
-        (error) => {
-
-          if (error) {
-
-            console.error(
-              "account session destroy error:",
-              error
-            );
-
-          }
-
-          res.clearCookie(
-            "connect.sid",
-            {
-              httpOnly: true,
-
-              secure:
-                process.env.NODE_ENV ===
-                "production",
-
-              sameSite: "lax"
-            }
-          );
-
-          return res.json({
-            success: true,
-
-            message:
-              "アカウントを削除しました。"
-          });
-
-        }
-      );
-
-    } catch (error) {
-
-      console.error(
-        "/api/account error:",
-        error
-      );
-
-      return res
-        .status(500)
-        .json({
-          message:
-            "アカウントを削除できませんでした。"
-        });
-
-    }
-
-  }
-);
-
-// ==================================================
 // パスワード忘れ
 // ==================================================
 
@@ -3965,7 +3870,7 @@ async function sendPreviousDMMessages(socket, conversationId) {
         dm.created_at,
         u.avatar AS avatar
       FROM dm_messages dm
-      LEFT JOIN users u ON u.id = dm.user_id
+      LEFT JOIN users u ON u.id::text = dm.user_id::text
       WHERE dm.conversation_id = $1
       ORDER BY dm.created_at ASC, dm.id ASC
       LIMIT 1000
@@ -4068,7 +3973,7 @@ async function sendPreviousMessages(
           u.avatar AS avatar
 
         FROM messages m
-        LEFT JOIN users u ON u.id = m.user_id
+        LEFT JOIN users u ON u.id::text = m.user_id::text
 
         WHERE m.room = $1
           AND m.created_at >=
