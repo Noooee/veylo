@@ -420,6 +420,24 @@
 
 
           <!-- ================================
+               フレンド
+          ================================= -->
+
+          <div class="friends-section">
+
+            <button
+              id="openFriendsButton"
+              type="button"
+              class="dm-section-header friends-header-button"
+            >
+              <span>フレンド</span>
+              <span id="friendRequestBadge" class="friend-badge hidden">0</span>
+            </button>
+
+          </div>
+
+
+          <!-- ================================
                ダイレクトメッセージ
           ================================= -->
 
@@ -706,6 +724,43 @@
   </div>
 
   <!-- ==================================================
+       フレンドモーダル
+  ================================================== -->
+
+  <div id="friendsModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>フレンド</h2>
+        <button id="closeFriendsButton" type="button" class="modal-close">×</button>
+      </div>
+      <div class="modal-body">
+
+        <div class="friends-tabs">
+          <button type="button" class="friends-tab active" data-tab="friends">フレンド</button>
+          <button type="button" class="friends-tab" data-tab="incoming">受信リクエスト</button>
+          <button type="button" class="friends-tab" data-tab="outgoing">送信済み</button>
+        </div>
+
+        <div id="friendsPanelFriends" class="friends-panel">
+          <div id="friendsListEmpty" class="dm-empty hidden">まだフレンドがいません</div>
+          <div id="friendsList" class="user-search-results"></div>
+        </div>
+
+        <div id="friendsPanelIncoming" class="friends-panel hidden">
+          <div id="incomingRequestsEmpty" class="dm-empty hidden">届いているリクエストはありません</div>
+          <div id="incomingRequestsList" class="user-search-results"></div>
+        </div>
+
+        <div id="friendsPanelOutgoing" class="friends-panel hidden">
+          <div id="outgoingRequestsEmpty" class="dm-empty hidden">送信中のリクエストはありません</div>
+          <div id="outgoingRequestsList" class="user-search-results"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================
        プロフィールモーダル
   ================================================== -->
 
@@ -775,7 +830,10 @@
 
         <div class="profile-footer-actions">
           <button id="editOwnProfileButton" type="button" class="primary-button hidden">プロフィールを編集</button>
+          <button id="viewProfileFriendButton" type="button" class="secondary-button hidden"></button>
         </div>
+
+        <div id="viewProfileFriendMessage" class="form-message"></div>
 
       </div>
     </div>
@@ -997,57 +1055,38 @@
 
         <div class="settings-group">
 
-          <div class="setting-row">
-
-            <div>
-
-              <div class="setting-title">
-                ダークモード
-              </div>
-
-              <div class="setting-description">
-                画面を暗いテーマにします
-              </div>
-
-            </div>
-
-            <button
-              id="themeToggleButton"
-              type="button"
-              class="toggle-button"
-            >
-              OFF
-            </button>
-
+          <div class="setting-title">
+            テーマ
           </div>
 
-        </div>
+          <div class="setting-description">
+            画面の配色を選べます
+          </div>
 
-
-        <!-- グレーモード -->
-
-        <div class="settings-group">
-
-          <div class="setting-row">
-
-            <div>
-
-              <div class="setting-title">
-                グレーモード
-              </div>
-
-              <div class="setting-description">
-                色を落ち着いたグレー系にします
-              </div>
-
-            </div>
+          <div id="themeSelector" class="theme-selector">
 
             <button
-              id="grayToggleButton"
               type="button"
-              class="toggle-button"
+              class="theme-option"
+              data-theme="light"
             >
-              OFF
+              ☀️ ライト
+            </button>
+
+            <button
+              type="button"
+              class="theme-option"
+              data-theme="dark"
+            >
+              🌙 ダーク
+            </button>
+
+            <button
+              type="button"
+              class="theme-option"
+              data-theme="gray"
+            >
+              ◑ グレー
             </button>
 
           </div>
