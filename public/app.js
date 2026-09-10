@@ -266,6 +266,60 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("userSearchResults");
 
   // ==================================================
+  // Friends
+  // ==================================================
+
+  const openFriendsButton =
+    document.getElementById("openFriendsButton");
+
+  const friendRequestBadge =
+    document.getElementById("friendRequestBadge");
+
+  const friendsModal =
+    document.getElementById("friendsModal");
+
+  const closeFriendsButton =
+    document.getElementById("closeFriendsButton");
+
+  const friendsTabs =
+    document.querySelectorAll(".friends-tab");
+
+  const friendsPanelFriends =
+    document.getElementById("friendsPanelFriends");
+
+  const friendsPanelIncoming =
+    document.getElementById("friendsPanelIncoming");
+
+  const friendsPanelOutgoing =
+    document.getElementById("friendsPanelOutgoing");
+
+  const friendsList =
+    document.getElementById("friendsList");
+
+  const friendsListEmpty =
+    document.getElementById("friendsListEmpty");
+
+  const incomingRequestsList =
+    document.getElementById("incomingRequestsList");
+
+  const incomingRequestsEmpty =
+    document.getElementById("incomingRequestsEmpty");
+
+  const outgoingRequestsList =
+    document.getElementById("outgoingRequestsList");
+
+  const outgoingRequestsEmpty =
+    document.getElementById("outgoingRequestsEmpty");
+
+  const viewProfileFriendButton =
+    document.getElementById("viewProfileFriendButton");
+
+  const viewProfileFriendMessage =
+    document.getElementById("viewProfileFriendMessage");
+
+  let viewedProfileUserId = null;
+
+  // ==================================================
   // Settings
   // ==================================================
 
@@ -294,15 +348,8 @@ document.addEventListener("DOMContentLoaded", () => {
       "logoutButton"
     );
 
-  const themeToggleButton =
-    document.getElementById(
-      "themeToggleButton"
-    );
-
-  const grayToggleButton =
-    document.getElementById(
-      "grayToggleButton"
-    );
+  const themeSelector =
+    document.getElementById("themeSelector");
 
   const languageSelect =
     document.getElementById(
@@ -445,6 +492,36 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==================================================
   // アイコン画像 / 頭文字フォールバック 共通ヘルパー
   // ==================================================
+
+  function linkifyHtml(text) {
+
+    const escaped = escapeHtml(text);
+
+    const urlPattern =
+      /(https?:\/\/[^\s<]+)/g;
+
+    return escaped.replace(
+      urlPattern,
+      (match) => {
+
+        // 末尾の句読点・括弧はリンクに含めない
+        let url = match;
+        let trailing = "";
+
+        while (
+          url.length > 0 &&
+          /[.,、。!！?？)）\]】」』]$/.test(url)
+        ) {
+          trailing = url.slice(-1) + trailing;
+          url = url.slice(0, -1);
+        }
+
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer nofollow">${url}</a>${trailing}`;
+
+      }
+    );
+
+  }
 
   function avatarInnerHtml(avatarUrl, name) {
 
@@ -862,6 +939,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         socket.emit("get my dms");
 
+        // フレンド一覧・リクエストも読み込む
+        loadFriends();
+
         // 再接続・ページ更新時に、直前まで見ていた
         // 部屋/DMのメッセージを再取得する
         requestActiveRoomData();
@@ -873,6 +953,17 @@ document.addEventListener("DOMContentLoaded", () => {
           1000
         );
 
+      }
+    );
+
+    // ==================================================
+    // フレンド申請・承認のリアルタイム反映
+    // ==================================================
+
+    socket.on(
+      "friend request update",
+      () => {
+        loadFriends();
       }
     );
 
@@ -1903,12 +1994,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (userSearchMessage) userSearchMessage.textContent = `${users.length}件見つかりました。`;
     for (const item of users) {
+      const row = document.createElement("div");
+      row.className = "user-search-row";
+
       const button = document.createElement("button");
       button.type = "button";
       button.className = "user-search-result";
       button.innerHTML = `<span class="user-search-avatar">${avatarInnerHtml(item.avatar, item.name)}</span><span class="user-search-name">${escapeHtml(item.name)}</span><span class="user-search-arrow">›</span>`;
       button.addEventListener("click", () => startDM(item.id));
-      userSearchResults.appendChild(button);
+
+      const friendButton = document.createElement("button");
+      friendButton.type = "button";
+      friendButton.className = "friend-quick-button";
+      friendButton.title = "フレンド申請を送る";
+      friendButton.textContent = "＋フレンド";
+      friendButton.addEventListener("click", async (event) => {
+        event.stopPropagation();
+        friendButton.disabled = true;
+        try {
+          const data = await sendFriendRequest(item.id);
+          friendButton.textContent = data?.status === "accepted" ? "フレンド" : "申請済み";
+        } catch (error) {
+          friendButton.disabled = false;
+          alert(error.message || "フレンド申請を送れませんでした。");
+        }
+      });
+
+      row.appendChild(button);
+      row.appendChild(friendButton);
+      userSearchResults.appendChild(row);
     }
   }
 
@@ -1947,6 +2061,153 @@ document.addEventListener("DOMContentLoaded", () => {
       dmList.appendChild(button);
     }
   }
+
+  // ==================================================
+  // Friends
+  // ==================================================
+
+  function openFriendsModal() {
+    friendsModal?.classList.remove("hidden");
+    loadFriends();
+  }
+
+  function closeFriendsModal() {
+    friendsModal?.classList.add("hidden");
+  }
+
+  function switchFriendsTab(tab) {
+
+    friendsTabs.forEach(button => {
+      button.classList.toggle("active", button.dataset.tab === tab);
+    });
+
+    friendsPanelFriends?.classList.toggle("hidden", tab !== "friends");
+    friendsPanelIncoming?.classList.toggle("hidden", tab !== "incoming");
+    friendsPanelOutgoing?.classList.toggle("hidden", tab !== "outgoing");
+
+  }
+
+  friendsTabs.forEach(button => {
+    button.addEventListener("click", () => switchFriendsTab(button.dataset.tab));
+  });
+
+  async function sendFriendRequest(userId) {
+    const data = await api("/api/friends/request", {
+      method: "POST",
+      body: JSON.stringify({ userId })
+    });
+    loadFriends();
+    return data;
+  }
+
+  async function acceptFriendRequest(id) {
+    await api(`/api/friends/${id}/accept`, { method: "POST" });
+    loadFriends();
+  }
+
+  async function removeFriendRequest(id) {
+    await api(`/api/friends/${id}`, { method: "DELETE" });
+    loadFriends();
+  }
+
+  function renderFriendRow(container, item, options) {
+
+    const row = document.createElement("div");
+    row.className = "user-search-row";
+
+    const info = document.createElement("div");
+    info.className = "user-search-result";
+    info.style.cursor = "default";
+    info.innerHTML = `<span class="user-search-avatar">${avatarInnerHtml(item.avatar, item.name)}</span><span class="user-search-name">${escapeHtml(item.name)}</span>`;
+
+    row.appendChild(info);
+
+    for (const action of options) {
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = action.className || "friend-quick-button";
+      button.textContent = action.label;
+      button.addEventListener("click", async () => {
+        button.disabled = true;
+        try {
+          await action.onClick();
+        } catch (error) {
+          alert(error.message || "処理できませんでした。");
+          button.disabled = false;
+        }
+      });
+
+      row.appendChild(button);
+
+    }
+
+    container.appendChild(row);
+
+  }
+
+  async function loadFriends() {
+
+    try {
+
+      const data = await api("/api/friends");
+
+      const friends = Array.isArray(data?.friends) ? data.friends : [];
+      const incoming = Array.isArray(data?.incoming) ? data.incoming : [];
+      const outgoing = Array.isArray(data?.outgoing) ? data.outgoing : [];
+
+      if (friendsList) {
+        friendsList.innerHTML = "";
+        for (const item of friends) {
+          renderFriendRow(friendsList, item, [
+            { label: "DM", onClick: () => { closeFriendsModal(); startDM(item.userId); } },
+            { label: "削除", className: "friend-quick-button danger", onClick: () => removeFriendRequest(item.id) }
+          ]);
+        }
+      }
+      friendsListEmpty?.classList.toggle("hidden", friends.length > 0);
+
+      if (incomingRequestsList) {
+        incomingRequestsList.innerHTML = "";
+        for (const item of incoming) {
+          renderFriendRow(incomingRequestsList, item, [
+            { label: "承認", onClick: () => acceptFriendRequest(item.id) },
+            { label: "拒否", className: "friend-quick-button danger", onClick: () => removeFriendRequest(item.id) }
+          ]);
+        }
+      }
+      incomingRequestsEmpty?.classList.toggle("hidden", incoming.length > 0);
+
+      if (outgoingRequestsList) {
+        outgoingRequestsList.innerHTML = "";
+        for (const item of outgoing) {
+          renderFriendRow(outgoingRequestsList, item, [
+            { label: "取り消す", className: "friend-quick-button danger", onClick: () => removeFriendRequest(item.id) }
+          ]);
+        }
+      }
+      outgoingRequestsEmpty?.classList.toggle("hidden", outgoing.length > 0);
+
+      if (friendRequestBadge) {
+        if (incoming.length > 0) {
+          friendRequestBadge.textContent = String(incoming.length);
+          friendRequestBadge.classList.remove("hidden");
+        } else {
+          friendRequestBadge.classList.add("hidden");
+        }
+      }
+
+    } catch (error) {
+      console.error("loadFriends error:", error);
+    }
+
+  }
+
+  openFriendsButton?.addEventListener("click", openFriendsModal);
+  closeFriendsButton?.addEventListener("click", closeFriendsModal);
+  friendsModal?.addEventListener("click", (event) => {
+    if (event.target === friendsModal) closeFriendsModal();
+  });
 
   userSearchButton?.addEventListener("click", openUserSearchModal);
   closeUserSearchButton?.addEventListener("click", closeUserSearchModal);
@@ -2628,7 +2889,7 @@ document.addEventListener("DOMContentLoaded", () => {
             message.text
               ? `
                 <div class="message-text">
-                  ${escapeHtml(message.text)}
+                  ${linkifyHtml(message.text)}
                   ${
                     isGrouped && message.edited
                       ? `<span class="message-edited">（編集済み）</span>`
@@ -3378,6 +3639,10 @@ document.addEventListener("DOMContentLoaded", () => {
     setViewProfilePreview(fallbackAvatar || null, fallbackName);
 
     editOwnProfileButton?.classList.add("hidden");
+    viewProfileFriendButton?.classList.add("hidden");
+    if (viewProfileFriendMessage) viewProfileFriendMessage.textContent = "";
+
+    viewedProfileUserId = Number(userId);
 
     viewProfileModal.classList.remove("hidden");
 
@@ -3398,6 +3663,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         setViewProfilePreview(data.user.avatar || null, data.user.name);
 
+        renderFriendButton(data.user.friendStatus, data.user.friendRequestId);
+
       }
 
     } catch (error) {
@@ -3405,6 +3672,75 @@ document.addEventListener("DOMContentLoaded", () => {
       if (viewProfileBio) {
         viewProfileBio.textContent = "プロフィールを取得できませんでした。";
       }
+
+    }
+
+  }
+
+  function renderFriendButton(status, requestId) {
+
+    if (!viewProfileFriendButton) return;
+
+    viewProfileFriendButton.classList.remove("hidden");
+    viewProfileFriendButton.disabled = false;
+    viewProfileFriendButton.className = "secondary-button";
+
+    if (status === "friends") {
+
+      viewProfileFriendButton.textContent = "フレンドを解除";
+      viewProfileFriendButton.classList.add("danger");
+      viewProfileFriendButton.onclick = async () => {
+        viewProfileFriendButton.disabled = true;
+        try {
+          await removeFriendRequest(requestId);
+          renderFriendButton("none", null);
+        } catch (error) {
+          if (viewProfileFriendMessage) viewProfileFriendMessage.textContent = error.message || "処理できませんでした。";
+          viewProfileFriendButton.disabled = false;
+        }
+      };
+
+    } else if (status === "outgoing") {
+
+      viewProfileFriendButton.textContent = "申請を取り消す";
+      viewProfileFriendButton.onclick = async () => {
+        viewProfileFriendButton.disabled = true;
+        try {
+          await removeFriendRequest(requestId);
+          renderFriendButton("none", null);
+        } catch (error) {
+          if (viewProfileFriendMessage) viewProfileFriendMessage.textContent = error.message || "処理できませんでした。";
+          viewProfileFriendButton.disabled = false;
+        }
+      };
+
+    } else if (status === "incoming") {
+
+      viewProfileFriendButton.textContent = "フレンド申請を承認";
+      viewProfileFriendButton.onclick = async () => {
+        viewProfileFriendButton.disabled = true;
+        try {
+          await acceptFriendRequest(requestId);
+          renderFriendButton("friends", requestId);
+        } catch (error) {
+          if (viewProfileFriendMessage) viewProfileFriendMessage.textContent = error.message || "処理できませんでした。";
+          viewProfileFriendButton.disabled = false;
+        }
+      };
+
+    } else {
+
+      viewProfileFriendButton.textContent = "＋ フレンド申請を送る";
+      viewProfileFriendButton.onclick = async () => {
+        viewProfileFriendButton.disabled = true;
+        try {
+          const data = await sendFriendRequest(viewedProfileUserId);
+          renderFriendButton(data?.status === "accepted" ? "friends" : "outgoing", null);
+        } catch (error) {
+          if (viewProfileFriendMessage) viewProfileFriendMessage.textContent = error.message || "フレンド申請を送れませんでした。";
+          viewProfileFriendButton.disabled = false;
+        }
+      };
 
     }
 
@@ -3723,41 +4059,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function loadSettings() {
 
-    const dark =
-      localStorage.getItem(
-        "veylo-dark-mode"
-      ) === "true";
+    const theme = getStoredTheme();
 
-    const gray =
-      localStorage.getItem(
-        "veylo-gray-mode"
-      ) === "true";
-
-    applyTheme(
-      dark
-    );
-
-    applyGrayMode(
-      gray
-    );
-
-    if (themeToggleButton) {
-
-      themeToggleButton.textContent =
-        dark
-          ? "ON"
-          : "OFF";
-
-    }
-
-    if (grayToggleButton) {
-
-      grayToggleButton.textContent =
-        gray
-          ? "ON"
-          : "OFF";
-
-    }
+    setActiveTheme(theme);
 
     const language =
       localStorage.getItem(
@@ -3809,61 +4113,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
   }
 
-  themeToggleButton?.addEventListener(
-    "click",
-    () => {
+  function getStoredTheme() {
 
-      const enabled =
-        !(
-          localStorage.getItem(
-            "veylo-dark-mode"
-          ) === "true"
-        );
+    const stored =
+      localStorage.getItem("veylo-theme");
 
-      localStorage.setItem(
-        "veylo-dark-mode",
-        String(enabled)
-      );
-
-      applyTheme(
-        enabled
-      );
-
-      themeToggleButton.textContent =
-        enabled
-          ? "ON"
-          : "OFF";
-
+    if (stored === "light" || stored === "dark" || stored === "gray") {
+      return stored;
     }
-  );
 
-  grayToggleButton?.addEventListener(
-    "click",
-    () => {
-
-      const enabled =
-        !(
-          localStorage.getItem(
-            "veylo-gray-mode"
-          ) === "true"
-        );
-
-      localStorage.setItem(
-        "veylo-gray-mode",
-        String(enabled)
-      );
-
-      applyGrayMode(
-        enabled
-      );
-
-      grayToggleButton.textContent =
-        enabled
-          ? "ON"
-          : "OFF";
-
+    // 旧バージョン（ダーク/グレー個別トグル）からの移行
+    if (localStorage.getItem("veylo-dark-mode") === "true") {
+      return "dark";
     }
-  );
+
+    if (localStorage.getItem("veylo-gray-mode") === "true") {
+      return "gray";
+    }
+
+    return "light";
+
+  }
+
+  function setActiveTheme(theme) {
+
+    localStorage.setItem("veylo-theme", theme);
+
+    applyTheme(theme === "dark");
+    applyGrayMode(theme === "gray");
+
+    themeSelector
+      ?.querySelectorAll(".theme-option")
+      .forEach(button => {
+        button.classList.toggle(
+          "active",
+          button.dataset.theme === theme
+        );
+      });
+
+  }
+
+  themeSelector
+    ?.querySelectorAll(".theme-option")
+    .forEach(button => {
+
+      button.addEventListener("click", () => {
+        setActiveTheme(button.dataset.theme);
+      });
+
+    });
 
   // ==================================================
   // 通知音 / デスクトップ通知
