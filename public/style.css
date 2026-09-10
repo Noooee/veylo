@@ -6537,3 +6537,173 @@ body.dark-mode .message-actions,
 body.gray-mode .message-actions {
   background: var(--surface, #2b2d31);
 }
+
+/* ---------------------------------------------------------
+   テーマ選択（ライト / ダーク / グレー）
+--------------------------------------------------------- */
+
+.theme-selector {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.theme-option {
+  flex: 1 1 0;
+
+  padding: 10px 6px;
+
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.theme-option:hover {
+  background: var(--primary-light);
+}
+
+.theme-option.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+/* =========================================================
+   ★ フレンド機能
+========================================================= */
+
+.friends-header-button {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background .15s ease;
+}
+
+.friends-header-button:hover {
+  background: var(--primary-light);
+}
+
+.friend-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--danger, #e05252);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.friends-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.friends-tab {
+  flex: 1 1 0;
+  padding: 8px 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.friends-tab:hover {
+  background: var(--primary-light);
+}
+
+.friends-tab.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.friends-panel.hidden {
+  display: none;
+}
+
+.user-search-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.user-search-row .user-search-result {
+  flex: 1 1 auto;
+}
+
+.friend-quick-button {
+  flex: 0 0 auto;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s ease, transform .15s ease;
+}
+
+.friend-quick-button:hover {
+  background: var(--primary-light);
+  transform: translateY(-1px);
+}
+
+.friend-quick-button:disabled {
+  opacity: .6;
+  cursor: default;
+  transform: none;
+}
+
+.friend-quick-button.danger {
+  color: var(--danger, #e05252);
+  border-color: rgba(224,82,82,.3);
+}
+
+.friend-quick-button.danger:hover {
+  background: rgba(224,82,82,.08);
+}
+
+.secondary-button.danger {
+  color: var(--danger, #e05252);
+  border-color: rgba(224,82,82,.3);
+}
+
+.secondary-button.danger:hover {
+  background: rgba(224,82,82,.08);
+}
+
+/* ---------------------------------------------------------
+   メッセージ内URLのリンク化
+--------------------------------------------------------- */
+
+.message-text a {
+  color: var(--primary);
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.message-text a:hover {
+  color: var(--primary-dark);
+}
