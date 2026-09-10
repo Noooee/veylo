@@ -502,6 +502,43 @@ async function initDatabase() {
   `);
 
   // ==================================================
+  // フレンド
+  // ==================================================
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS friend_requests (
+      id SERIAL PRIMARY KEY,
+
+      from_user_id INTEGER NOT NULL
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+      to_user_id INTEGER NOT NULL
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+      status TEXT NOT NULL DEFAULT 'pending',
+
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      responded_at TIMESTAMPTZ,
+
+      UNIQUE (from_user_id, to_user_id)
+    )
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+    friend_requests_to_user_idx
+    ON friend_requests(to_user_id, status)
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS
+    friend_requests_from_user_idx
+    ON friend_requests(from_user_id, status)
+  `);
+
+  // ==================================================
   // Password Reset
   // ==================================================
 
@@ -1157,12 +1194,44 @@ app.get(
 
       const row = result.rows[0];
 
+      let friendStatus = "none";
+      let friendRequestId = null;
+
+      const friendRow = await pool.query(
+        `
+        SELECT id, from_user_id, to_user_id, status
+        FROM friend_requests
+        WHERE (from_user_id = $1 AND to_user_id = $2)
+           OR (from_user_id = $2 AND to_user_id = $1)
+        LIMIT 1
+        `,
+        [req.session.userId, targetId]
+      );
+
+      if (friendRow.rows.length > 0) {
+
+        const fr = friendRow.rows[0];
+        friendRequestId = fr.id;
+
+        if (fr.status === "accepted") {
+          friendStatus = "friends";
+        } else if (fr.status === "pending") {
+          friendStatus =
+            Number(fr.from_user_id) === Number(req.session.userId)
+              ? "outgoing"
+              : "incoming";
+        }
+
+      }
+
       return res.json({
         user: {
           id: Number(row.id),
           name: row.name,
           avatar: row.avatar || null,
-          bio: row.bio || ""
+          bio: row.bio || "",
+          friendStatus,
+          friendRequestId
         }
       });
 
@@ -1171,6 +1240,267 @@ app.get(
       return res.status(500).json({
         message: "ユーザー情報を取得できませんでした。"
       });
+    }
+
+  }
+);
+
+// ==================================================
+// フレンド一覧・リクエスト一覧
+// ==================================================
+
+app.get(
+  "/api/friends",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+
+      const myId = req.session.userId;
+
+      const friendsResult = await pool.query(
+        `
+        SELECT
+          fr.id,
+          CASE WHEN fr.from_user_id = $1 THEN fr.to_user_id ELSE fr.from_user_id END AS other_id,
+          CASE WHEN fr.from_user_id = $1 THEN u2.name ELSE u1.name END AS other_name,
+          CASE WHEN fr.from_user_id = $1 THEN u2.avatar ELSE u1.avatar END AS other_avatar
+        FROM friend_requests fr
+        INNER JOIN users u1 ON u1.id = fr.from_user_id
+        INNER JOIN users u2 ON u2.id = fr.to_user_id
+        WHERE fr.status = 'accepted'
+          AND (fr.from_user_id = $1 OR fr.to_user_id = $1)
+        ORDER BY u2.name ASC
+        `,
+        [myId]
+      );
+
+      const incomingResult = await pool.query(
+        `
+        SELECT fr.id, fr.from_user_id AS other_id, u.name AS other_name, u.avatar AS other_avatar
+        FROM friend_requests fr
+        INNER JOIN users u ON u.id = fr.from_user_id
+        WHERE fr.status = 'pending' AND fr.to_user_id = $1
+        ORDER BY fr.created_at DESC
+        `,
+        [myId]
+      );
+
+      const outgoingResult = await pool.query(
+        `
+        SELECT fr.id, fr.to_user_id AS other_id, u.name AS other_name, u.avatar AS other_avatar
+        FROM friend_requests fr
+        INNER JOIN users u ON u.id = fr.to_user_id
+        WHERE fr.status = 'pending' AND fr.from_user_id = $1
+        ORDER BY fr.created_at DESC
+        `,
+        [myId]
+      );
+
+      const mapRow = row => ({
+        id: row.id,
+        userId: Number(row.other_id),
+        name: row.other_name,
+        avatar: row.other_avatar || null
+      });
+
+      return res.json({
+        friends: friendsResult.rows.map(mapRow),
+        incoming: incomingResult.rows.map(mapRow),
+        outgoing: outgoingResult.rows.map(mapRow)
+      });
+
+    } catch (error) {
+      console.error("/api/friends error:", error);
+      return res.status(500).json({
+        message: "フレンド情報を取得できませんでした。"
+      });
+    }
+
+  }
+);
+
+// ==================================================
+// フレンド申請を送る
+// ==================================================
+
+app.post(
+  "/api/friends/request",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+
+      const myId = Number(req.session.userId);
+      const targetId = Number(req.body?.userId);
+
+      if (!Number.isInteger(targetId) || targetId <= 0) {
+        return res.status(400).json({ message: "ユーザーを選択してください。" });
+      }
+
+      if (targetId === myId) {
+        return res.status(400).json({ message: "自分自身には申請できません。" });
+      }
+
+      const targetExists = await pool.query(
+        `SELECT id FROM users WHERE id = $1 LIMIT 1`,
+        [targetId]
+      );
+
+      if (targetExists.rows.length === 0) {
+        return res.status(404).json({ message: "ユーザーが見つかりません。" });
+      }
+
+      // 相手から既に申請が来ていれば、自動的に承認する
+      const reverseResult = await pool.query(
+        `
+        UPDATE friend_requests
+        SET status = 'accepted', responded_at = NOW()
+        WHERE from_user_id = $1 AND to_user_id = $2 AND status = 'pending'
+        RETURNING id
+        `,
+        [targetId, myId]
+      );
+
+      if (reverseResult.rows.length > 0) {
+        notifyUser(targetId, "friend request update");
+        return res.json({ status: "accepted", message: "フレンドになりました。" });
+      }
+
+      const existing = await pool.query(
+        `
+        SELECT id, status
+        FROM friend_requests
+        WHERE from_user_id = $1 AND to_user_id = $2
+        LIMIT 1
+        `,
+        [myId, targetId]
+      );
+
+      if (existing.rows.length > 0) {
+
+        const row = existing.rows[0];
+
+        if (row.status === "accepted") {
+          return res.status(409).json({ message: "既にフレンドです。" });
+        }
+
+        if (row.status === "pending") {
+          return res.status(409).json({ message: "既に申請済みです。" });
+        }
+
+        // declined だった場合は再申請扱いにする
+        await pool.query(
+          `
+          UPDATE friend_requests
+          SET status = 'pending', created_at = NOW(), responded_at = NULL
+          WHERE id = $1
+          `,
+          [row.id]
+        );
+
+        notifyUser(targetId, "friend request update");
+
+        return res.json({ status: "pending", message: "フレンド申請を送りました。" });
+
+      }
+
+      await pool.query(
+        `
+        INSERT INTO friend_requests (from_user_id, to_user_id, status)
+        VALUES ($1, $2, 'pending')
+        `,
+        [myId, targetId]
+      );
+
+      notifyUser(targetId, "friend request update");
+
+      return res.json({ status: "pending", message: "フレンド申請を送りました。" });
+
+    } catch (error) {
+      console.error("/api/friends/request error:", error);
+      return res.status(500).json({ message: "フレンド申請を送れませんでした。" });
+    }
+
+  }
+);
+
+// ==================================================
+// フレンド申請を承認
+// ==================================================
+
+app.post(
+  "/api/friends/:id/accept",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+
+      const id = Number(req.params.id);
+      const myId = req.session.userId;
+
+      const result = await pool.query(
+        `
+        UPDATE friend_requests
+        SET status = 'accepted', responded_at = NOW()
+        WHERE id = $1 AND to_user_id = $2 AND status = 'pending'
+        RETURNING from_user_id
+        `,
+        [id, myId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "この申請は見つかりませんでした。" });
+      }
+
+      notifyUser(Number(result.rows[0].from_user_id), "friend request update");
+
+      return res.json({ message: "フレンドになりました。" });
+
+    } catch (error) {
+      console.error("/api/friends/:id/accept error:", error);
+      return res.status(500).json({ message: "承認できませんでした。" });
+    }
+
+  }
+);
+
+// ==================================================
+// フレンド申請を拒否 / 取り消し / フレンド解除
+// ==================================================
+
+app.delete(
+  "/api/friends/:id",
+  requireLogin,
+  async (req, res) => {
+
+    try {
+
+      const id = Number(req.params.id);
+      const myId = req.session.userId;
+
+      const result = await pool.query(
+        `
+        DELETE FROM friend_requests
+        WHERE id = $1
+          AND (from_user_id = $2 OR to_user_id = $2)
+        RETURNING
+          CASE WHEN from_user_id = $2 THEN to_user_id ELSE from_user_id END AS other_id
+        `,
+        [id, myId]
+      );
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "見つかりませんでした。" });
+      }
+
+      notifyUser(Number(result.rows[0].other_id), "friend request update");
+
+      return res.json({ message: "更新しました。" });
+
+    } catch (error) {
+      console.error("/api/friends/:id error:", error);
+      return res.status(500).json({ message: "処理できませんでした。" });
     }
 
   }
@@ -3914,6 +4244,23 @@ async function sendMyDMsToUsers(conversationId) {
     }
   } catch (error) {
     console.error("sendMyDMsToUsers error:", error);
+  }
+}
+
+// ==================================================
+// 指定ユーザーの接続中ソケットへ通知を送る
+// （フレンド申請・承認などのリアルタイム反映用）
+// ==================================================
+
+function notifyUser(userId, eventName, payload) {
+  try {
+    for (const connectedSocket of io.sockets.sockets.values()) {
+      if (connectedSocket.userId && Number(connectedSocket.userId) === Number(userId)) {
+        connectedSocket.emit(eventName, payload || {});
+      }
+    }
+  } catch (error) {
+    console.error("notifyUser error:", error);
   }
 }
 
